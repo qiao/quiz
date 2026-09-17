@@ -1,6 +1,6 @@
 # Product requirements: quiz skill
 
-Status: draft, for review by the user. Date: 2026-09-16.
+Status: current. Date: 2026-09-16.
 
 This document answers: what are we building, and why?
 

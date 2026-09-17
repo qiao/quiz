@@ -1,6 +1,6 @@
 # Technical design: quiz skill architecture
 
-Status: draft, for review by the user. Date: 2026-09-16.
+Status: current. Date: 2026-09-16.
 
 This document answers: how does the compiler and slide runtime work?
 
