@@ -241,8 +241,7 @@ This document answers: what did we decide, and what did we reject?
 - **Rejected alternative:** Exam mode hiding feedback until the final slide.
   Rejected because delayed feedback reduces learning value for self-study.
 - **Rejected alternative:** Dual-mode switcher between learn and exam modes.
-  Rejected because extra modes add interface complexity without improving core developer
-  onboarding.
+  Rejected because extra modes add interface complexity without improving personal self-testing.
 
 ### D18: Progress persistence
 - **Decision:** Persist quiz answers in browser `localStorage` keyed by a derived identifier
