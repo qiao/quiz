@@ -721,10 +721,10 @@ h2 {
           if (choice.id === correct.id) {
             stateClass = 'is-correct';
             const mine = answer === choice.id;
-            status.push(mine ? '✓ Correct. This is your choice.' : '✓ Correct choice');
+            status.push(mine ? '✓ Your answer (Correct)' : '✓ Correct answer');
           } else if (choice.id === answer) {
             stateClass = 'is-wrong-pick';
-            status.push('✗ Not correct. This is your choice.');
+            status.push('✗ Your answer (Incorrect)');
           } else {
             stateClass = 'is-other';
           }
