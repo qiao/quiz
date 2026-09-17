@@ -320,32 +320,43 @@ node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind] [--grade <answers
 
 `build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
 
-When passed `--blind`, `build.mjs` produces `quiz.blind.json` (`BlindQuiz`) in the draft directory.
-The compiler removes `kind`, `rationale`, and `explanation` fields from all choices and questions,
-and shuffles choices with the seeded generator. This prevents answer leakage to the verification
-sub-agent.
+Validation runs first for all three commands. If the draft or answers file fails validation,
+the command reports errors to standard error and exits with code 1 before performing subsequent
+actions.
+
+When passed `--blind`, `build.mjs` validates the draft, removes `kind`, `rationale`, and
+`explanation` fields from all choices and questions, shuffles choices with the seeded generator,
+and produces `quizzes/<slug>/quiz.blind.json` (`BlindQuiz`) in the draft directory. This prevents
+answer leakage to the verification sub-agent.
 
 When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent answers
-(`SubAgentAnswerFile`) against the draft key. Code maps shuffled choices back to draft choices
-using the question seed. The compiler prints a JSON report (`GradeReport`) of passed questions and
-failed questions with error reasons.
+(`SubAgentAnswerFile`) against the draft key. A relative path resolves from the current working
+directory (for example, `quizzes/<slug>/answers.json`). Code maps shuffled choices back to draft
+choices using the question seed. The compiler prints a JSON report (`GradeReport`) of passed
+questions and failed questions with error reasons.
 
 ### Blind check verification loop
 
 During Phase 3, the primary agent uses code to verify quiz quality:
 1. The primary agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`.
-2. The agent invokes an independent sub-agent with read access to the source material. The
-   sub-agent instructions forbid reading files in `quizzes/` to prevent answer key exposure.
+2. The agent reads `quizzes/<slug>/quiz.blind.json` and starts an independent sub-agent with read
+   access to the source material. The agent places the blind JSON in the sub-agent prompt. The
+   sub-agent instructions forbid reading files in `quizzes/` to prevent answer key exposure. The
+   agent does not provide the draft, explanations, rationales, or any answer hints.
 3. The sub-agent evaluates each question in `quiz.blind.json` without the answer key.
 4. For each question, the sub-agent records either its chosen choice ID (`'a'`, `'b'`, `'c'`, or
-   `'d'`) or `'ambiguous'` with an explanation in `answers.json`.
-5. The primary agent executes `build.mjs --grade` to evaluate the answers.
-6. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
-   explanation to resolve the ambiguity.
-7. The verification allows up to two repair rounds per question. If a question fails after two
+   `'d'`) or `'ambiguous'` with an explanation in its final response message matching
+   `SubAgentAnswerFile`.
+5. The primary agent writes the returned JSON to `quizzes/<slug>/answers.json`.
+6. The primary agent executes:
+   `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json`.
+7. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
+   explanation to resolve the ambiguity. Any edit to `quiz.json` changes the hash seed, requiring
+   a fresh `--blind` run and complete sub-agent re-check.
+8. The verification allows up to two repair rounds per question. If a question fails after two
    rounds, the agent replaces it with one new question of the same tier. If the replacement also
-   fails after two repair rounds, the agent removes the question and notifies the user of the
-   removal and the revised question count.
+   fails after two repair rounds, the agent removes the question, re-verifies, and notifies the
+   user of the removal and the revised question count.
 
 ### Validation rules
 
@@ -369,7 +380,15 @@ Before emitting HTML, `build.mjs` checks:
     `lineStart`.
 14. Unknown fields in draft objects trigger validation errors to detect property typos.
 
-### Error format
+### Error format and exit codes
+
+`build.mjs` uses standard process exit codes:
+- `0`: The command executed successfully. For `--grade`, parse the JSON output and inspect the
+  `passed` property to check whether all questions passed verification.
+- `1`: Validation failed. The draft JSON or answers JSON contains schema errors. `build.mjs`
+  prints structured error diagnostics to standard error.
+- `2`: Usage error. The invocation is missing required file arguments, files do not exist,
+  or unknown command-line options were passed.
 
 When validation fails, `build.mjs` prints structured error diagnostics to standard error and exits
 with code 1:
