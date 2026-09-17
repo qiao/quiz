@@ -749,6 +749,19 @@ token uses CSS `light-dark(<light>, <dark>)`:
   `1.125rem`, body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
 - **Typography families (from `vercel-brand.css`):**
   `"Geist"` for sans-serif text and `"Geist Mono"` for monospace code.
+- **Motion tokens (from `transitions.dev`):**
+  `skills/quiz/tokens.css` defines motion tokens sourced from repository
+  `Jakubantalik/transitions.dev`, file `skills/transitions-dev/_root.css`, at commit
+  `598d3d6ad89dabb4bdf742fd2e887ca53914a888`:
+  - `--duration-stagger: 40ms`: step interval for the score count-up timer.
+  - `--duration-quick: 150ms`: button and choice card hover transitions.
+  - `--duration-fast: 250ms`: slide enter transition.
+  - `--duration-medium: 350ms`: SVG check and cross icon stroke drawing.
+  - `--duration-very-slow: 500ms`: explanation panel and score band line elevation.
+  - `--ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1)`: primary easing curve.
+  - `--distance-base: 8px`: slide enter horizontal offset.
+  - `--distance-medium: 12px`: explanation panel vertical offset.
+  - `--blur-medium: 3px`: slide and feedback enter blur.
 
 ### Theme configuration and resolution
 
@@ -765,9 +778,21 @@ Pressing `t` toggles `data-theme` between `'light'` and `'dark'`, and saves the 
 
 ### Motion and focus styles
 
-Following the "Accessibility and responsive behavior" section of `vercel.com/design.md`:
-- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` disables slide transitions and
-  animations (`transition: none; animation: none`).
+Transitions follow `prefers-reduced-motion` settings:
+- **Reduced motion rule:** All motion resides inside the media query
+  `@media (prefers-reduced-motion: no-preference)`. When a user enables reduced motion, no CSS
+  transitions or animations run. Script code checks `window.matchMedia` for reduced motion to skip
+  the score count-up and confetti. The page renders complete and static immediately.
+- **Animated states and source recipes:** When motion is permitted, the interface animates four
+  state transitions using tokens from `transitions.dev`:
+  1. Slide enter: 250 ms translation, fade, and blur using the enter pattern of recipe
+     `08-page-side-by-side.md`.
+  2. Answer status icons: 350 ms SVG stroke draw using the pattern of recipe
+     `25-checkbox-check.md`.
+  3. Feedback panel: 500 ms rise with fade and blur using the pattern of recipe
+     `18-texts-reveal.md`.
+  4. End slide score reveal: 800 ms numerical count-up, followed by the 500 ms rise of the score
+     band line, and a 2.4-second confetti drop for a 100% score.
 - **Focus rings:** All interactive controls display a visible focus indicator using
   `:focus-visible` with a 2-pixel solid outline and a 2-pixel offset.
 
@@ -864,6 +889,7 @@ The automated test suite organizes tests into thirteen groups:
 - SIL Open Font License 1.1: <https://openfontlicense.org/>
 - Geist Font OFL License: <https://github.com/vercel/geist-font/blob/main/OFL.txt>
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
+- transitions.dev Repository and Terms: <https://transitions.dev/terms.html>
 - Node.js Test Runner: <https://nodejs.org/api/test.html>
 - Node.js Releases: <https://nodejs.org/en/about/previous-releases>
 - Reproducible Builds Specification: <https://reproducible-builds.org/specs/source-date-epoch/>
