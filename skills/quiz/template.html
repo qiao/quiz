@@ -874,27 +874,37 @@ h2 {
     }
   }
 
+  const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  /**
+   * Gives the theme on screen: the saved choice, or the system theme when no choice is saved.
+   *
+   * @returns {'light' | 'dark'} The theme.
+   */
   function currentTheme() {
     const saved = storage.get(THEME_KEY);
     if (saved === 'light' || saved === 'dark') return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return darkQuery.matches ? 'dark' : 'light';
   }
 
-  function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    const other = theme === 'dark' ? 'light' : 'dark';
+  function updateThemeButton() {
+    const other = currentTheme() === 'dark' ? 'light' : 'dark';
     themeToggle.textContent = `Use ${other} theme`;
-    themeToggle.setAttribute('aria-keyshortcuts', 'T');
   }
 
   function toggleTheme() {
     const theme = currentTheme() === 'dark' ? 'light' : 'dark';
     storage.set(THEME_KEY, theme);
-    applyTheme(theme);
+    document.documentElement.dataset.theme = theme;
+    updateThemeButton();
   }
 
+  // With no saved choice, the page leaves `data-theme` unset, so the CSS follows the system theme
+  // when it changes.
+  themeToggle.setAttribute('aria-keyshortcuts', 'T');
   themeToggle.addEventListener('click', toggleTheme);
-  applyTheme(currentTheme());
+  darkQuery.addEventListener('change', updateThemeButton);
+  updateThemeButton();
 
   document.addEventListener('keydown', (event) => {
     if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
