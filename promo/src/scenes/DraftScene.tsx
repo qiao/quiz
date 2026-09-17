@@ -3,10 +3,10 @@ import { COLOR, EASE_OUT, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const QUESTIONS = [
-  { tier: 1, name: "Fundamentals", text: "What does useState() return?" },
-  { tier: 2, name: "Core", text: "When does a useEffect cleanup run?" },
-  { tier: 3, name: "Advanced", text: "What occurs when a list item key changes?" },
-  { tier: 4, name: "Expert", text: "Why can useCallback not stop a child re-render?" },
+  { tier: 1, name: "Fundamentals", text: "What does useFetch() return to TodoList?" },
+  { tier: 2, name: "Core", text: "When does AuthContext refresh the session?" },
+  { tier: 3, name: "Advanced", text: "Why does TodoItem lose its edit on a new id?" },
+  { tier: 4, name: "Expert", text: "Why does useUndoReducer save diffs, not states?" },
 ];
 
 /** Frame where the first question row appears. */
