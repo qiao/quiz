@@ -909,8 +909,12 @@ const USAGE = `Usage:
       Print a grade report as JSON.
 
 Run the command from the project folder. Relative paths start from that folder.
-Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage error,
-3 when --grade found at least one failed question.
+
+Exit codes:
+  0  The command worked.
+  1  The draft or the answer file is not valid.
+  2  The command line has a mistake, or a file cannot be read.
+  3  --grade found at least one failed question.
 `;
 
 /**
@@ -918,8 +922,12 @@ Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage e
  * @property {string} cwd Folder that relative paths start from.
  * @property {Record<string, string | undefined>} env Environment variables.
  * @property {string} skillDir Folder that holds `template.html` and the assets.
- * @property {(text: string) => void} stdout Writes to standard output.
- * @property {(text: string) => void} stderr Writes to standard error.
+ * @property {(text: string) => void} stdout Function that writes to standard output.
+ * @property {(text: string) => void} stderr Function that writes to standard error.
+ *
+ * @typedef {{ kind: 'help' }
+ *   | { kind: 'build' | 'blind', draftPath: string }
+ *   | { kind: 'grade', draftPath: string, answersPath: string }} Command
  */
 
 /** Error that stops the command with a given exit code and message. */
@@ -929,12 +937,10 @@ class CommandError extends Error {
    *
    * @param {1 | 2} code Exit code.
    * @param {string} message Text for standard error.
-   * @param {{ showUsage?: boolean }} [options] True in `showUsage` for a mistake in the arguments.
    */
-  constructor(code, message, { showUsage = false } = {}) {
+  constructor(code, message) {
     super(message);
     this.code = code;
-    this.showUsage = showUsage;
   }
 }
 
@@ -942,32 +948,10 @@ class CommandError extends Error {
  * Makes the error for a mistake in the command line arguments.
  *
  * @param {string} message Text for standard error.
- * @returns {CommandError} An error with code 2 that also prints the usage text.
+ * @returns {CommandError} An error with code 2 whose message ends with the usage text.
  */
 function usageError(message) {
-  return new CommandError(2, message, { showUsage: true });
-}
-
-/**
- * Reads a JSON file for the command line.
- *
- * @param {string} path Path as the user wrote it.
- * @param {string} cwd Folder that a relative path starts from.
- * @returns {unknown} The parsed value.
- * @throws {CommandError} With code 2 when the file does not exist, or code 1 when it is not JSON.
- */
-function readJsonFile(path, cwd) {
-  const fullPath = resolve(cwd, path);
-  if (!existsSync(fullPath)) {
-    throw new CommandError(2, `Error: cannot read ${path}: the file does not exist`);
-  }
-  try {
-    return JSON.parse(readFileSync(fullPath, 'utf8'));
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    const message = `VALIDATION ERROR in ${path}:\n- The file is not valid JSON: ${reason}`;
-    throw new CommandError(1, message);
-  }
+  return new CommandError(2, `${message}\n\n${USAGE.trimEnd()}`);
 }
 
 /**
@@ -985,22 +969,48 @@ function stopOnErrors(errors, path) {
 }
 
 /**
+ * Reads a JSON file for the command line.
+ *
+ * @param {string} path Path as the user wrote it.
+ * @param {string} cwd Folder that a relative path starts from.
+ * @returns {unknown} The parsed value.
+ * @throws {CommandError} With code 2 when the file cannot be read, or code 1 when it is not JSON.
+ */
+function readJsonFile(path, cwd) {
+  const fullPath = resolve(cwd, path);
+  if (!existsSync(fullPath)) {
+    throw new CommandError(2, `Error: cannot read ${path}: the file does not exist`);
+  }
+  let text;
+  try {
+    text = readFileSync(fullPath, 'utf8');
+  } catch (error) {
+    const reason = /** @type {NodeJS.ErrnoException} */ (error).code ?? String(error);
+    throw new CommandError(2, `Error: cannot read ${path}: ${reason}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    stopOnErrors([`The file is not valid JSON: ${/** @type {Error} */ (error).message}`], path);
+  }
+}
+
+/**
  * Reads the command line arguments.
  *
  * @param {string[]} args Arguments after the script name.
- * @returns {{ help: boolean, draftPath: string, blind: boolean, gradePath: string | null }}
- *   The parsed arguments.
- * @throws {CommandError} With code 2 for a usage error.
+ * @returns {Command} The command to run.
+ * @throws {CommandError} With code 2 for a mistake in the arguments.
  */
 function parseArgs(args) {
   /** @type {string[]} */
   const paths = [];
   let blind = false;
   /** @type {string | null} */
-  let gradePath = null;
+  let answersPath = null;
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === '--help' || arg === '-h') return { help: true, draftPath: '', blind, gradePath };
+    if (arg === '--help' || arg === '-h') return { kind: 'help' };
     if (arg === '--blind') {
       blind = true;
     } else if (arg === '--grade') {
@@ -1008,7 +1018,7 @@ function parseArgs(args) {
       if (!next || next.startsWith('--')) {
         throw usageError('Error: --grade needs the path to answers.json');
       }
-      gradePath = next;
+      answersPath = next;
       index += 1;
     } else if (arg.startsWith('-')) {
       throw usageError(`Error: unknown option '${arg}'`);
@@ -1020,8 +1030,10 @@ function parseArgs(args) {
   if (paths.length > 1) {
     throw usageError(`Error: expected one draft path, found ${paths.length}`);
   }
-  if (blind && gradePath) throw usageError('Error: use --blind or --grade, not both');
-  return { help: false, draftPath: paths[0], blind, gradePath };
+  if (blind && answersPath) throw usageError('Error: use --blind or --grade, not both');
+  const draftPath = paths[0];
+  if (answersPath) return { kind: 'grade', draftPath, answersPath };
+  return { kind: blind ? 'blind' : 'build', draftPath };
 }
 
 /**
@@ -1032,7 +1044,12 @@ function parseArgs(args) {
  * @throws {CommandError} With code 2 when a file is missing, because the skill is not complete.
  */
 function readPageParts(skillDir) {
-  /** @param {string} name File name in the skill folder. */
+  /**
+   * Reads one file from the skill folder.
+   *
+   * @param {string} name File name in the skill folder.
+   * @returns {string} The file content.
+   */
   const read = (name) => {
     const path = join(skillDir, name);
     if (!existsSync(path)) {
@@ -1061,6 +1078,29 @@ function buildTime(env) {
 }
 
 /**
+ * Makes the page for a valid draft.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @param {MainIo} io Folders and environment.
+ * @returns {string} The complete HTML page.
+ * @throws {CommandError} With code 2 when the template or an asset is not usable.
+ */
+function makePage(draft, io) {
+  const targets = draft.questions.map((question) => question.citation.target);
+  const paths = [...new Set(targets.filter((target) => !isUrl(target)).map(repoPath))];
+  const quiz = buildQuiz(draft, {
+    createdAt: buildTime(io.env),
+    gitFacts: readGitFacts(gitRunnerFor(io.cwd), paths),
+  });
+  const parts = readPageParts(io.skillDir);
+  try {
+    return renderPage(quiz, parts);
+  } catch (error) {
+    throw new CommandError(2, `Error: ${/** @type {Error} */ (error).message}`);
+  }
+}
+
+/**
  * Runs the command line.
  *
  * @param {string[]} args Arguments after the script name.
@@ -1071,49 +1111,34 @@ function buildTime(env) {
  */
 export function main(args, io) {
   try {
-    const { help, draftPath, blind, gradePath } = parseArgs(args);
-    if (help) {
+    const command = parseArgs(args);
+    if (command.kind === 'help') {
       io.stdout(USAGE);
       return 0;
     }
-    const draft = readJsonFile(draftPath, io.cwd);
-    stopOnErrors(validateDraft(draft), draftPath);
+    const draft = readJsonFile(command.draftPath, io.cwd);
+    stopOnErrors(validateDraft(draft), command.draftPath);
     const validDraft = /** @type {QuizDraft} */ (draft);
-    const outFolder = dirname(draftPath);
 
-    if (blind) {
-      const outPath = join(outFolder, 'quiz.blind.json');
-      const blindJson = JSON.stringify(blindQuiz(validDraft), null, 2);
-      writeFileSync(resolve(io.cwd, outPath), `${blindJson}\n`);
-      io.stdout(`${outPath}\n`);
-      return 0;
-    }
-
-    if (gradePath) {
-      const file = readJsonFile(gradePath, io.cwd);
-      stopOnErrors(validateAnswers(file, validDraft.questions.length), gradePath);
+    if (command.kind === 'grade') {
+      const file = readJsonFile(command.answersPath, io.cwd);
+      stopOnErrors(validateAnswers(file, validDraft.questions.length), command.answersPath);
       const report = gradeAnswers(validDraft, /** @type {{ answers: SubAgentAnswer[] }} */ (file));
       io.stdout(`${JSON.stringify(report, null, 2)}\n`);
       return report.passed ? 0 : 3;
     }
 
-    const targets = validDraft.questions.map((question) => question.citation.target);
-    const paths = [...new Set(targets.filter((target) => !isUrl(target)).map(repoPath))];
-    const quiz = buildQuiz(validDraft, {
-      createdAt: buildTime(io.env),
-      gitFacts: readGitFacts(gitRunnerFor(io.cwd), paths),
-    });
-    const page = renderPage(quiz, readPageParts(io.skillDir));
-    const outPath = join(outFolder, 'index.html');
-    writeFileSync(resolve(io.cwd, outPath), page);
+    const [name, content] = command.kind === 'blind'
+      ? ['quiz.blind.json', `${JSON.stringify(blindQuiz(validDraft), null, 2)}\n`]
+      : ['index.html', makePage(validDraft, io)];
+    const outPath = join(dirname(command.draftPath), name);
+    writeFileSync(resolve(io.cwd, outPath), content);
     io.stdout(`${outPath}\n`);
     return 0;
   } catch (error) {
-    if (error instanceof CommandError) {
-      io.stderr(`${error.message}\n${error.showUsage ? `\n${USAGE}` : ''}`);
-      return error.code;
-    }
-    throw error;
+    if (!(error instanceof CommandError)) throw error;
+    io.stderr(`${error.message}\n`);
+    return error.code;
   }
 }
 

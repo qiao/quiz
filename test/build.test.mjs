@@ -601,8 +601,9 @@ describe('renderPage', () => {
 /**
  * Makes a temporary project with the fixture draft at `quizzes/js-event-loop/quiz.json`.
  *
- * @returns {{ cwd: string, run: (args: string[], env?: Record<string, string>) => any }}
- *   The project folder, and a function that runs `main` there and captures the output.
+ * @returns {{ cwd: string, skillDir: string, run: (args: string[], env?: object) => any }}
+ *   The project folder, the fake skill folder, and a function that runs `main` there and captures
+ *   the output.
  */
 function makeProject() {
   const cwd = mkdtempSync(join(tmpdir(), 'quiz-project-'));
@@ -620,6 +621,7 @@ function makeProject() {
   writeFileSync(join(skillDir, 'assets/OFL.txt'), 'License');
   return {
     cwd,
+    skillDir,
     run(args, env = {}) {
       let stdout = '';
       let stderr = '';
@@ -743,6 +745,7 @@ describe('main', () => {
       [[draftPath, '--grade'], 'Error: --grade needs the path to answers.json'],
       [[draftPath, '--blind', '--grade', 'a.json'], 'Error: use --blind or --grade, not both'],
       [['missing/quiz.json'], 'Error: cannot read missing/quiz.json: the file does not exist'],
+      [['quizzes'], 'Error: cannot read quizzes: EISDIR'],
     ];
     for (const [args, message] of cases) {
       const result = project.run(/** @type {string[]} */ (args));
@@ -751,6 +754,17 @@ describe('main', () => {
       const isFileError = message.startsWith('Error: cannot read');
       assert.equal(result.stderr.includes('Usage:'), !isFileError, result.stderr);
     }
+  });
+
+  it('exits with 2 and a message when the template is not usable', () => {
+    const project = makeProject();
+    writeFileSync(join(project.skillDir, 'template.html'), '<title>{{TITLE}}</title>');
+    const result = project.run([draftPath]);
+    assert.equal(result.code, 2);
+    assert.equal(
+      result.stderr,
+      'Error: template.html must hold /*{{TOKENS_CSS}}*/ exactly once, found 0\n',
+    );
   });
 
   it('prints the usage with --help', () => {
