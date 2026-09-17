@@ -1,7 +1,8 @@
 # quiz
 
 `quiz` is an agent skill that auto-generates multiple-choice quizzes as responsive HTML slide
-pages from codebases, documentation sites, files, or technical topics.
+pages from codebases, documentation sites, files, or technical topics. Developers run the skill
+primarily to test their own knowledge, and can share the generated slides with others.
 
 The skill runs in coding agent hosts such as Claude Code and agy. It structures questions into four
 progressive difficulty tiers, verifies questions with an independent blind sub-agent, and compiles
