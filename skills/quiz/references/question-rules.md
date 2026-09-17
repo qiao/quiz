@@ -66,7 +66,8 @@ Every question must contain exactly four choices:
 - Write all four choices with similar length and the same grammatical form.
 - The correct choice must not be the longest choice, the most detailed choice, or the only choice
   with a qualifier (such as "usually" or "in most cases"). A learner who picks the longest choice
-  must not win by guessing.
+  must not win by guessing. The compiler rejects a draft if the correct choice is more than 20%
+  longer than the longest wrong choice (over 1.2 times its character length).
 
 ### Correct choice
 - State the accurate technical answer directly.
