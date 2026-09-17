@@ -632,9 +632,11 @@ The agent extracts key parameters from natural language prompts:
 
 The agent asks a clarifying question before authoring when:
 1. A specified target path does not exist.
-2. The prompt names no resource or topic, and the working directory is empty.
-3. The prompt names no resource or topic, and the working directory is the user home directory
-   (`~`), where recursive scanning would inspect unrelated personal files.
+2. The prompt has no resource and no focus words (such as a bare `/quiz` or only a question count),
+   and the working directory is empty.
+3. The prompt has no resource and no focus words (such as a bare `/quiz` or only a question count),
+   and the working directory is the user home directory (`~`), where recursive scanning would
+   inspect unrelated personal files.
 4. The prompt specifies a free-standing topic, and the working directory is the user home directory
    (`~`), to confirm where to save the quiz output folder.
 

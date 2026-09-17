@@ -114,18 +114,19 @@ This document answers: what did we decide, and what did we reject?
   produce distorted questions instead of exploring the intended subject via web research.
 
 ### D6: Clarifying questions
-- **Decision:** Ask clarifying questions only when a target path does not exist, when the prompt
-  names no resource or topic while the current working directory is empty or the home directory,
-  or when a topic quiz runs in the home directory (`~`) to choose an output destination. If the
-  prompt names an explicit URL, document, or path, proceed without asking.
+- **Decision:** Ask clarifying questions only when a target path does not exist, when a prompt has
+  no resource and no focus words (such as a bare `/quiz` or only a question count) while the
+  current working directory is empty or the home directory, or when a topic quiz runs in the home
+  directory (`~`) to choose an output destination. If the prompt names an explicit URL, document,
+  path, or topic, proceed without asking.
 - **Reason:** Developers expect immediate execution when standard defaults exist or when the
-  prompt provides an unambiguous resource.
+  prompt provides an unambiguous resource or topic.
 - **Rejected alternative:** Ask clarifying questions on every run.
   Rejected because asking confirmation questions for count, difficulty, or format slows down
   daily use.
 - **Rejected alternative:** Never ask clarifying questions.
-  Rejected because running without a resource in an empty folder or home directory produces
-  meaningless output.
+  Rejected because running without a resource or topic in an empty folder or home directory
+  produces meaningless output.
 
 ---
 
