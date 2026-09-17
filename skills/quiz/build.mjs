@@ -155,25 +155,20 @@ function checkCitation(citation, label, errors) {
 /**
  * Rejects a correct choice that is much longer than every wrong choice.
  *
- * A learner who picks the longest choice must not find the answer. The check runs only when the
- * question has one correct choice and every choice has text.
+ * A learner who picks the longest choice must not find the answer.
  *
- * @param {unknown[]} choices The 4 choices of the question.
+ * @param {DraftChoice[]} choices The 4 choices, each with text, and exactly one correct choice.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
  */
 function checkChoiceLengths(choices, label, errors) {
-  const valid = choices.every((choice) => isObject(choice) && isFilledString(choice.text));
-  if (!valid) return;
-  const typed = /** @type {DraftChoice[]} */ (choices);
-  const correct = typed.filter((choice) => choice.kind === 'correct');
-  if (correct.length !== 1) return;
-
-  const correctLength = correct[0].text.trim().length;
-  const wrongLengths = typed
-    .filter((choice) => choice.kind !== 'correct')
-    .map((choice) => choice.text.trim().length);
-  const longestWrong = Math.max(...wrongLengths);
+  let correctLength = 0;
+  let longestWrong = 0;
+  for (const choice of choices) {
+    const length = choice.text.trim().length;
+    if (choice.kind === 'correct') correctLength = length;
+    else longestWrong = Math.max(longestWrong, length);
+  }
   if (correctLength > longestWrong * MAX_CORRECT_LENGTH_RATIO) {
     errors.push(
       `${label}: the correct choice has ${correctLength} characters, and the longest wrong ` +
@@ -198,11 +193,13 @@ function checkChoices(choices, label, errors) {
   }
   /** @type {Map<string, number>} */
   const seenTexts = new Map();
+  let allTextsFilled = true;
 
   choices.forEach((choice, index) => {
     const number = index + 1;
     if (!isObject(choice)) {
       errors.push(`${label}, Choice ${number}: the choice must be a JSON object`);
+      allTextsFilled = false;
       return;
     }
     const kind = String(choice.kind);
@@ -221,6 +218,8 @@ function checkChoices(choices, label, errors) {
       const first = seenTexts.get(key);
       if (first) errors.push(`${label}: choices ${first} and ${number} have the same text`);
       else seenTexts.set(key, number);
+    } else {
+      allTextsFilled = false;
     }
 
     if (kind === 'correct') {
@@ -238,13 +237,21 @@ function checkChoices(choices, label, errors) {
     }
   });
 
-  checkChoiceLengths(choices, label, errors);
+  /** @type {Record<string, number>} */
+  const found = {};
+  for (const kind of CHOICE_KINDS) {
+    found[kind] = choices.filter((choice) => isObject(choice) && choice.kind === kind).length;
+  }
+  if (allTextsFilled && found.correct === 1) {
+    checkChoiceLengths(/** @type {DraftChoice[]} */ (choices), label, errors);
+  }
 
   for (const [kind, expected] of Object.entries(KIND_COUNTS)) {
-    const found = choices.filter((choice) => isObject(choice) && choice.kind === kind).length;
-    if (found !== expected) {
+    if (found[kind] !== expected) {
       const noun = expected === 1 ? 'choice' : 'choices';
-      errors.push(`${label}: expected exactly ${expected} '${kind}' ${noun}, found ${found}`);
+      errors.push(
+        `${label}: expected exactly ${expected} '${kind}' ${noun}, found ${found[kind]}`,
+      );
     }
   }
 }
