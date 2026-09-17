@@ -6,6 +6,8 @@
  * writes the page. Section 3 of `docs/architecture.md` specifies the command line.
  */
 
+import { createHash } from 'node:crypto';
+
 /**
  * @typedef {'correct' | 'obvious-wrong' | 'plausible-wrong'} ChoiceKind
  *
@@ -348,4 +350,78 @@ export function renderMarkdown(markdown) {
     }
   }
   return blocks.join('');
+}
+
+/**
+ * Derives the quiz id from the slug and a hash of the questions.
+ *
+ * A new quiz at an old slug gets a new id, so the page does not load old saved progress.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @returns {string} The slug, a hyphen, and the first 8 hex characters of a SHA-256 hash.
+ */
+export function quizIdOf(draft) {
+  const hash = createHash('sha256').update(JSON.stringify(draft.questions)).digest('hex');
+  return `${draft.slug}-${hash.slice(0, 8)}`;
+}
+
+/**
+ * Creates a random number generator that always gives the same numbers for the same seed.
+ *
+ * The generator is mulberry32, with its state from the first 4 bytes of a SHA-256 hash of the seed.
+ *
+ * @param {string} seed Any text.
+ * @returns {() => number} A function that returns a number from 0 (included) to 1 (excluded).
+ */
+function createRandom(seed) {
+  let state = createHash('sha256').update(seed).digest().readUInt32LE(0);
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Shuffles an array in place with the Fisher-Yates method.
+ *
+ * @template T
+ * @param {T[]} items Array to shuffle.
+ * @param {() => number} random Random number generator.
+ */
+function shuffleInPlace(items, random) {
+  for (let index = items.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(random() * (index + 1));
+    [items[index], items[other]] = [items[other], items[index]];
+  }
+}
+
+/**
+ * Decides the display order of the choices of each question.
+ *
+ * The correct choice goes to each of the 4 positions an equal number of times, and the remainder
+ * goes to the earlier positions. The wrong choices fill the open positions in a random order. The
+ * seed is the quiz id, so the blind copy, the grade, and the page all use the same order.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @returns {number[][]} For each question, the draft indices of its choices in display order.
+ * @example
+ * choiceOrders(draft)[0]; // [2, 0, 3, 1]: position a shows draft choice 2
+ */
+export function choiceOrders(draft) {
+  const random = createRandom(quizIdOf(draft));
+  const correctSlots = draft.questions.map((_, index) => index % 4);
+  shuffleInPlace(correctSlots, random);
+
+  return draft.questions.map((question, questionIndex) => {
+    const correctIndex = question.choices.findIndex((choice) => choice.kind === 'correct');
+    const wrongIndexes = [0, 1, 2, 3].filter((index) => index !== correctIndex);
+    shuffleInPlace(wrongIndexes, random);
+    const correctSlot = correctSlots[questionIndex];
+    return [0, 1, 2, 3].map((slot) =>
+      slot === correctSlot ? correctIndex : /** @type {number} */ (wrongIndexes.shift()),
+    );
+  });
 }

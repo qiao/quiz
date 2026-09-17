@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { renderMarkdown, validateDraft } from '../skills/quiz/build.mjs';
+import {
+  choiceOrders,
+  quizIdOf,
+  renderMarkdown,
+  validateDraft,
+} from '../skills/quiz/build.mjs';
 
 const FIXTURE_URL = new URL('./fixtures/valid-draft.json', import.meta.url);
 
@@ -184,5 +189,70 @@ describe('renderMarkdown', () => {
       renderMarkdown('One\nline\n\n- first `x`\n- second\n\nTwo'),
       '<p>One line</p><ul><li>first <code>x</code></li><li>second</li></ul><p>Two</p>',
     );
+  });
+});
+
+/**
+ * Makes a draft with a given number of questions, based on the first fixture question.
+ *
+ * @param {number} count Number of questions.
+ * @param {string} [salt] Text that changes the content, and so the quiz id.
+ * @returns {any} A draft with tiers in order.
+ */
+function makeDraft(count, salt = '') {
+  const draft = loadDraft();
+  const template = draft.questions[0];
+  draft.questions = Array.from({ length: count }, (_, index) => ({
+    ...structuredClone(template),
+    tier: Math.floor((index * 4) / count) + 1,
+    prompt: `Question ${index + 1} ${salt}`,
+  }));
+  return draft;
+}
+
+describe('quizIdOf', () => {
+  it('joins the slug and 8 hex characters of the content hash', () => {
+    assert.match(quizIdOf(loadDraft()), /^js-event-loop-[0-9a-f]{8}$/);
+  });
+
+  it('changes when a question changes', () => {
+    const draft = loadDraft();
+    const before = quizIdOf(draft);
+    draft.questions[0].prompt += '?';
+    assert.notEqual(quizIdOf(draft), before);
+  });
+});
+
+describe('choiceOrders', () => {
+  it('gives the same order for the same draft', () => {
+    assert.deepEqual(choiceOrders(loadDraft()), choiceOrders(loadDraft()));
+  });
+
+  it('gives a permutation of the 4 choices for each question', () => {
+    for (const order of choiceOrders(makeDraft(40))) {
+      assert.deepEqual([...order].sort(), [0, 1, 2, 3]);
+    }
+  });
+
+  it('balances the correct position for each count from 1 to 40', () => {
+    for (let count = 1; count <= 40; count += 1) {
+      const draft = makeDraft(count);
+      const slots = [0, 0, 0, 0];
+      choiceOrders(draft).forEach((order) => {
+        slots[order.indexOf(0)] += 1;
+      });
+      assert.ok(Math.max(...slots) - Math.min(...slots) <= 1, `count ${count}: ${slots}`);
+    }
+  });
+
+  it('does not keep the draft order of the wrong choices', () => {
+    const orders = choiceOrders(makeDraft(40, 'wrong order'));
+    const obviousSlots = new Set(orders.map((order) => order.indexOf(1)));
+    const inDraftOrder = orders.filter((order) => {
+      const wrong = order.filter((choice) => choice !== 0);
+      return wrong.join() === '1,2,3';
+    });
+    assert.equal(obviousSlots.size, 4);
+    assert.ok(inDraftOrder.length < orders.length / 2, `${inDraftOrder.length} in draft order`);
   });
 });
