@@ -285,7 +285,8 @@ This document answers: what did we decide, and what did we reject?
     `--ease-smooth-out`.
   - `25-checkbox-check.md`: SVG stroke draw animation on status icons over 350 ms.
   - `18-texts-reveal.md`: Feedback rise animation of 12px with fade and 3px blur over 500 ms,
-    reused for the score band summary line.
+    reused for the score band summary line. The notes under the choices use the same reveal with
+    8px over 350 ms, inside a grid row that opens from zero height like an accordion.
 - **Rejected alternatives (8 recipes):**
   - `02-number-pop-in.md`: Digit-by-digit spans in the score heading would break screen reader
     announcements. The 20-step count-up already provides score progression.
@@ -424,9 +425,10 @@ animations, bounce effects, or parallax."
 
 **Our implementation:**
 The generated HTML page animates three state changes (slide enter, answer feedback, and score
-count-up) and displays a one-time confetti burst for a perfect score. The page uses no scroll
-reveals, bounce effects, or parallax. Every animation and transition sits inside the media query
-`@media (prefers-reduced-motion: no-preference)`. When the user enables reduced motion, all
+count-up) and displays a one-time confetti burst for a perfect score. The answer feedback opens the
+notes under the choices together, as a smooth accordion. The page uses no scroll reveals,
+staggered entry, bounce effects, or parallax. Every animation and transition sits inside the media
+query `@media (prefers-reduced-motion: no-preference)`. When the user enables reduced motion, all
 animations are disabled and the page renders complete and static immediately.
 
 **Reason for divergence:**

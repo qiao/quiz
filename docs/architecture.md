@@ -565,30 +565,36 @@ Transitions provide visual feedback during navigation and answers without blocki
    draws its stroke over 350 ms (`--duration-medium`) with `--ease-smooth-out`. The stroke uses
    `stroke-dasharray` and `stroke-dashoffset` with path lengths of 14 units for check and 23 units
    for cross.
-3. **Explanation panel rise:** When the learner selects a choice, the feedback section rises 12
+3. **Choice notes reveal:** When the learner selects a choice, the notes under each choice (the
+   status and the rationale) open from zero height and rise 8 pixels (`--distance-base`) with a
+   fade from opacity 0 to 1 and a 3 pixel blur over 350 ms (`--duration-medium`) with
+   `--ease-smooth-out`. A grid row animates from `0fr` to `1fr`, so the choices below move down
+   smoothly. All notes move together, with no stagger (see the stillness record in
+   `docs/decisions.md`).
+4. **Explanation panel rise:** When the learner selects a choice, the feedback section rises 12
    pixels (`--distance-medium`) with a fade from opacity 0 to 1 and a 3 pixel blur over 500 ms
    (`--duration-very-slow`) with `--ease-smooth-out`. Keyboard shortcuts and focus work immediately
    without waiting for the transition to finish.
-4. **End slide score ring and count-up:** The end slide presents the score in a thin ring (144 px,
+5. **End slide score ring and count-up:** The end slide presents the score in a thin ring (144 px,
    3 px stroke). The track uses `--vbg-gray-400`. The fill uses ink (`--vbg-gray-1000`) with a
    rounded cap, turned to start at 12 o'clock. At 100%, the fill turns green (`--vbg-green-900`). At
    zero, only the track shows. The heading wraps the ring, count, and percent, and keeps the full
    text in its `aria-label` for screen readers. On a real finish from the last question, the fill
    moves with the 800 ms count-up from empty to final value, while the count and percent count up
    in 20 steps over 800 ms.
-5. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
+6. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
    view using the 500 ms rise animation. The line matches the score percentage:
    - 100%: "Every answer is correct."
    - 70% or more: "A good result. The missed questions show what to read next."
    - 40% or more: "Good progress. Read the explanation of each missed question."
    - Below 40%: "A first pass. Every explanation is one slide away."
-6. **Perfect score celebration:** When the score reaches 100% on completion, confetti starts after
+7. **Perfect score celebration:** When the score reaches 100% on completion, confetti starts after
    800 ms once the ring closes. Sixty confetti pieces drop from the top edge. Each piece measures
    8 by 14 pixels and uses page colors: primary ink (`--vbg-gray-1000`), success green
    (`--vbg-green-900`), or secondary gray (`--vbg-gray-900`). Pieces fall over 1.2 to 2 seconds
    with random delays up to 400 ms and rotate across a random angle. The confetti container ignores
    pointer events, carries `aria-hidden="true"`, and detaches from the DOM after 2.4 seconds.
-7. **Static fallbacks:** Reloading the page, following a direct hash link to `#<N+1>`, or enabling
+8. **Static fallbacks:** Reloading the page, following a direct hash link to `#<N+1>`, or enabling
    `prefers-reduced-motion: reduce` draws the final state at once without count-up or confetti.
 
 ---
@@ -769,12 +775,13 @@ token uses CSS `light-dark(<light>, <dark>)`:
   - `--duration-stagger: 40ms`: step interval for the score count-up timer.
   - `--duration-quick: 150ms`: button and choice card hover transitions.
   - `--duration-fast: 250ms`: slide enter transition.
-  - `--duration-medium: 350ms`: SVG check and cross icon stroke drawing.
+  - `--duration-medium: 350ms`: SVG check and cross icon stroke drawing, and the choice notes
+    reveal.
   - `--duration-very-slow: 500ms`: explanation panel and score band line elevation.
   - `--ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1)`: primary easing curve.
-  - `--distance-base: 8px`: slide enter horizontal offset.
+  - `--distance-base: 8px`: slide enter horizontal offset, and choice notes vertical offset.
   - `--distance-medium: 12px`: explanation panel vertical offset.
-  - `--blur-medium: 3px`: slide and feedback enter blur.
+  - `--blur-medium: 3px`: slide, choice notes, and feedback enter blur.
 
 ### Theme configuration and resolution
 

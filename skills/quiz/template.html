@@ -258,6 +258,20 @@ h2 {
   padding-top: 2px;
 }
 
+/*
+ * Notes under a choice: the status and the rationale. A grid row holds them, so the motion rules
+ * can open the row from zero height.
+ */
+.choice-notes {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.choice-notes-inner {
+  display: block;
+  min-height: 0;
+}
+
 .choice-status {
   display: flex;
   gap: var(--vbg-space-1);
@@ -559,6 +573,20 @@ kbd {
     animation: icon-draw var(--duration-medium) var(--ease-smooth-out) both;
   }
 
+  /*
+   * Answer: the notes under the choices open from zero height, as a smooth accordion, and rise in
+   * with the texts reveal of the feedback. All notes move together, because the design rules
+   * forbid staggered entry. The rows below move down with them.
+   */
+  .slide.is-answering .choice-notes {
+    animation: notes-open var(--duration-medium) var(--ease-smooth-out) both;
+  }
+
+  .slide.is-answering .choice-notes-inner {
+    overflow: hidden;
+    animation: notes-rise var(--duration-medium) var(--ease-smooth-out) both;
+  }
+
   .slide.is-answering .feedback,
   .is-rising {
     animation: feedback-rise var(--duration-very-slow) var(--ease-smooth-out) both;
@@ -615,6 +643,30 @@ kbd {
 
     to {
       stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes notes-open {
+    from {
+      grid-template-rows: 0fr;
+    }
+
+    to {
+      grid-template-rows: 1fr;
+    }
+  }
+
+  @keyframes notes-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--distance-base));
+      filter: blur(var(--blur-medium));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
     }
   }
 
@@ -1065,11 +1117,18 @@ kbd {
             stateClass = 'is-other';
           }
         }
-        const body = element('span', { class: 'choice-body' }, [
-          element('span', { class: 'rich', html: choice.textHtml }),
+        const notes = [
           status ? element('span', { class: 'choice-status' }, status) : null,
           answer && choice.rationaleHtml
             ? element('span', { class: 'choice-rationale rich', html: choice.rationaleHtml })
+            : null,
+        ].filter((note) => note !== null);
+        const body = element('span', { class: 'choice-body' }, [
+          element('span', { class: 'rich', html: choice.textHtml }),
+          notes.length
+            ? element('span', { class: 'choice-notes' }, [
+                element('span', { class: 'choice-notes-inner' }, notes),
+              ])
             : null,
         ]);
         const node = element(
