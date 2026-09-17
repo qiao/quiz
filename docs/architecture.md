@@ -37,12 +37,12 @@ The skill transforms resources into self-contained HTML slides through five sequ
          │
          ▼
   +-----------------------------------------------------------+
-  | Phase 2: Draft (author 20 questions in 4 difficulty tiers)|
+  | Phase 2: Draft (author N questions, default 20)           |
   +-----------------------------------------------------------+
          │
          ▼
   +-----------------------------------------------------------+
-  | Phase 3: Blind Check (independent sub-agent verifies draft)|
+  | Phase 3: Blind Check (blind sub-agent verifies draft)     |
   +-----------------------------------------------------------+
          │
          ▼
