@@ -9,7 +9,7 @@ const REPAIRED = 7;
 const CELL_GAP = 1.5;
 
 /** Frame where the repaired question turns from failed to passed. */
-const REPAIR_FRAME = 50;
+const REPAIR_FRAME = 38;
 
 /** Scene 4: a blind checker answers every question, and the skill repairs the one that fails. */
 export const CheckScene: React.FC = () => {
