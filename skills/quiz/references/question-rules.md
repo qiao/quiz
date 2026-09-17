@@ -121,10 +121,10 @@ Spread questions across the target resource:
   files, specify the path relative to the git repository root of the resource. The build compiler
   uses this root path to resolve git permalinks.
 - For local files, include `lineStart` and `lineEnd` when the fact lives in a specific code block.
-  `lineEnd` must be greater than or equal to `lineStart`.
-- For PDF documents, specify the `page` number.
+  Both numbers must be positive integers of 1 or more, and `lineEnd` must be at least `lineStart`.
+- For PDF documents, specify the `page` number as a positive integer of 1 or more.
 
-## 5. Technical language
+## 7. Technical language
 
 - Use exact programming terms and domain language from the source repository.
 - Author questions in the language of the user prompt, or the conversation language.
