@@ -105,23 +105,40 @@ Completion criterion: An unused directory `quizzes/<slug>/` exists on disk.
 
 ## 7. Author draft questions
 
-Write `quizzes/<slug>/quiz.json` conforming to the `QuizDraft` schema.
+Write `quizzes/<slug>/quiz.json` conforming to the authoring rules in
+`<skill-dir>/references/question-rules.md` and the validation rules in Section 3 of
+`docs/architecture.md`.
 
-Structure the JSON payload:
-- `title`: descriptive quiz title.
-- `slug`: the directory slug selected in step 6.
-- `source`: brief summary of the target resource.
-- `questions`: array of question objects following non-decreasing tiers (tier 1 through tier 4).
+Format `quiz.json` with this structure:
 
-Adhere strictly to these invariants:
-- Tier balance: distribute questions so tier sizes differ by at most 1 question.
-- Choices: exactly four choices per question. Exactly one with `kind: "correct"`, one with
-  `kind: "obvious-wrong"`, and two with `kind: "plausible-wrong"`.
-- Explanations and rationales: omit `rationale` on the correct choice. Provide a non-empty
-  `rationale` on all three wrong choices. Provide a non-empty `explanation` on each question.
-- Citations: provide a `target` path or URL. For local files, specify the path relative to the
-  git repository root of the resource, with `lineStart` and `lineEnd`. For PDF documents, specify
-  the `page` number.
+```json
+{
+  "title": "Descriptive Quiz Title",
+  "slug": "<slug>",
+  "source": "Summary of resource or topic",
+  "questions": [
+    {
+      "tier": 1,
+      "prompt": "Question prompt in Markdown.",
+      "choices": [
+        { "text": "Correct choice", "kind": "correct" },
+        { "text": "Obvious wrong", "kind": "obvious-wrong", "rationale": "Why wrong." },
+        { "text": "Plausible wrong 1", "kind": "plausible-wrong", "rationale": "Why wrong." },
+        { "text": "Plausible wrong 2", "kind": "plausible-wrong", "rationale": "Why wrong." }
+      ],
+      "explanation": "Why the correct choice is accurate.",
+      "citation": { "target": "path/to/file.ts", "lineStart": 10, "lineEnd": 25 }
+    }
+  ]
+}
+```
+
+Key authoring requirements:
+- Questions follow non-decreasing tiers (1 to 4). Tier sizes must differ by at most 1 question.
+- Each question has exactly 4 choices: 1 `correct` (no rationale), 1 `obvious-wrong`
+  (with rationale), and 2 `plausible-wrong` (with rationale).
+- The correct choice text must not exceed 1.2 times the length of the longest wrong choice.
+- Local citations use paths relative to the repository root. PDF citations specify `page`.
 
 Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 
@@ -130,18 +147,16 @@ Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 Validate questions with an independent sub-agent that cannot see the answer key.
 
 ### Step 8a: Generate blind quiz payload
-Run the build compiler with the `--blind` flag from the project root:
+Run the build compiler with `--blind` immediately after drafting:
 
 ```bash
 node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind
 ```
 
-Command behavior and exit codes:
-- Validation runs first. If draft validation fails, the command exits with code 1 and writes
-  diagnostics to standard error. Fix every listed error in `quizzes/<slug>/quiz.json` and run
-  `--blind` again, before starting the checker sub-agent. Usage errors exit with code 2.
-- When validation succeeds, the command exits with code 0, writes `quizzes/<slug>/quiz.blind.json`
-  with stripped answer keys and shuffled choices, and prints the generated path.
+- If validation fails (exit code 1), read the errors on standard error, repair `quiz.json`,
+  and run `--blind` again. Do not invoke the sub-agent until `--blind` exits with code 0.
+- When validation succeeds (exit code 0), the command generates `quizzes/<slug>/quiz.blind.json`
+  with stripped answer keys and shuffled choices, and prints its file path.
 
 ### Step 8b: Invoke the blind sub-agent
 Read the complete content of `quizzes/<slug>/quiz.blind.json`.
@@ -176,13 +191,11 @@ Run the grading command from the project root:
 node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json
 ```
 
-Command behavior and exit codes:
-- The command prints a `GradeReport` as JSON to standard output.
-- Exit code 0 means that all questions passed verification (`passed: true`). Proceed to step 9.
-- Exit code 3 means that the grade ran and at least one question failed (`passed: false`). Inspect
-  the `failures` array in the report and repair failed questions in step 8d.
-- Validation failures in the draft or answers file exit with code 1 and write diagnostics to
-  standard error. Usage errors exit with code 2.
+- Exit code 0: all questions passed verification (`passed: true`). Proceed to step 9.
+- Exit code 3: one or more questions failed verification (`passed: false`). Inspect the
+  `failures` array in the standard output JSON and repair failed questions in step 8d.
+- Exit code 1: validation error in `quiz.json` or `answers.json`. Repair the file and re-run.
+Section 3 of `docs/architecture.md` specifies the full exit code and error format.
 
 ### Step 8d: Repair failed questions
 Any edit to `quiz.json` changes the quiz identifier hash, which changes the choice shuffle seed
@@ -215,10 +228,11 @@ Compile the final responsive HTML slide deck and deliver the result to the user.
 node <skill-dir>/build.mjs quizzes/<slug>/quiz.json
 ```
 
-Command behavior and exit codes:
-- The command exits with code 0 on success, code 1 on validation failure, and code 2 on usage error.
-- The compiler validates the draft, balances answer positions across choices, compiles Markdown to
-  safe HTML, inlines CSS and font assets, and writes `quizzes/<slug>/index.html`.
+The compiler validates the draft, balances answer positions across choices, compiles Markdown to
+safe HTML, inlines CSS and font assets, and writes `quizzes/<slug>/index.html`. Exit code 0
+indicates success.
+
+Deliver the results to the user:
 - Print the relative output path: `quizzes/<slug>/index.html`.
 - Print a browser command to view the slides: `open ./quizzes/<slug>/index.html` on macOS,
   `xdg-open ./quizzes/<slug>/index.html` on Linux, or `start quizzes\<slug>\index.html`
