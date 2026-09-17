@@ -12,9 +12,9 @@
 pages from codebases, documentation sites, files, or technical topics. Developers run the skill
 primarily to test their own knowledge, and can share the generated slides with others.
 
-The skill runs in coding agent hosts such as Claude Code and agy. It structures questions into four
-progressive difficulty tiers, verifies questions with an independent blind sub-agent, and compiles
-a single self-contained HTML file that runs offline.
+The skill runs in coding agents that support skills, such as Claude Code, Codex, and OpenCode. It
+structures questions into four progressive difficulty tiers, verifies questions with an independent
+blind sub-agent, and compiles a single self-contained HTML file that runs offline.
 
 ---
 
@@ -42,7 +42,7 @@ mkdir -p ~/.claude/skills
 ln -s ~/proj/quiz/skills/quiz ~/.claude/skills/quiz
 ```
 
-### Antigravity and Agent Hosts using ~/.agents
+### Other agents that read ~/.agents/skills
 
 ```bash
 mkdir -p ~/.agents/skills
