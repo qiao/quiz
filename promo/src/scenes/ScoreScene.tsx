@@ -1,5 +1,5 @@
 import { Audio } from "@remotion/media";
-import { ding } from "@remotion/sfx";
+import { ding, mouseClick } from "@remotion/sfx";
 import {
   AbsoluteFill,
   Easing,
@@ -12,23 +12,38 @@ import {
 import { COLOR, MONO } from "../theme";
 import { Caption } from "./Caption";
 
-/** Frames where the ring starts and ends its fill. */
-const FILL_START = 6;
-const FILL_END = 30;
+/** Frames of the first fill, which stops at 19 of 20 because one answer was wrong. */
+const FIRST_FILL = [6, 30] as const;
+
+/** Frame where the learner presses "Try the missed questions again". */
+const RETRY_PRESS = 48;
+
+/** Frames of the second fill, after the learner answers the missed question again. */
+const SECOND_FILL = [54, 64] as const;
 
 /** Frame where the confetti starts, after the ring closes. */
-const CONFETTI_START = FILL_END + 2;
+const CONFETTI_START = SECOND_FILL[1] + 2;
 
 const CONFETTI_COLORS = [COLOR.text, COLOR.green, COLOR.dim];
 
-/** Scene 6: the score ring fills to a perfect score, and confetti falls. */
+/**
+ * Scene 6: the score ring fills to 19 of 20, the learner retries the missed question, and the ring
+ * closes at a perfect score with confetti.
+ */
 export const ScoreScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const fill = interpolate(frame, [FILL_START, FILL_END], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.bezier(0.33, 0, 0.2, 1),
-  });
+  const fill =
+    frame < SECOND_FILL[0]
+      ? interpolate(frame, [...FIRST_FILL], [0, 0.95], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+          easing: Easing.bezier(0.33, 0, 0.2, 1),
+        })
+      : interpolate(frame, [...SECOND_FILL], [0.95, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+          easing: Easing.bezier(0.33, 0, 0.2, 1),
+        });
   const perfect = fill === 1;
   const confettiFrame = frame - CONFETTI_START;
 
@@ -66,7 +81,7 @@ export const ScoreScene: React.FC = () => {
           : null}
       </AbsoluteFill>
 
-      <div style={{ position: "relative", marginTop: 170, width: 440, height: 440 }}>
+      <div style={{ position: "relative", marginTop: 110, width: 440, height: 440 }}>
         <svg width={440} height={440} viewBox="0 0 100 100">
           <circle cx={50} cy={50} r={46} fill={COLOR.background} stroke={COLOR.track} strokeWidth={2} />
           <circle
@@ -104,10 +119,37 @@ export const ScoreScene: React.FC = () => {
         </Interactive.Div>
       </div>
 
+      <Interactive.Div
+        name="Retry button"
+        style={{
+          marginTop: 44,
+          padding: "18px 34px",
+          borderRadius: 8,
+          fontFamily: MONO,
+          fontSize: 30,
+          fontWeight: 500,
+          backgroundColor: COLOR.text,
+          color: COLOR.background,
+          opacity: interpolate(frame, [34, 40, 54, 60], [0, 1, 1, 0], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          }),
+          scale: interpolate(frame, [RETRY_PRESS, RETRY_PRESS + 2, RETRY_PRESS + 4], [1, 0.94, 1], {
+            extrapolateLeft: "clamp",
+            extrapolateRight: "clamp",
+          }),
+        }}
+      >
+        Try the missed questions again
+      </Interactive.Div>
+
+      <Sequence name="Retry sound" from={RETRY_PRESS} layout="none">
+        <Audio src={mouseClick} volume={0.5} />
+      </Sequence>
       <Sequence name="Perfect sound" from={CONFETTI_START} layout="none">
         <Audio src={ding} volume={0.5} />
       </Sequence>
-      <Caption text="Test your knowledge" from={36} />
+      <Caption text="Test your knowledge" from={72} />
     </AbsoluteFill>
   );
 };
