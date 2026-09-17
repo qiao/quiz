@@ -42,7 +42,6 @@ export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
 
 const CHOICE_KINDS = ['correct', 'obvious-wrong', 'plausible-wrong'];
 const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
-const COUNT_WORDS = ['0', '1', '2'];
 
 const QUIZ_FIELDS = ['title', 'slug', 'source', 'questions'];
 const QUESTION_FIELDS = ['tier', 'prompt', 'choices', 'explanation', 'citation'];
@@ -180,7 +179,7 @@ function checkChoices(choices, label, errors) {
     if (counts[kind] !== expected) {
       const noun = expected === 1 ? 'choice' : 'choices';
       errors.push(
-        `${label}: expected exactly ${COUNT_WORDS[expected]} '${kind}' ${noun}, ` +
+        `${label}: expected exactly ${expected} '${kind}' ${noun}, ` +
           `found ${counts[kind]}`,
       );
     }
