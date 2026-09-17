@@ -124,8 +124,8 @@ This document answers: what did we decide, and what did we reject?
   on small files creates trivial questions that test superficial details.
 - **Rejected alternative:** Strict 20-question minimum.
   Rejected because small source files cannot produce 20 substantive questions without trivia.
-- **Rejected alternative:** Unlimited question count.
-  Rejected because quizzes over 40 questions cause learner fatigue and degrade model attention.
+- **Rejected alternative:** Fixed question count with no user override.
+  Rejected because user prompts must have control over quiz length.
 
 ### D8: Difficulty progression
 - **Decision:** Four equal tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
