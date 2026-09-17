@@ -19,14 +19,15 @@ This document answers: what are we building, and why?
 ## 1. The core problem
 
 Engineers who explore unfamiliar codebases, documentation, or technical systems need practice
-questions to verify their mental models. They need questions that evaluate system comprehension,
-execution flow, and design trade-offs rather than trivia. They also need a simple presentation
-format that opens locally without network access, third-party accounts, or server infrastructure.
+questions to test their own mental models. They need questions that evaluate system comprehension,
+execution flow, and design trade-offs rather than trivia. They also need a self-contained format
+that opens locally for personal study, with the option to share slides with others.
 
-The `quiz` skill addresses these needs. It inspects local repositories, documentation sites, files,
-or user topics. It generates four tiers of multiple-choice questions without trivia. It verifies
-the questions with an independent blind sub-agent and compiles them into a single self-contained
-HTML slide page. The page works offline and runs in any modern browser.
+The `quiz` skill addresses these needs. A developer runs `/quiz` to generate four tiers of
+multiple-choice questions from local code, documentation, files, or technical topics. An
+independent blind sub-agent verifies the questions without an answer key. The compiler builds a
+single self-contained HTML slide page. The page works offline in any modern browser for immediate
+self-testing, and the user can share it with others.
 
 ---
 
