@@ -37,8 +37,6 @@ specifies that behavior.
 
 - Section 3 of `docs/README.md` defines the four documentation rules. Follow them strictly.
 - When updating a fact, update every document that references it.
-- Ground every external claim with a link in Sources.
-- Record contradictions explicitly in `docs/decisions.md`.
 
 **Commit fine-grained.** One logical change per commit. Any commit can be reverted cleanly without
 affecting unrelated work. Use commit subjects in the format `area: change`.
