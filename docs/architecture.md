@@ -417,15 +417,21 @@ The visual design uses monochrome typography based on Geist Sans and Geist Mono:
 ### SIL Open Font License 1.1 compliance
 
 Geist fonts are licensed under the SIL Open Font License 1.1 (OFL-1.1). Condition 2 of OFL-1.1
-requires keeping the copyright notice and license text when bundling or redistributing font
-software.
+requires including the copyright notice and license text when bundling or redistributing font
+software. Because each generated HTML page embeds the font software as base64 data, each output
+page is a redistribution copy.
 
-The skill satisfies this condition through three mechanisms:
-1. **Repository license file:** `skills/quiz/assets/OFL.txt` stores the full license text and
-   copyright notice: `Copyright (c) 2023 Vercel, Inc.`.
-2. **Asset header:** `skills/quiz/assets/fonts.css` begins with a human-readable copyright header.
-3. **Compiled HTML comment:** `build.mjs` inserts the license notice in every output page header:
-   `<!-- Font software: Geist (c) 2023 Vercel, Inc., SIL Open Font License 1.1 -->`.
+The upstream `OFL.txt` defines:
+- Copyright notice:
+  `Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font)`
+- No Reserved Font Name (RFN), permitting subsetted fonts to keep the name "Geist".
+
+The skill satisfies license requirements through three mechanisms:
+1. **Repository license file:** `skills/quiz/assets/OFL.txt` vendors the complete license text
+   (4,383 bytes) from `vercel/geist-font` on branch `main`.
+2. **Asset header:** `skills/quiz/assets/fonts.css` begins with the exact copyright notice.
+3. **Compiled HTML comment:** `build.mjs` embeds the full vendored `OFL.txt` license text as an
+   HTML comment inside each generated page.
 
 ---
 
@@ -502,8 +508,8 @@ The automated test suite verifies:
 ## 12. Sources
 
 - ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
-- SIL Open Font License 1.1: <https://openfontlicense.org/open-font-license-official-text/>
-- SIL OFL FAQ on Redistribution: <https://scripts.sil.org/OFL-FAQ_web>
+- SIL Open Font License 1.1: <https://openfontlicense.org/>
+- Geist Font OFL License: <https://github.com/vercel/geist-font/blob/main/OFL.txt>
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
 - Node.js Test Runner: <https://nodejs.org/api/test.html>
 - Node.js Releases: <https://nodejs.org/en/about/previous-releases>
