@@ -481,23 +481,25 @@ The skill satisfies license requirements through three mechanisms:
 
 The compiler resolves citation permalinks during compilation:
 
-1. `build.mjs` checks if the cited file sits inside a git repository using
+1. If the citation target begins with `http://` or `https://`, the compiler assigns `citation.url`
+   directly to that target URL.
+2. For local file paths, `build.mjs` checks if the cited file sits inside a git repository using
    `git rev-parse --show-toplevel`. Citation paths are relative to this repository root.
-2. It checks whether `HEAD` is on a remote-tracking branch by running
+3. It checks whether `HEAD` is on a remote-tracking branch by running
    `git branch -r --contains HEAD`. If the command produces no output, the commit is not pushed
    to a remote, and `build.mjs` sets `citation.url` to `undefined`. This check reads local refs
    and makes no network calls.
-3. It checks for uncommitted changes using `git status --porcelain <target-file>`. If the file has
+4. It checks for uncommitted changes using `git status --porcelain <target-file>`. If the file has
    uncommitted changes, `citation.url` remains `undefined`.
-4. It reads the remote URL using `git remote get-url origin`. If the remote URL uses the SSH form
+5. It reads the remote URL using `git remote get-url origin`. If the remote URL uses the SSH form
    (`git@github.com:org/repo.git`), `build.mjs` converts it to HTTPS
    (`https://github.com/org/repo`).
-5. Version 1 supports GitHub remotes only. If the repository points to GitHub, the compiler
+6. Version 1 supports GitHub remotes only. If the repository points to GitHub, the compiler
    formats a direct link: `https://github.com/<org>/<repo>/blob/<commit>/<path>#L15-L32`.
    For PDF citations with a page number, it formats `#page=N`.
-6. If any check fails, the slide displays plain text line numbers (`path/to/file.ts:15-32`) or
+7. If any check fails, the slide displays plain text line numbers (`path/to/file.ts:15-32`) or
    page numbers (`document.pdf:p.12`).
-7. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`.
+8. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`.
 
 ---
 
