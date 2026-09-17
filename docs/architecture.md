@@ -758,25 +758,50 @@ directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
 
 ## 13. Test plan
 
-Unit tests verify compiler behavior using the native `node:test` runner.
+Unit tests verify compiler behavior using the native `node:test` runner. Run the test suite with:
+
+```bash
+node --test 'test/*.test.mjs'
+```
 
 ### Test suite: `test/build.test.mjs`
 
-The automated test suite verifies:
-1. **Validation gates:** Rejects drafts missing fields, drafts with invalid tier numbers, drafts
-   with descending tiers, drafts with improper choice distributions, and drafts with invalid slugs
-   (such as `../../slug`).
-2. **Deterministic builds:** Accepts `SOURCE_DATE_EPOCH` or an environment override to set
-   `createdAt` so tests produce reproducible output across runs.
-3. **Shuffling balance:** Verifies that across 100 sample builds, choice positions A, B, C, and D
-   receive equal allocation within a 1-position margin.
-4. **HTML escaping:** Validates that `<script>`, `onerror`, and HTML tags in Markdown prompts are
-   correctly encoded into safe HTML entities.
-5. **Script boundary safety and parsing:** Validates that `</script>` and `<!--` within embedded
-   JSON data are escaped with `\u003c`, extracts the embedded JSON payload directly from the
-   generated HTML, and verifies that `JSON.parse` parses the payload without error.
-6. **Offline self-containment:** Validates that the output file contains zero external HTTP or
-   HTTPS requests in `<link>` tags, `<script>` tags, or CSS `url()` and `@import` rules.
+The automated test suite organizes tests into thirteen groups:
+
+1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
+   non-objects, missing or empty fields, directory-escaping slugs, invalid or descending tiers,
+   tier size disparities greater than 1, choice count violations, choice kind distribution errors,
+   misplaced rationales, duplicate choice text, and bad citation lines or pages.
+2. **`renderMarkdown`:** Verifies Markdown compilation. Tests verify HTML entity escaping, inline
+   code, bold, italics, fenced code blocks with language tags, unclosed fences, paragraphs, and
+   lists.
+3. **`quizIdOf`:** Verifies quiz identifier derivation. Tests verify slug prefix format, 8-character
+   hex content hashes, and hash changes when question content changes.
+4. **`choiceOrders`:** Verifies deterministic choice shuffling. Tests confirm reproducible
+   permutations, distractor order shuffling, and answer slot balance within 1 question across
+   counts from 1 to 40.
+5. **`blindQuiz`:** Verifies blind check generation. Tests verify removal of `kind`, `rationale`,
+   and `explanation` fields while preserving the displayed choice order.
+6. **`validateAnswers`:** Verifies sub-agent answer payloads. Tests accept valid answer objects and
+   reject invalid choice letters, duplicate answers, out-of-bounds IDs, missing reasons for
+   ambiguous choices, and unknown fields.
+7. **`gradeAnswers`:** Verifies answer grading. Tests confirm full passes for correct answer keys,
+   and verify structured failure reporting for wrong choices, ambiguous selections, and missing
+   answers.
+8. **`githubWebUrl`:** Verifies remote URL parsing. Tests convert SSH and HTTPS GitHub remotes into
+   web URLs and reject non-GitHub hosts.
+9. **`resolveCitation`:** Verifies citation links. Tests link direct URLs, produce permalinks with
+   git commit hashes and line or page anchors for clean tracked files, and omit links for dirty or
+   unpushed files.
+10. **`buildQuiz`:** Verifies presentation data assembly. Tests derive IDs, tier names, formatted
+    HTML, and mapped choice letters from valid drafts.
+11. **`renderPage`:** Verifies template assembly. Tests confirm placeholder replacement, license
+    embedding, and script tag escaping with `\u003c`.
+12. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, `--blind` output,
+    `--grade` outputs with exit code 0 or code 3, validation failure exit code 1, and usage exit
+    code 2 with argument-specific usage printing.
+13. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
+    remaining template placeholders and zero external network requests in links, scripts, and CSS.
 
 ---
 
