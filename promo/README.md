@@ -1,7 +1,7 @@
 # Quiz skill promo video
 
 This folder holds the promo video of the `quiz` skill, made with
-[Remotion](https://www.remotion.dev). The video is 1920 by 1080 pixels, 30 frames per second, and
+[Remotion](https://www.remotion.dev). The video is 1920 by 1080 pixels, 60 frames per second, and
 13.4 seconds long.
 
 ```bash

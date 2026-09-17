@@ -15,7 +15,7 @@ loadFont({
 });
 
 /** Frames per second of every composition. */
-export const FPS = 30;
+export const FPS = 60;
 
 /** Returns the frame at a time in seconds. Each time stays the same at a different frame rate. */
 export const sec = (seconds: number): number => Math.round(seconds * FPS);
