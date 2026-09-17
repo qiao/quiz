@@ -1,0 +1,62 @@
+/*
+ * Design tokens for the quiz page.
+ * Source: https://vercel.com/geist/vercel-brand.css, which https://vercel.com/design.md names.
+ * Values copied on 2026-09-16. The page uses only these tokens.
+ * Each color is light-dark(<light>, <dark>), so `color-scheme` on the root selects the theme.
+ */
+:root {
+  color-scheme: light;
+
+  --vbg-font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --vbg-font-mono: 'Geist Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --vbg-background-100: light-dark(oklch(1 0 0), oklch(0 0 0));
+  --vbg-background-200: light-dark(oklch(0.984 0 0), oklch(0.027 0 0));
+  --vbg-gray-400: light-dark(oklch(0.937 0 0), oklch(0.301 0 0));
+  --vbg-gray-900: light-dark(oklch(0.42 0 0), oklch(0.706 0 0));
+  --vbg-gray-1000: light-dark(oklch(0.205 0 0), oklch(0.946 0 0));
+  --vbg-gray-alpha-300: light-dark(oklch(0 0 0 / 0.1), oklch(1 0 0 / 0.13));
+  --vbg-gray-alpha-400: light-dark(oklch(0 0 0 / 0.08), oklch(1 0 0 / 0.14));
+  --vbg-blue-700: light-dark(oklch(57.61% 0.2508 258.23), oklch(57.61% 0.2321 258.23));
+  --vbg-blue-900: light-dark(oklch(53.18% 0.2399 256.99), oklch(71.7% 0.1648 250.794));
+  --vbg-green-900: light-dark(oklch(51.75% 0.1453 147.65), oklch(73.1% 0.2158 148.29));
+  --vbg-red-700: light-dark(oklch(62.56% 0.2524 23.03), oklch(62.56% 0.2234 23.03));
+  --vbg-focus: light-dark(var(--vbg-blue-700), var(--vbg-blue-900));
+
+  --vbg-space-1: 4px;
+  --vbg-space-2: 8px;
+  --vbg-space-3: 12px;
+  --vbg-space-4: 16px;
+  --vbg-space-5: 20px;
+  --vbg-space-6: 24px;
+  --vbg-space-8: 32px;
+  --vbg-space-10: 40px;
+  --vbg-space-12: 48px;
+  --vbg-space-16: 64px;
+
+  --vbg-radius-small: 6px;
+  --vbg-radius: 8px;
+
+  --vbg-type-page-title: 2.5rem;
+  --vbg-type-title: 2rem;
+  --vbg-type-section: 1.5rem;
+  --vbg-type-subsection: 1.25rem;
+  --vbg-type-lede: 1.125rem;
+  --vbg-type-body: 1rem;
+  --vbg-type-compact: 0.875rem;
+  --vbg-type-label: 0.8125rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
