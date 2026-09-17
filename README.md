@@ -1,8 +1,12 @@
 # quiz
 
-[![test](https://github.com/qiao/quiz/actions/workflows/test.yml/badge.svg)](https://github.com/qiao/quiz/actions/workflows/test.yml)
+[![test][badge]][workflow]
 
-![The quiz skill reads a repo, writes questions in four tiers, and builds a quiz page](docs/media/quiz-promo.gif)
+![The quiz skill reads a repo, writes questions in four tiers, and builds a quiz page][demo]
+
+[badge]: https://github.com/qiao/quiz/actions/workflows/test.yml/badge.svg
+[workflow]: https://github.com/qiao/quiz/actions/workflows/test.yml
+[demo]: docs/media/quiz-promo.gif
 
 `quiz` is an agent skill that auto-generates multiple-choice quizzes as responsive HTML slide
 pages from codebases, documentation sites, files, or technical topics. Developers run the skill
