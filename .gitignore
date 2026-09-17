@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Quizzes that the skill makes when you run it in this repo
+quizzes/
+
 # Environment and secrets
 .env
 .env.*
