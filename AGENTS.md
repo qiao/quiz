@@ -1,0 +1,124 @@
+# AGENTS.md
+
+Guidance for agents working in this repository. Read it before you change anything. The
+conventions here override general defaults.
+
+Read `docs/decisions.md` first. It records the architectural decisions and rejected alternatives.
+A change that contradicts a design document updates that document in the same commit.
+
+## What this is
+
+`quiz` is an agent skill that generates multiple-choice quizzes as responsive HTML slide pages.
+Quizzes can be generated from codebases, documentation, files, or user topics.
+
+The repository holds two primary components:
+1. The design specification in markdown documents under `docs/`.
+2. The skill implementation under `skills/quiz/` (planned) and tests under `test/` (planned).
+
+The documentation set defines the architecture:
+- `docs/decisions.md`: What did we decide, and what did we reject?
+- `docs/README.md` (planned): Documentation index and map.
+- `docs/product.md` (planned): User goals, features, and non-goals.
+- `docs/architecture.md` (planned): System architecture, data structures, and compiler flow.
+
+The documents are the specification. A commit that changes behavior updates the document that
+specifies that behavior.
+
+## Workflow
+
+**Clarity outranks stability.** Nothing outside this repository depends on it yet.
+
+- Rename, renumber, split, and delete files freely. A better structure justifies the update.
+- Never leave stale redirects or deprecated aliases. Update content and fix references in the same
+  commit.
+- Evaluate changes by document readability.
+
+**Keep the documents true.** A fact lives in one document, and every other document links to it.
+
+- When updating a fact, update every document that references it.
+- Ground every external claim. Link technical statements about runtimes, HTML, or design tokens to
+  official sources.
+- Record contradictions explicitly. When two specifications disagree, record the discrepancy in
+  `docs/decisions.md`.
+
+### Four documentation rules
+
+1. **One home per fact.** Each fact lives in a single primary document. Other documents link to it.
+2. **One word per concept.** Use canonical names across all documents without synonyms.
+3. **Ground every external claim.** Link technical claims to official documentation in Sources.
+4. **Record contradictions explicitly.** Document discrepancies between external guides and the
+   implementation openly.
+
+**Commit fine-grained.** One logical change per commit. Any commit can be reverted cleanly without
+affecting unrelated work. Use commit subjects in the format `area: change`.
+
+**Use kebab-case for file names.** Every markdown file, script, stylesheet, and test uses lowercase
+letters, numbers, and hyphens.
+
+**Doc comments.** Follow standard JSDoc or TSDoc syntax (`/** ... */`).
+- Omit type annotations in TypeScript files.
+- Start comments on types, interfaces, and properties with a noun phrase.
+- Start comments on functions and methods with a verb phrase.
+- Document parameters with `@param` and return values with `@returns`.
+
+## Visual explanations and type snippets
+
+**Use ASCII diagrams to explain complex flows.**
+- Fenced code blocks must use the `text` tag.
+- Keep box widths aligned and arrows labeled.
+- Keep diagrams under 100 columns wide.
+
+**Show TypeScript interface snippets for new types.**
+- Provide explicit types for all properties.
+- Add concise doc comments for non-obvious constraints.
+- Pair type models with ASCII structure diagrams.
+
+## Design invariants
+
+Breaking any of these invariants breaks the system design:
+
+1. **The build script validates all JSON before output generation.** Invalid draft schemas halt the
+   build immediately.
+2. **All Markdown is compiled and HTML-escaped at build time.** The template script performs no
+   runtime parsing.
+3. **The output is a single self-contained HTML file.** Pages work without internet access and make
+   no network calls.
+4. **Questions follow four progressive tiers with no trivia.** Questions evaluate system
+   comprehension rather than memorization.
+5. **Every question has exactly four choices with balanced positions.** Answer positions are
+   shuffled deterministically by code.
+6. **No proprietary trademarks or logos appear on generated slides.** Slides use monochrome
+   typographic styling.
+
+## Writing
+
+Use ASD-STE100 Simplified Technical English and no em-dashes. Wrap every line to at most 100
+characters.
+
+Write for a reader skimming at 2am to find one fact.
+
+- **Put the subject first.** Lead with the fact and follow with the qualification.
+- **Keep sentences short.** Aim under 25 words. Treat 40 words as a hard stop.
+- **Show the mechanism.** Report exact numbers and system actions instead of feelings.
+- **Keep lines under 100 characters.** Wrap all text, code snippets, lists, and table rows.
+
+### Tells to avoid
+
+Machine-written text often contains repetitive phrasing and filler words:
+
+- **Antithesis as a tic.** "X, not Y" defines by negation. State what is true directly.
+- **Appositive tails.** Avoid attaching commentary phrases to finished sentences.
+- **Throat-clearing.** Do not open sentences with filler words like "Importantly" or "Note that".
+- **Colon fanfare.** State facts directly without theatrical lead-ins.
+- **Rule-of-three padding.** Avoid padding lists to three items when two items state the facts.
+- **Bold lead-ins on every bullet.** Avoid opening every list bullet with bold text.
+- **Semicolon splices.** Separate complete thoughts into distinct sentences.
+- **Forbidden words:** delve, leverage, utilize, facilitate, underscore (verb), testament,
+  landscape, realm, tapestry, holistic, myriad, plethora, crucial, pivotal, game-changing, unlock,
+  empower, streamline, seamless, load-bearing, seam, smoking gun, showcase, elevate, "dive into",
+  "at its core", "the beauty of", "that said", "at the end of the day", ensure, gracefully,
+  intuitive, destroy. No emoji.
+
+## Ending a turn
+
+Name the next step when work remains.
