@@ -12,6 +12,7 @@ import {
   quizIdOf,
   readGitFacts,
   renderMarkdown,
+  renderPage,
   resolveCitation,
   validateAnswers,
   validateDraft,
@@ -483,5 +484,44 @@ describe('buildQuiz', () => {
         assert.equal('rationaleHtml' in choice, sourceChoice.kind !== 'correct');
       });
     });
+  });
+});
+
+describe('renderPage', () => {
+  const template =
+    '<title>{{TITLE}}</title><style>/*{{TOKENS_CSS}}*/\n/*{{FONTS_CSS}}*/</style>' +
+    '<!--{{LICENSE}}-->' +
+    '<script id="quiz-data" type="application/json">{{QUIZ_DATA}}</script>';
+  const parts = {
+    template,
+    tokensCss: ':root{--a:1}',
+    fontsCss: '@font-face{font-family:"Geist"}',
+    license: 'Copyright 2024 The Geist Project Authors\n-----\nSIL OPEN FONT LICENSE -->',
+  };
+
+  it('embeds data that cannot close the script tag and that JSON.parse reads back', () => {
+    const draft = loadDraft();
+    draft.title = 'Tags <b> & "quotes"';
+    draft.questions[0].prompt = 'End </script><!-- and $& and $1';
+    const quiz = buildQuiz(draft, { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
+    const page = renderPage(quiz, parts);
+
+    const data = /<script id="quiz-data" type="application\/json">([^]*?)<\/script>/.exec(page);
+    assert.ok(data);
+    assert.ok(!data[1].includes('<'), 'the data holds a raw < character');
+    assert.deepEqual(JSON.parse(data[1]), quiz);
+    assert.ok(page.includes('<title>Tags &lt;b&gt; &amp; &quot;quotes&quot;</title>'));
+    assert.ok(page.includes(':root{--a:1}') && page.includes('font-family:"Geist"'));
+    const license = '<!--\nCopyright 2024 The Geist Project Authors\n-----\nSIL OPEN FONT';
+    assert.ok(page.includes(license));
+    assert.equal(page.match(/-->/g)?.length, 1, 'the license text closed the comment early');
+  });
+
+  it('throws when the template does not hold each placeholder once', () => {
+    const quiz = buildQuiz(loadDraft(), { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
+    assert.throws(
+      () => renderPage(quiz, { ...parts, template: template.replace('{{TITLE}}', '') }),
+      /template\.html must hold \{\{TITLE\}\} exactly once, found 0/,
+    );
   });
 });

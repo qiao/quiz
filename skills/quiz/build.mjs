@@ -750,3 +750,55 @@ export function buildQuiz(draft, { createdAt, gitFacts }) {
     })),
   };
 }
+
+/**
+ * @typedef {object} PageParts
+ * @property {string} template Content of `template.html`.
+ * @property {string} tokensCss Content of `tokens.css`.
+ * @property {string} fontsCss Content of `assets/fonts.css`.
+ * @property {string} license Content of `assets/OFL.txt`.
+ */
+
+/**
+ * Replaces the one copy of a placeholder in the template.
+ *
+ * Split and join keep `$&` and other replacement patterns in the value as plain text.
+ *
+ * @param {string} template Template text.
+ * @param {string} placeholder Exact placeholder text.
+ * @param {string} value Text to insert.
+ * @returns {string} The template with the value in place of the placeholder.
+ */
+function fillPlaceholder(template, placeholder, value) {
+  const parts = template.split(placeholder);
+  if (parts.length !== 2) {
+    throw new Error(
+      `template.html must hold ${placeholder} exactly once, found ${parts.length - 1}`,
+    );
+  }
+  return parts.join(value);
+}
+
+/**
+ * Writes the self-contained page for a built quiz.
+ *
+ * The quiz data goes into a JSON script tag. Each `<` becomes `<`, so the data cannot close
+ * the tag or open a comment, and `JSON.parse` still reads it.
+ *
+ * @param {BuiltQuiz} quiz Built quiz.
+ * @param {PageParts} parts Template and assets.
+ * @returns {string} The complete HTML page.
+ */
+export function renderPage(quiz, parts) {
+  let page = parts.template;
+  page = fillPlaceholder(page, '{{TITLE}}', escapeHtml(quiz.title));
+  page = fillPlaceholder(page, '/*{{TOKENS_CSS}}*/', parts.tokensCss.trim());
+  page = fillPlaceholder(page, '/*{{FONTS_CSS}}*/', parts.fontsCss.trim());
+  page = fillPlaceholder(
+    page,
+    '<!--{{LICENSE}}-->',
+    `<!--\n${parts.license.trim().replaceAll('-->', '-- >')}\n-->`,
+  );
+  page = fillPlaceholder(page, '{{QUIZ_DATA}}', JSON.stringify(quiz).replace(/</g, '\\u003c'));
+  return page;
+}
