@@ -104,10 +104,11 @@ The skill accepts flexible natural language arguments:
 
 ## 5. User stories
 
-### Story 1: Onboarding to a new repository
-An engineer joins a team and clones an unfamiliar repository. The engineer runs `/quiz`. The skill
-reads the code and compiles 20 questions into `./quizzes/<slug>/index.html`. The engineer opens the
-page and reviews core architectural decisions and data flows in fifteen minutes.
+### Story 1: Exploring an unfamiliar repository
+An engineer clones an unfamiliar repository to understand its architecture. The engineer runs
+`/quiz` to test personal comprehension. The skill reads the code and compiles 20 questions into
+`./quizzes/<slug>/index.html`. The engineer opens the page and tests their mental model of core
+architectural decisions and data flows in fifteen minutes.
 
 ### Story 2: Subsystem review before refactoring
 A developer plans a refactor of a complex caching layer. The developer runs `/quiz cache eviction`.
@@ -119,10 +120,11 @@ An engineer boards a flight with a technical PDF specification. The engineer pre
 `/quiz spec.pdf`. During the flight, the engineer opens the single self-contained HTML file without
 internet access and completes the quiz.
 
-### Story 4: Presenting slides on an external display
-A team lead connects a laptop to a conference room projector to review repository conventions with
-new hires. The room is bright. The lead presses the T key to switch the slides to light mode,
-providing high contrast for all attendees.
+### Story 4: Sharing a quiz for team onboarding
+As a secondary use, a developer shares a generated quiz with new hires for team onboarding.
+To share slides in person, a team lead connects a laptop to a conference room projector.
+The room is bright. The lead presses the T key to switch the slides to light mode, providing high
+contrast for all attendees.
 
 ---
 
