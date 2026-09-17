@@ -525,6 +525,15 @@ h2 {
     return /** @type {HTMLButtonElement} */ (node);
   }
 
+  /**
+   * Replaces the slide content, and skips children that a render function left out.
+   *
+   * @param {Array<Node | string | null>} children Slide content in order.
+   */
+  function showSlide(children) {
+    slideElement.replaceChildren(...children.filter((child) => child !== null));
+  }
+
   let quiz;
   try {
     quiz = JSON.parse(document.getElementById('quiz-data').textContent);
@@ -684,7 +693,7 @@ h2 {
       answeredCount ? button('Restart', 'secondary', restart) : null,
     ]);
 
-    slideElement.replaceChildren(
+    showSlide([
       element('p', { class: 'meta', text: `Quiz · ${plural(questionCount, 'question')}` }),
       element('h1', { text: quiz.title }),
       element('p', { class: 'lede', text: `Source: ${quiz.source}` }),
@@ -704,7 +713,7 @@ h2 {
           'and T toggles theme.',
       }),
       actions,
-    );
+    ]);
   }
 
   function renderQuestionSlide(question) {
@@ -779,7 +788,7 @@ h2 {
     nextButton.disabled = !answer;
     if (!answer) nextButton.title = 'Choose an answer first';
 
-    slideElement.replaceChildren(
+    showSlide([
       element('div', { class: 'meta' }, [
         element('span', { text: `Tier ${question.tier} · ${question.tierName}` }),
         element('span', { text: `Question ${question.id} of ${questionCount}` }),
@@ -791,7 +800,7 @@ h2 {
         button('Back', 'secondary', back),
         element('span', { class: 'actions-end' }, [nextButton]),
       ]),
-    );
+    ]);
   }
 
   function renderEndSlide() {
@@ -826,7 +835,7 @@ h2 {
         )
       : element('p', { class: 'lede', text: 'You answered all questions correctly.' });
 
-    slideElement.replaceChildren(
+    showSlide([
       element('p', { class: 'meta', text: 'Result' }),
       element('h1', { text: `${correctCount} of ${questionCount} correct (${percent}%)` }),
       element('table', { class: 'score-table' }, [
@@ -844,7 +853,7 @@ h2 {
         missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
         button('Restart', 'secondary', restart),
       ]),
-    );
+    ]);
   }
 
   /**
