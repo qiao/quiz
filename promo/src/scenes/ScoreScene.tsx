@@ -107,7 +107,7 @@ export const ScoreScene: React.FC = () => {
       <Sequence name="Perfect sound" from={CONFETTI_START} layout="none">
         <Audio src={ding} volume={0.5} />
       </Sequence>
-      <Caption text="One HTML file. Share it." from={36} />
+      <Caption text="Test your knowledge" from={36} />
     </AbsoluteFill>
   );
 };
