@@ -271,12 +271,19 @@ Before emitting HTML, `build.mjs` checks:
    to prevent directory traversal outside `quizzes/`.
 2. `questions` array must contain at least one question.
 3. Every question must have `tier` in `[1, 2, 3, 4]`.
-4. Every question must contain exactly four choices.
-5. Exactly one choice per question must have `kind: 'correct'`.
-6. Exactly one choice per question must have `kind: 'obvious-wrong'`.
-7. Exactly two choices per question must have `kind: 'plausible-wrong'`.
-8. Correct choice must not define `rationale`.
-9. All three wrong choices must define non-empty `rationale` strings.
+4. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
+5. Tier sizes must match D8: for `N` questions, each tier holds `Math.floor(N / 4)` questions,
+   distributing remainders to earlier tiers.
+6. The prompt, each choice text, the explanation, and the citation target must not be empty.
+7. Every question must contain exactly four choices, and no two choices may have identical text.
+8. Exactly one choice per question must have `kind: 'correct'`.
+9. Exactly one choice per question must have `kind: 'obvious-wrong'`.
+10. Exactly two choices per question must have `kind: 'plausible-wrong'`.
+11. The correct choice must not define `rationale`.
+12. All three wrong choices must define non-empty `rationale` strings.
+13. If `lineStart` and `lineEnd` are present in a citation, `lineEnd` must not be less than
+    `lineStart`.
+14. Unknown fields in draft objects trigger validation errors to detect property typos.
 
 ### Error format
 
