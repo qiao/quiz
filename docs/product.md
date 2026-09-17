@@ -77,7 +77,7 @@ The product serves two primary user roles:
 The skill accepts flexible natural language arguments:
 
 ```text
-/quiz [resource] [focus] [--count N]
+/quiz [resource] [focus]
 ```
 
 ### Supported input forms
