@@ -69,9 +69,13 @@ The skill transforms resources into self-contained HTML slides through five sequ
    questions into `quizzes/<slug>/quiz.json` conforming to the `QuizDraft` schema. It creates
    four equal tiers: Fundamentals, Core, Advanced, and Expert. Each question has one correct
    choice, one obvious wrong choice, and two plausible wrong choices.
-3. **Blind Check:** The agent invokes a secondary sub-agent with read access to the resource,
-   passing only the questions without the answer key. The sub-agent solves each question. If the
-   sub-agent misses a question or identifies ambiguity, the primary agent revises the draft.
+3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`
+   to generate `quizzes/<slug>/quiz.blind.json`. Code removes `kind`, `rationale`, and
+   `explanation`, and shuffles choices. The agent invokes an independent sub-agent with read
+   access to the resource. The sub-agent returns its chosen choice ID or reports `'ambiguous'` with
+   a reason. The primary agent compares returned choices against the answer key and repairs
+   failed questions. After two failed repair rounds, the agent removes the question, rebalances
+   tier sizes, and informs the user.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -234,10 +238,27 @@ When invoked from another project, `SKILL.md` resolves the absolute path to `bui
 ### Command line interface
 
 ```bash
-node <skill-dir>/build.mjs <path-to-quiz-draft.json>
+node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind]
 ```
 
 `build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
+
+When passed `--blind`, `build.mjs` produces `quiz.blind.json` in the draft directory. The compiler
+removes `kind`, `rationale`, and `explanation` fields from all choices and questions, and shuffles
+choices. This prevents answer leakage to the verification sub-agent.
+
+### Blind check verification loop
+
+During Phase 3, the primary agent uses the blind payload to verify quiz quality:
+1. The agent invokes an independent sub-agent with read access to the source material.
+2. The sub-agent evaluates each question in `quiz.blind.json` without the answer key.
+3. For each question, the sub-agent returns either its chosen choice ID (`'a'`, `'b'`, `'c'`, or
+   `'d'`) or `'ambiguous'` with a concise explanation.
+4. The primary agent checks returned answers against the draft answer key.
+5. If the sub-agent selected a distractor or marked `'ambiguous'`, the agent revises the prompt,
+   distractors, or explanation to resolve the ambiguity.
+6. The verification allows up to two repair rounds per question. If a question fails after two
+   rounds, the agent deletes the question, rebalances tier counts, and notifies the user.
 
 ### Validation rules
 
