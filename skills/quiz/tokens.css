@@ -20,7 +20,7 @@
   --vbg-blue-700: light-dark(oklch(57.61% 0.2508 258.23), oklch(57.61% 0.2321 258.23));
   --vbg-blue-900: light-dark(oklch(53.18% 0.2399 256.99), oklch(71.7% 0.1648 250.794));
   --vbg-green-900: light-dark(oklch(51.75% 0.1453 147.65), oklch(73.1% 0.2158 148.29));
-  --vbg-red-700: light-dark(oklch(62.56% 0.2524 23.03), oklch(62.56% 0.2234 23.03));
+  --vbg-red-900: light-dark(oklch(54.99% 0.232 25.29), oklch(69.96% 0.2136 22.03));
   --vbg-focus: light-dark(var(--vbg-blue-700), var(--vbg-blue-900));
 
   --vbg-space-1: 4px;
