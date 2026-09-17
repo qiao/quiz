@@ -260,10 +260,23 @@ h2 {
 }
 
 .choice-status {
-  display: block;
+  display: flex;
+  gap: var(--vbg-space-1);
+  align-items: center;
   margin-top: var(--vbg-space-1);
   font-size: var(--vbg-type-label);
   font-weight: 500;
+}
+
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .choice-rationale {
@@ -558,6 +571,26 @@ kbd {
     return node;
   }
 
+  const ICON_PATHS = { check: 'M3.5 8.5l3 3 6-7', cross: 'M4 4l8 8M12 4l-8 8' };
+
+  /**
+   * Makes a small line icon that a status word accompanies. The icon is hidden from readers.
+   *
+   * @param {'check' | 'cross'} name Icon name.
+   * @returns {SVGSVGElement} The icon.
+   */
+  function icon(name) {
+    const svgNamespace = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNamespace, 'svg');
+    svg.setAttribute('class', 'icon');
+    svg.setAttribute('viewBox', '0 0 16 16');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS(svgNamespace, 'path');
+    path.setAttribute('d', ICON_PATHS[name]);
+    svg.append(path);
+    return svg;
+  }
+
   /**
    * Makes a button.
    *
@@ -792,23 +825,23 @@ kbd {
       'ol',
       { class: 'choices' },
       question.choices.map((choice, index) => {
-        const status = [];
+        let status = null;
         let stateClass = '';
         if (answer) {
           if (choice.id === correct.id) {
             stateClass = 'is-correct';
             const mine = answer === choice.id;
-            status.push(mine ? '✓ Your answer (Correct)' : '✓ Correct answer');
+            status = [icon('check'), mine ? 'Your answer (Correct)' : 'Correct answer'];
           } else if (choice.id === answer) {
             stateClass = 'is-wrong-pick';
-            status.push('✗ Your answer (Incorrect)');
+            status = [icon('cross'), 'Your answer (Incorrect)'];
           } else {
             stateClass = 'is-other';
           }
         }
         const body = element('span', { class: 'choice-body' }, [
           element('span', { class: 'rich', html: choice.textHtml }),
-          status.length ? element('span', { class: 'choice-status', text: status[0] }) : null,
+          status ? element('span', { class: 'choice-status' }, status) : null,
           answer && choice.rationaleHtml
             ? element('span', { class: 'choice-rationale rich', html: choice.rationaleHtml })
             : null,
