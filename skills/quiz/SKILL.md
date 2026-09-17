@@ -171,16 +171,21 @@ Command behavior and exit codes:
 - If `passed` is `false`, inspect the `failures` array.
 
 ### Step 8d: Repair failed questions
-For each failed question in `failures`:
+Any edit to `quiz.json` changes the quiz identifier hash, which changes the choice shuffle seed
+for every question. Editing one question can change choice letters across the entire quiz.
+
+When repairing or replacing questions:
 1. **Repair round:** Revise the question prompt, distractors, or explanation in
-   `quizzes/<slug>/quiz.json` to resolve ambiguity or incorrect information.
-2. After editing `quiz.json`, re-run `--blind` and re-test with the sub-agent.
+   `quizzes/<slug>/quiz.json` to resolve ambiguity or incorrect facts.
+2. **Complete re-check:** Run `--blind` again to produce an updated `quiz.blind.json`. Send the
+   checker all questions again, and overwrite `quizzes/<slug>/answers.json`. Never keep old
+   answers from prior rounds. Re-run `--grade` on the fresh answers.
 3. Allow up to two repair rounds per question.
 4. **Replacement:** If a question still fails after two repair rounds, replace it with one new
    question of the same tier. The replacement question receives up to two repair rounds.
 5. **Removal:** If the replacement question also fails after two repair rounds, delete the question
    from `quizzes/<slug>/quiz.json`. Inform the user of the question removal and the revised total
-   count.
+   count. Re-run `--blind`, collect answers for all remaining questions, and re-grade.
    Tier sizes must still differ by at most 1 question across all tiers.
 
 Completion criterion: All questions in `quizzes/<slug>/quiz.json` pass grading, or unresolvable
