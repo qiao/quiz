@@ -106,8 +106,7 @@ Completion criterion: An unused directory `quizzes/<slug>/` exists on disk.
 ## 7. Author draft questions
 
 Write `quizzes/<slug>/quiz.json` conforming to the authoring rules in
-`<skill-dir>/references/question-rules.md` and the validation rules in Section 3 of
-`docs/architecture.md`.
+`<skill-dir>/references/question-rules.md`.
 
 Format `quiz.json` with this structure:
 
@@ -191,7 +190,6 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answe
 - Exit code 3: one or more questions failed verification (`passed: false`). Inspect the
   `failures` array in the standard output JSON and repair failed questions in step 8d.
 - Exit code 1: validation error in `quiz.json` or `answers.json`. Repair the file and re-run.
-Section 3 of `docs/architecture.md` specifies the full exit code and error format.
 
 ### Step 8d: Repair failed questions
 Any edit to `quiz.json` changes the quiz identifier hash, which changes the choice shuffle seed
