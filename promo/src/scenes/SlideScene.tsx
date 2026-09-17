@@ -98,7 +98,7 @@ export const SlideScene: React.FC = () => {
       <Sequence name="Pick sound" from={PICK_FRAME} layout="none">
         <Audio src={uiSwitch} volume={0.5} />
       </Sequence>
-      <Caption text="Test what you know" from={30} />
+      <Caption text="See why each answer is right" from={30} />
     </AbsoluteFill>
   );
 };
