@@ -882,6 +882,7 @@ kbd {
       else history.pushState(null, '', hash);
     }
     slideElement.classList.remove('is-answering');
+    clearSlideTimers();
     render(options.focus !== false);
     if (moved && options.focus !== false) enterSlide(direction);
   }
@@ -1148,6 +1149,20 @@ kbd {
       node.textContent = String(Math.round((value * step) / 20));
       if (step >= 20) clearInterval(timer);
     }, 40);
+    slideTimers.push(timer);
+  }
+
+  // Timers of the current slide. A new slide clears them, so a fast Restart or Back does not
+  // drop confetti or count on a slide that is gone.
+  /** @type {number[]} */
+  let slideTimers = [];
+
+  function clearSlideTimers() {
+    for (const timer of slideTimers) {
+      clearInterval(timer);
+      clearTimeout(timer);
+    }
+    slideTimers = [];
   }
 
   /** Drops 60 small pieces from the top edge for a perfect score, and removes them after 2.4 s. */
@@ -1197,7 +1212,7 @@ kbd {
     if (live) {
       countUp(countNode, correctCount);
       countUp(percentNode, percent);
-      if (percent === 100) setTimeout(dropConfetti, 800);
+      if (percent === 100) slideTimers.push(setTimeout(dropConfetti, 800));
     }
 
     const rows = [1, 2, 3, 4]
