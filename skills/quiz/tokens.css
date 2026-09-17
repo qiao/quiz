@@ -1,7 +1,7 @@
 /*
  * Design tokens for the quiz page.
  * Source: https://vercel.com/geist/vercel-brand.css, which https://vercel.com/design.md names.
- * Values copied on 2026-09-16. The page uses only these tokens.
+ * Copy date: 2026-09-16. The page uses only these tokens.
  * Each color is light-dark(<light>, <dark>), so `color-scheme` on the root selects the theme.
  */
 :root {
@@ -66,7 +66,7 @@
  * Source: https://github.com/Jakubantalik/transitions.dev, file skills/transitions-dev/_root.css
  * at commit 598d3d6ad89dabb4bdf742fd2e887ca53914a888. The terms, at
  * https://transitions.dev/terms.html,
- * permit use in a product. Only the free recipes are used. The names are the source names.
+ * permit use in a product. The page uses only the free recipes. The names are the source names.
  */
 :root {
   --duration-stagger: 40ms;
