@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { validateDraft } from '../skills/quiz/build.mjs';
+import { renderMarkdown, validateDraft } from '../skills/quiz/build.mjs';
 
 const FIXTURE_URL = new URL('./fixtures/valid-draft.json', import.meta.url);
 
@@ -144,5 +144,45 @@ describe('validateDraft', () => {
       "Question 3: 'citation.lineEnd' (10) is less than 'citation.lineStart' (12)",
       "Question 4: 'citation.page' must be a whole number of 1 or more",
     ]);
+  });
+});
+
+describe('renderMarkdown', () => {
+  it('escapes HTML in text', () => {
+    assert.equal(
+      renderMarkdown('<script>alert(1)</script> and <img src=x onerror="go()">'),
+      '<p>&lt;script&gt;alert(1)&lt;/script&gt; and &lt;img src=x onerror=&quot;go()&quot;&gt;</p>',
+    );
+  });
+
+  it('renders inline code, strong, and emphasis', () => {
+    assert.equal(
+      renderMarkdown("Use `a<b>` with **care** and *thought*, and don't mind 2 * 3 * 4"),
+      '<p>Use <code>a&lt;b&gt;</code> with <strong>care</strong> and <em>thought</em>, ' +
+        'and don&#39;t mind 2 * 3 * 4</p>',
+    );
+  });
+
+  it('keeps Markdown characters inside inline code', () => {
+    assert.equal(renderMarkdown('`**not bold**`'), '<p><code>**not bold**</code></p>');
+  });
+
+  it('renders a fenced code block with its indent and escapes its content', () => {
+    assert.equal(
+      renderMarkdown('Look:\n\n```js\nif (a < b) {\n  end("</script>");\n}\n```\nAfter'),
+      '<p>Look:</p><pre data-lang="js"><code>if (a &lt; b) {\n  end(&quot;&lt;/script&gt;&quot;);' +
+        '\n}</code></pre><p>After</p>',
+    );
+  });
+
+  it('renders the rest of the text as code when a fence has no end', () => {
+    assert.equal(renderMarkdown('```\nx <y'), '<pre><code>x &lt;y</code></pre>');
+  });
+
+  it('renders paragraphs and lists', () => {
+    assert.equal(
+      renderMarkdown('One\nline\n\n- first `x`\n- second\n\nTwo'),
+      '<p>One line</p><ul><li>first <code>x</code></li><li>second</li></ul><p>Two</p>',
+    );
   });
 });

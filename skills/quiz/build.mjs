@@ -255,3 +255,98 @@ export function validateDraft(draft) {
   }
   return errors;
 }
+
+/** @type {Record<string, string>} */
+const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+
+/**
+ * Replaces the five characters that HTML treats as markup with entities.
+ *
+ * @param {string} text Raw text.
+ * @returns {string} Text that is safe inside an element or an attribute value.
+ */
+export function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (character) => HTML_ENTITIES[character]);
+}
+
+/**
+ * Renders inline code, strong text, and emphasis in one line of Markdown.
+ *
+ * @param {string} text One line of Markdown.
+ * @returns {string} Safe HTML.
+ */
+function renderInline(text) {
+  return text
+    .split(/(`[^`\n]+`)/)
+    .map((part, index) => {
+      // Odd parts are code spans, so their Markdown characters stay as text.
+      if (index % 2 === 1) return `<code>${escapeHtml(part.slice(1, -1))}</code>`;
+      return escapeHtml(part)
+        .replace(/\*\*([^*\s](?:[^*]*[^*\s])?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*([^*\s](?:[^*]*[^*\s])?)\*/g, '<em>$1</em>');
+    })
+    .join('');
+}
+
+const FENCE_START = /^\s*```\s*([\w+-]*)\s*$/;
+const FENCE_END = /^\s*```\s*$/;
+const LIST_ITEM = /^\s*- /;
+
+/**
+ * Renders the Markdown subset of section 4 of `docs/architecture.md` as safe HTML.
+ *
+ * The subset is paragraphs, lists with hyphens, fenced code, inline code, strong text, and
+ * emphasis. Every other character is escaped, so raw HTML in the draft shows as text.
+ *
+ * @param {string} markdown Markdown text from the draft.
+ * @returns {string} Safe HTML.
+ * @example
+ * renderMarkdown('Use `<br>`'); // '<p>Use <code>&lt;br&gt;</code></p>'
+ */
+export function renderMarkdown(markdown) {
+  const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+  /** @type {string[]} */
+  const blocks = [];
+  let index = 0;
+
+  while (index < lines.length) {
+    const line = lines[index];
+    const fence = FENCE_START.exec(line);
+    if (fence) {
+      /** @type {string[]} */
+      const code = [];
+      index += 1;
+      while (index < lines.length && !FENCE_END.test(lines[index])) {
+        code.push(lines[index]);
+        index += 1;
+      }
+      index += 1;
+      const language = fence[1] ? ` data-lang="${escapeHtml(fence[1])}"` : '';
+      blocks.push(`<pre${language}><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+    } else if (line.trim() === '') {
+      index += 1;
+    } else if (LIST_ITEM.test(line)) {
+      /** @type {string[]} */
+      const items = [];
+      while (index < lines.length && LIST_ITEM.test(lines[index])) {
+        items.push(`<li>${renderInline(lines[index].replace(LIST_ITEM, ''))}</li>`);
+        index += 1;
+      }
+      blocks.push(`<ul>${items.join('')}</ul>`);
+    } else {
+      /** @type {string[]} */
+      const words = [];
+      while (
+        index < lines.length &&
+        lines[index].trim() !== '' &&
+        !FENCE_START.test(lines[index]) &&
+        !LIST_ITEM.test(lines[index])
+      ) {
+        words.push(lines[index].trim());
+        index += 1;
+      }
+      blocks.push(`<p>${renderInline(words.join(' '))}</p>`);
+    }
+  }
+  return blocks.join('');
+}
