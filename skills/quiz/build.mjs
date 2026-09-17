@@ -46,11 +46,12 @@ export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /** Names of the tiers, in tier order. */
 export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
 
-const CHOICE_KINDS = ['correct', 'obvious-wrong', 'plausible-wrong'];
+/** Number of choices of each kind that a question must have. */
+const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
+const CHOICE_KINDS = Object.keys(KIND_COUNTS);
 
 /** Largest length of the correct choice, as a multiple of the longest wrong choice. */
 const MAX_CORRECT_LENGTH_RATIO = 1.2;
-const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
 
 const QUIZ_FIELDS = ['title', 'slug', 'source', 'questions'];
 const QUESTION_FIELDS = ['tier', 'prompt', 'choices', 'explanation', 'citation'];
@@ -75,6 +76,18 @@ function isObject(value) {
  */
 function isFilledString(value) {
   return typeof value === 'string' && value.trim() !== '';
+}
+
+/**
+ * Joins values into an English list with a final "or", for example `'a', 'b', or 'c'`.
+ *
+ * @param {readonly (string | number)[]} values Values in order.
+ * @param {(value: string | number) => string} [format] Text for one value.
+ * @returns {string} The list.
+ */
+function oneOf(values, format = (value) => `'${value}'`) {
+  const items = values.map(format);
+  return `${items.slice(0, -1).join(', ')}, or ${items[items.length - 1]}`;
 }
 
 /**
@@ -168,8 +181,6 @@ function checkChoices(choices, label, errors) {
     errors.push(`${label}: expected exactly 4 choices, found ${found}`);
     return;
   }
-  /** @type {Record<string, number>} */
-  const counts = { correct: 0, 'obvious-wrong': 0, 'plausible-wrong': 0 };
   /** @type {Map<string, number>} */
   const seenTexts = new Map();
 
@@ -186,13 +197,8 @@ function checkChoices(choices, label, errors) {
       : `${label}, Choice ${number}`;
 
     checkUnknownFields(choice, CHOICE_FIELDS, choiceLabel, errors);
-    if (validKind) {
-      counts[kind] += 1;
-    } else {
-      errors.push(
-        `${choiceLabel}: 'kind' must be 'correct', 'obvious-wrong', or 'plausible-wrong', ` +
-          `found '${kind}'`,
-      );
+    if (!validKind) {
+      errors.push(`${choiceLabel}: 'kind' must be ${oneOf(CHOICE_KINDS)}, found '${kind}'`);
     }
     if (isFilledString(choice.text)) {
       const key = String(choice.text).trim();
@@ -203,27 +209,28 @@ function checkChoices(choices, label, errors) {
       errors.push(`${choiceLabel}: 'text' must be a string that is not empty`);
     }
 
-    if (kind === 'correct' && 'rationale' in choice) {
-      errors.push(
-        `${choiceLabel}: remove 'rationale', because 'explanation' covers the correct choice`,
-      );
-    } else if (validKind && kind !== 'correct' && choice.rationale === undefined) {
-      errors.push(`${choiceLabel}: missing required 'rationale'`);
-    } else if (validKind && kind !== 'correct' && !isFilledString(choice.rationale)) {
-      errors.push(`${choiceLabel}: 'rationale' must be a string that is not empty`);
+    if (kind === 'correct') {
+      if ('rationale' in choice) {
+        errors.push(
+          `${choiceLabel}: remove 'rationale', because 'explanation' covers the correct choice`,
+        );
+      }
+    } else if (validKind) {
+      if (choice.rationale === undefined) {
+        errors.push(`${choiceLabel}: missing required 'rationale'`);
+      } else if (!isFilledString(choice.rationale)) {
+        errors.push(`${choiceLabel}: 'rationale' must be a string that is not empty`);
+      }
     }
   });
 
   checkChoiceLengths(choices, label, errors);
 
-  for (const kind of CHOICE_KINDS) {
-    const expected = KIND_COUNTS[/** @type {ChoiceKind} */ (kind)];
-    if (counts[kind] !== expected) {
+  for (const [kind, expected] of Object.entries(KIND_COUNTS)) {
+    const found = choices.filter((choice) => isObject(choice) && choice.kind === kind).length;
+    if (found !== expected) {
       const noun = expected === 1 ? 'choice' : 'choices';
-      errors.push(
-        `${label}: expected exactly ${expected} '${kind}' ${noun}, ` +
-          `found ${counts[kind]}`,
-      );
+      errors.push(`${label}: expected exactly ${expected} '${kind}' ${noun}, found ${found}`);
     }
   }
 }
@@ -277,7 +284,8 @@ export function validateDraft(draft) {
       }
       previousTier = Math.max(previousTier, tier);
     } else {
-      errors.push(`${label}: 'tier' must be 1, 2, 3, or 4, found ${JSON.stringify(tier)}`);
+      const tiers = oneOf([1, 2, 3, 4], String);
+      errors.push(`${label}: 'tier' must be ${tiers}, found ${JSON.stringify(tier)}`);
     }
 
     for (const field of ['prompt', 'explanation']) {
@@ -564,10 +572,9 @@ export function validateAnswers(file, questionCount) {
     } else {
       seen.add(questionId);
     }
-    if (![...CHOICE_LETTERS, 'ambiguous'].includes(String(choice))) {
-      errors.push(
-        `${label}: 'choice' must be 'a', 'b', 'c', 'd', or 'ambiguous', found '${choice}'`,
-      );
+    const choices = [...CHOICE_LETTERS, 'ambiguous'];
+    if (!choices.includes(String(choice))) {
+      errors.push(`${label}: 'choice' must be ${oneOf(choices)}, found '${choice}'`);
     }
     if (choice === 'ambiguous' && !isFilledString(reason)) {
       errors.push(`${label}: an 'ambiguous' answer needs a 'reason' that is not empty`);
