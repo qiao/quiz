@@ -27,7 +27,9 @@ Completion criterion: Node.js 18 or later is confirmed available.
 
 Find the absolute path to this skill directory, denoted `<skill-dir>`.
 
-- Resolve the directory that contains `SKILL.md` and `build.mjs`.
+- If the host environment states a base directory when loading this skill (for example,
+  "Base directory for this skill: ..."), use that path as `<skill-dir>`.
+- Otherwise, resolve the directory containing `SKILL.md` and `build.mjs`.
 - Use this absolute path when executing `build.mjs` or reading references in later steps.
 
 Completion criterion: `<skill-dir>` absolute path is known.
