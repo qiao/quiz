@@ -94,6 +94,7 @@ Write for a reader skimming at 2am to find one fact.
 - **Keep sentences short.** Aim under 25 words. Treat 40 words as a hard stop.
 - **Show the mechanism.** Report exact numbers and system actions instead of feelings.
 - **Keep lines to at most 100 characters.** Wrap all text, code snippets, lists, and table rows.
+  A string value in a JSON file keeps its own line, because wrapping changes the data.
 
 ### Tells to avoid
 
