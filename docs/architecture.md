@@ -511,13 +511,13 @@ The deck contains three distinct slide views:
 
 | Key | Action |
 |---|---|
-| `1` or `a` | Select choice A |
-| `2` or `b` | Select choice B |
-| `3` or `c` | Select choice C |
-| `4` or `d` | Select choice D |
-| `Enter` or `Right Arrow` | Advance to next slide |
-| `Left Arrow` | Return to previous slide |
-| `t` | Toggle theme between light and dark |
+| `1` or `a` | Choose answer A |
+| `2` or `b` | Choose answer B |
+| `3` or `c` | Choose answer C |
+| `4` or `d` | Choose answer D |
+| `Enter` or `Right Arrow` | Go on |
+| `Left Arrow` | Go back |
+| `t` | Change the theme |
 
 The global key listener ignores inputs when the user focuses a form element or selects text on
 the slide. To prevent double activation where `Enter` selects a choice button and immediately
