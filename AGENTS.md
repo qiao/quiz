@@ -3,8 +3,8 @@
 Guidance for agents working in this repository. Read it before you change anything. The
 conventions here override general defaults.
 
-Read `docs/decisions.md` first. It records the architectural decisions and rejected alternatives.
-A change that contradicts a design document updates that document in the same commit.
+Read `docs/README.md` first. It maps the design documents and holds the four rules that keep them
+accurate. A change that contradicts a design document updates that document in the same commit.
 
 ## What this is
 
@@ -16,10 +16,10 @@ The repository holds two primary components:
 2. The skill implementation under `skills/quiz/` (planned) and tests under `test/` (planned).
 
 The documentation set defines the architecture:
+- `docs/README.md`: Documentation index and map.
+- `docs/product.md`: User goals, features, and non-goals.
+- `docs/architecture.md`: System architecture, data structures, and compiler flow.
 - `docs/decisions.md`: What did we decide, and what did we reject?
-- `docs/README.md` (planned): Documentation index and map.
-- `docs/product.md` (planned): User goals, features, and non-goals.
-- `docs/architecture.md` (planned): System architecture, data structures, and compiler flow.
 
 The documents are the specification. A commit that changes behavior updates the document that
 specifies that behavior.
