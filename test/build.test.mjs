@@ -6,8 +6,10 @@ import { describe, it } from 'node:test';
 import {
   blindQuiz,
   choiceOrders,
+  gradeAnswers,
   quizIdOf,
   renderMarkdown,
+  validateAnswers,
   validateDraft,
 } from '../skills/quiz/build.mjs';
 
@@ -258,6 +260,24 @@ describe('choiceOrders', () => {
   });
 });
 
+/**
+ * Makes an answer file where the checker picks the correct choice of each question.
+ *
+ * @param {any} draft Valid draft.
+ * @returns {any} An answer file with every answer correct.
+ */
+function correctAnswers(draft) {
+  const letters = ['a', 'b', 'c', 'd'];
+  return {
+    answers: choiceOrders(draft).map((order, index) => ({
+      questionId: index + 1,
+      choice: letters[
+        order.findIndex((choice) => draft.questions[index].choices[choice].kind === 'correct')
+      ],
+    })),
+  };
+}
+
 describe('blindQuiz', () => {
   it('removes every field that shows the answer', () => {
     const text = JSON.stringify(blindQuiz(loadDraft()));
@@ -279,5 +299,75 @@ describe('blindQuiz', () => {
       );
       assert.deepEqual(question.choices.map((choice) => choice.id), ['a', 'b', 'c', 'd']);
     });
+  });
+});
+
+describe('validateAnswers', () => {
+  it('accepts a complete answer file', () => {
+    const draft = loadDraft();
+    assert.deepEqual(validateAnswers(correctAnswers(draft), draft.questions.length), []);
+  });
+
+  it('rejects bad answers', () => {
+    const file = {
+      answers: [
+        { questionId: 1, choice: 'e' },
+        { questionId: 1, choice: 'a' },
+        { questionId: 9, choice: 'b' },
+        { questionId: 2, choice: 'ambiguous' },
+        { questionId: 3, choice: 'c', note: 'x' },
+      ],
+    };
+    assert.deepEqual(validateAnswers(file, 8), [
+      "Answer 1: 'choice' must be 'a', 'b', 'c', 'd', or 'ambiguous', found 'e'",
+      'Answer 2: question 1 already has an answer',
+      "Answer 3: 'questionId' must be a question number from 1 to 8, found 9",
+      "Answer 4: an 'ambiguous' answer needs a 'reason' that is not empty",
+      "Answer 5: unknown field 'note'",
+    ]);
+  });
+
+  it('rejects a file with no answers array', () => {
+    assert.deepEqual(validateAnswers({ answer: [] }, 8), [
+      "Answers: the file must be a JSON object with an 'answers' array",
+    ]);
+  });
+});
+
+describe('gradeAnswers', () => {
+  it('passes when every answer is correct', () => {
+    const draft = loadDraft();
+    assert.deepEqual(gradeAnswers(draft, correctAnswers(draft)), {
+      passed: true,
+      totalQuestions: 8,
+      passedCount: 8,
+      failures: [],
+    });
+  });
+
+  it('reports a wrong choice, an ambiguous question, and a missing answer', () => {
+    const draft = loadDraft();
+    const file = correctAnswers(draft);
+    const orders = choiceOrders(draft);
+    const obviousLetter = ['a', 'b', 'c', 'd'][orders[4].indexOf(1)];
+    file.answers[4].choice = obviousLetter;
+    file.answers[6] = { questionId: 7, choice: 'ambiguous', reason: 'Two choices are true.' };
+    file.answers.pop();
+
+    const report = gradeAnswers(draft, file);
+    assert.equal(report.passed, false);
+    assert.equal(report.passedCount, 5);
+    assert.deepEqual(
+      report.failures.map(({ questionId, tier }) => [questionId, tier]),
+      [[5, 3], [7, 4], [8, 4]],
+    );
+    assert.ok(
+      report.failures[0].reason.includes(
+        `chose ${obviousLetter}, which is draft choice 2 ('obvious-wrong')`,
+      ),
+      report.failures[0].reason,
+    );
+    assert.match(report.failures[1].reason, /ambiguous: Two choices are true\./);
+    assert.equal(report.failures[2].reason, 'The checker gave no answer for this question.');
   });
 });

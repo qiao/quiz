@@ -444,6 +444,22 @@ export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
  * @property {string} slug Folder name of the quiz.
  * @property {string} source Resource that the quiz covers.
  * @property {BlindQuestion[]} questions Questions with no answer key.
+ *
+ * @typedef {object} SubAgentAnswer
+ * @property {number} questionId Question number, from 1.
+ * @property {ChoiceLetter | 'ambiguous'} choice Letter that the checker chose.
+ * @property {string} [reason] Why the question is ambiguous.
+ *
+ * @typedef {object} GradeFailure
+ * @property {number} questionId Question number, from 1.
+ * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {string} reason What the checker did.
+ *
+ * @typedef {object} GradeReport
+ * @property {boolean} passed True when every question passed.
+ * @property {number} totalQuestions Number of questions in the draft.
+ * @property {number} passedCount Number of questions that passed.
+ * @property {GradeFailure[]} failures One item for each question that failed.
  */
 
 /**
@@ -469,5 +485,102 @@ export function blindQuiz(draft) {
       })),
       citation: question.citation,
     })),
+  };
+}
+
+const ANSWER_FIELDS = ['questionId', 'choice', 'reason'];
+
+/**
+ * Checks the answer file that the blind checker returned.
+ *
+ * @param {unknown} file Parsed content of `answers.json`.
+ * @param {number} questionCount Number of questions in the draft.
+ * @returns {string[]} One message for each broken rule. An empty list means that the file is
+ *   valid.
+ */
+export function validateAnswers(file, questionCount) {
+  if (!isObject(file) || !Array.isArray(file.answers)) {
+    return ["Answers: the file must be a JSON object with an 'answers' array"];
+  }
+  /** @type {string[]} */
+  const errors = [];
+  const seen = new Set();
+  file.answers.forEach((answer, index) => {
+    const label = `Answer ${index + 1}`;
+    if (!isObject(answer)) {
+      errors.push(`${label}: the answer must be a JSON object`);
+      return;
+    }
+    checkUnknownFields(answer, ANSWER_FIELDS, label, errors);
+    const { questionId, choice, reason } = answer;
+    const inRange = Number(questionId) >= 1 && Number(questionId) <= questionCount;
+    if (!Number.isInteger(questionId) || !inRange) {
+      errors.push(
+        `${label}: 'questionId' must be a question number from 1 to ${questionCount}, ` +
+          `found ${JSON.stringify(questionId)}`,
+      );
+    } else if (seen.has(questionId)) {
+      errors.push(`${label}: question ${questionId} already has an answer`);
+    } else {
+      seen.add(questionId);
+    }
+    if (![...CHOICE_LETTERS, 'ambiguous'].includes(String(choice))) {
+      errors.push(
+        `${label}: 'choice' must be 'a', 'b', 'c', 'd', or 'ambiguous', found '${choice}'`,
+      );
+    }
+    if (choice === 'ambiguous' && !isFilledString(reason)) {
+      errors.push(`${label}: an 'ambiguous' answer needs a 'reason' that is not empty`);
+    }
+  });
+  return errors;
+}
+
+/**
+ * Compares the answers of the blind checker with the answer key of the draft.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @param {{ answers: SubAgentAnswer[] }} file Valid answer file.
+ * @returns {GradeReport} The result for the whole quiz, with one failure for each question that
+ *   the checker missed, marked as ambiguous, or did not answer.
+ */
+export function gradeAnswers(draft, file) {
+  const orders = choiceOrders(draft);
+  const answers = new Map(file.answers.map((answer) => [answer.questionId, answer]));
+  /** @type {GradeFailure[]} */
+  const failures = [];
+
+  draft.questions.forEach((question, index) => {
+    const questionId = index + 1;
+    const answer = answers.get(questionId);
+    const fail = (/** @type {string} */ reason) =>
+      failures.push({ questionId, tier: question.tier, reason });
+
+    if (!answer) {
+      fail('The checker gave no answer for this question.');
+    } else if (answer.choice === 'ambiguous') {
+      fail(`The checker marked the question as ambiguous: ${answer.reason}`);
+    } else {
+      const slot = CHOICE_LETTERS.indexOf(answer.choice);
+      const choiceIndex = orders[index][slot];
+      const chosen = question.choices[choiceIndex];
+      if (chosen.kind !== 'correct') {
+        const correctLetter = CHOICE_LETTERS[orders[index].findIndex(
+          (other) => question.choices[other].kind === 'correct',
+        )];
+        const note = answer.reason ? ` The checker said: ${answer.reason}` : '';
+        fail(
+          `The checker chose ${answer.choice}, which is draft choice ${choiceIndex + 1} ` +
+            `('${chosen.kind}'): "${chosen.text}". The correct choice is ${correctLetter}.${note}`,
+        );
+      }
+    }
+  });
+
+  return {
+    passed: failures.length === 0,
+    totalQuestions: draft.questions.length,
+    passedCount: draft.questions.length - failures.length,
+    failures,
   };
 }
