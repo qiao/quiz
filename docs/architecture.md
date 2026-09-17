@@ -421,7 +421,9 @@ The deck contains three distinct slide views:
 | `Left Arrow` | Return to previous slide |
 | `t` | Toggle theme between light and dark |
 
-Event listeners ignore key inputs if the user focuses a form element or selects text on the slide.
+The global key listener ignores inputs when the user focuses a form element or selects text on
+the slide. To prevent double activation where `Enter` selects a choice button and immediately
+advances the slide, the global handler ignores `Enter` when focus sits on a button.
 The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enable browser history.
 
 ### Slide navigation and retry flow
