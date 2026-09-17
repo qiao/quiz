@@ -157,7 +157,7 @@ export interface DraftQuestion {
 export interface QuizDraft {
   /** Human-readable quiz title */
   title: string;
-  /** Directory and URL slug */
+  /** Directory and URL slug matching ^[a-z0-9]+(-[a-z0-9]+)*$ */
   slug: string;
   /** Resource name or path */
   source: string;
@@ -209,7 +209,7 @@ export interface BuiltQuiz {
   id: string;
   /** Quiz title */
   title: string;
-  /** Directory slug */
+  /** Directory and URL slug matching ^[a-z0-9]+(-[a-z0-9]+)*$ */
   slug: string;
   /** Resource description */
   source: string;
@@ -238,7 +238,8 @@ If `--out` is omitted, the compiler defaults to `./quizzes/<slug>/`.
 ### Validation rules
 
 Before emitting HTML, `build.mjs` checks:
-1. `title`, `slug`, and `source` must be non-empty strings.
+1. `title` and `source` must be non-empty strings. `slug` must match `^[a-z0-9]+(-[a-z0-9]+)*$`
+   to prevent directory traversal outside `quizzes/`.
 2. `questions` array must contain at least one question.
 3. Every question must have `tier` in `[1, 2, 3, 4]`.
 4. Every question must contain exactly four choices.
