@@ -596,7 +596,7 @@ browser persists the user choice under the `localStorage` key `quiz:theme`.
 At page load, the client resolves theme state in this order:
 1. `localStorage.getItem('quiz:theme')`: if the value is `'light'` or `'dark'`, this setting wins.
 2. `window.matchMedia('(prefers-color-scheme: dark)')`: if matching, the page selects dark mode.
-3. Fallback: if no setting or media preference matches, the page defaults to dark mode.
+3. Fallback: if no setting or media preference matches, the page defaults to light mode.
 
 Pressing `t` toggles `data-theme` between `'light'` and `'dark'`, and saves the new value into
 `localStorage`.
