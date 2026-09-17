@@ -1,9 +1,9 @@
 {
   "name": "promo",
   "version": "1.0.0",
-  "description": "My Remotion video",
+  "description": "Promo video of the quiz skill",
   "repository": {},
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.525",
