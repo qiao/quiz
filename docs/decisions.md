@@ -66,7 +66,8 @@ This document answers: what did we decide, and what did we reject?
   Rejected because `quiz` is shorter and matches user expectations.
 
 ### D2: Target audience
-- **Decision:** Target self-study and team onboarding. Formal exams are out of scope.
+- **Decision:** Target personal self-testing first, with optional sharing for team onboarding and
+  peer study. Formal exams are out of scope.
 - **Reason:** Static HTML pages deliver code and data directly to the client browser. Anyone who
   inspects page source can read the answers.
 - **Rejected alternative:** Formal exams with cheating prevention.
