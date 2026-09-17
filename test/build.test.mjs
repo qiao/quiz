@@ -606,6 +606,17 @@ describe('main', () => {
     assert.deepEqual(JSON.parse(result.stdout), expected);
   });
 
+  it('exits with 3 and still prints the report when a question fails the grade', () => {
+    const project = makeProject();
+    const answers = correctAnswers(loadDraft());
+    answers.answers[0] = { questionId: 1, choice: 'ambiguous', reason: 'Two choices fit.' };
+    writeFileSync(join(project.cwd, 'answers.json'), JSON.stringify(answers));
+    const result = project.run([draftPath, '--grade', 'answers.json']);
+    assert.equal(result.code, 3);
+    assert.equal(result.stderr, '');
+    assert.equal(JSON.parse(result.stdout).passed, false);
+  });
+
   it('exits with 1 and lists the errors for an invalid draft or answer file', () => {
     const project = makeProject();
     const draft = loadDraft();

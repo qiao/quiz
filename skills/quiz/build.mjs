@@ -812,7 +812,8 @@ const USAGE = `Usage:
   node build.mjs <quiz.json> --grade <answers.json>  Print a grade report as JSON.
 
 Run the command from the project folder. Relative paths start from that folder.
-Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage error.
+Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage error,
+3 when --grade found at least one failed question.
 `;
 
 /**
@@ -955,7 +956,7 @@ function buildTime(env) {
  *
  * @param {string[]} args Arguments after the script name.
  * @param {MainIo} io Folders, environment, and output streams.
- * @returns {0 | 1 | 2} The exit code.
+ * @returns {0 | 1 | 2 | 3} The exit code.
  * @example
  * process.exitCode = main(process.argv.slice(2), { cwd: process.cwd(), ... });
  */
@@ -984,7 +985,7 @@ export function main(args, io) {
       stopOnErrors(validateAnswers(file, validDraft.questions.length), gradePath);
       const report = gradeAnswers(validDraft, /** @type {{ answers: SubAgentAnswer[] }} */ (file));
       io.stdout(`${JSON.stringify(report, null, 2)}\n`);
-      return 0;
+      return report.passed ? 0 : 3;
     }
 
     const quiz = buildQuiz(validDraft, {
