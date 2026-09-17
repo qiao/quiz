@@ -8,13 +8,14 @@ This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |
 |---|---|---|
-| 1 | Decision log | What did we decide for Q1 to Q24? |
+| 1 | Decision log | What did we decide for Q1 to Q25? |
 | 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
 | 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
 | 4 | Output and presentation (D13 to D18) | How do we build and render slides? |
 | 5 | Execution and verification (D19 to D24) | How do we run and test the build? |
-| 6 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
-| 7 | Sources | Where are the primary references? |
+| 6 | Agent hosts (D25) | Which agent environments do we support? |
+| 7 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
+| 8 | Sources | Where are the primary references? |
 
 ---
 
@@ -46,6 +47,7 @@ This document answers: what did we decide, and what did we reject?
 | D22 | Controls | Responsive slides with keys | Enables fast keyboard navigation |
 | D23 | Citations | Git permalink with commit SHA | Prevents broken source references |
 | D24 | Tests | Unit tests with `node:test` | Deterministic validation of compiler |
+| D25 | Hosts | Claude Code first, generic steps | Runs on Claude Code and agy hosts |
 
 ---
 
@@ -222,7 +224,7 @@ This document answers: what did we decide, and what did we reject?
   settings.
 - **Rejected alternative:** Strictly follow operating system with no toggle switcher.
   Rejected because presentation environments conflict with personal system settings.
-  See section 6 for the conflict record.
+  See section 7 for the conflict record.
 
 ### D17: Feedback and score modes
 - **Decision:** Learn mode with instant answer feedback, end slide summary by tier, and a button
@@ -309,7 +311,24 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 6. Conflict record: theme toggle
+## 6. Agent hosts (D25)
+
+### D25: Multi-host support
+- **Decision:** Support Claude Code first, using generic instructions in `SKILL.md`. Document
+  installation for both `~/.claude/skills` and `~/.agents/skills`.
+- **Reason:** Writing generic steps (such as "start a sub-agent that cannot see the answer key")
+  without proprietary tool names allows multiple agent hosts to run the skill. The README shows
+  how to symlink into either environment.
+- **Rejected alternative A:** Claude Code only.
+  Rejected because other agent hosts (such as agy) share identical skill folder structures and can
+  execute the workflow.
+- **Rejected alternative B:** Automated test matrix across multiple agent runtimes in v1.
+  Rejected because testing multiple agent CLIs in CI adds maintenance overhead before the core
+  compiler stabilizes.
+
+---
+
+## 7. Conflict record: theme toggle
 
 This section records the contradiction between the source design document and our implementation
 choice, following documentation rule 4.
@@ -338,7 +357,7 @@ system settings.
 
 ---
 
-## 7. Sources
+## 8. Sources
 
 - ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
