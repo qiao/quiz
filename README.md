@@ -16,26 +16,33 @@ a single self-contained HTML file that runs offline.
 
 ## Installation
 
-Clone this repository:
+The build step needs [Node.js](https://nodejs.org) 20 or later.
+
+Install the skill with the [skills CLI](https://github.com/vercel-labs/skills). It finds the agents
+on your computer, for example Claude Code:
 
 ```bash
-git clone <repo-url> ~/proj/quiz-skill
+npx skills add qiao/quiz
 ```
 
-Create a symlink for your agent host:
+To install by hand, clone this repository and link the skill folder into your agent host.
+
+```bash
+git clone https://github.com/qiao/quiz.git ~/proj/quiz
+```
 
 ### Claude Code
 
 ```bash
 mkdir -p ~/.claude/skills
-ln -s ~/proj/quiz-skill/skills/quiz ~/.claude/skills/quiz
+ln -s ~/proj/quiz/skills/quiz ~/.claude/skills/quiz
 ```
 
 ### Antigravity and Agent Hosts using ~/.agents
 
 ```bash
 mkdir -p ~/.agents/skills
-ln -s ~/proj/quiz-skill/skills/quiz ~/.agents/skills/quiz
+ln -s ~/proj/quiz/skills/quiz ~/.agents/skills/quiz
 ```
 
 ---
