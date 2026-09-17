@@ -35,19 +35,10 @@ specifies that behavior.
 
 **Keep the documents true.** A fact lives in one document, and every other document links to it.
 
+- Section 3 of `docs/README.md` defines the four documentation rules. Follow them strictly.
 - When updating a fact, update every document that references it.
-- Ground every external claim. Link technical statements about runtimes, HTML, or design tokens to
-  official sources.
-- Record contradictions explicitly. When two specifications disagree, record the discrepancy in
-  `docs/decisions.md`.
-
-### Four documentation rules
-
-1. **One home per fact.** Each fact lives in a single primary document. Other documents link to it.
-2. **One word per concept.** Use canonical names across all documents without synonyms.
-3. **Ground every external claim.** Link technical claims to official documentation in Sources.
-4. **Record contradictions explicitly.** Document discrepancies between external guides and the
-   implementation openly.
+- Ground every external claim with a link in Sources.
+- Record contradictions explicitly in `docs/decisions.md`.
 
 **Commit fine-grained.** One logical change per commit. Any commit can be reverted cleanly without
 affecting unrelated work. Use commit subjects in the format `area: change`.
