@@ -25,10 +25,6 @@
   box-sizing: border-box;
 }
 
-[hidden] {
-  display: none !important;
-}
-
 html,
 body {
   margin: 0;
@@ -190,12 +186,10 @@ h2 {
   line-height: 1.45;
 }
 
-.prompt > :first-child,
 .rich > :first-child {
   margin-top: 0;
 }
 
-.prompt > :last-child,
 .rich > :last-child {
   margin-bottom: 0;
 }
@@ -366,7 +360,7 @@ h2 {
   color: var(--vbg-gray-1000);
 }
 
-.button-secondary:hover:not(:disabled) {
+.button-secondary:hover {
   background: var(--vbg-background-200);
 }
 
@@ -452,11 +446,6 @@ kbd {
   text-align: right;
 }
 
-/*
- * Motion. Every animation sits inside this media query, so the page is complete with no motion.
- * Slide enter: the enter half of the transitions.dev recipe 08-page-side-by-side.md.
- * The old slide does not slide out, because the page renders one slide at a time.
- */
 /* The score ring holds the count in its center. The heading label carries the full text. */
 .score {
   display: grid;
@@ -518,6 +507,11 @@ kbd {
   letter-spacing: 0;
 }
 
+/*
+ * Motion. Every animation sits inside this media query, so the page is complete with no motion.
+ * Slide enter: the enter half of the transitions.dev recipe 08-page-side-by-side.md.
+ * The old slide does not slide out, because the page renders one slide at a time.
+ */
 @media (prefers-reduced-motion: no-preference) {
   /* The fill moves with the count-up, which takes 800 ms. */
   .ring-fill {
