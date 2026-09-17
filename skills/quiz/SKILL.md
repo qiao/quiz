@@ -175,14 +175,14 @@ Any edit to `quiz.json` changes the quiz identifier hash, which changes the choi
 for every question. Editing one question can change choice letters across the entire quiz.
 
 When repairing or replacing questions:
-1. **Repair round:** Revise the question prompt, distractors, or explanation in
-   `quizzes/<slug>/quiz.json` to resolve ambiguity or incorrect facts.
-2. **Complete re-check:** Run `--blind` again to produce an updated `quiz.blind.json`. Send the
-   checker all questions again, and overwrite `quizzes/<slug>/answers.json`. Never keep old
-   answers from prior rounds. Re-run `--grade` on the fresh answers.
-3. Allow up to two repair rounds per question.
+1. **Batch repair round:** Revise all failed questions in `quizzes/<slug>/quiz.json` in one
+   editing pass to resolve ambiguity or incorrect facts.
+2. **Single re-check:** Run `--blind` once to produce an updated `quiz.blind.json`. Send the
+   checker all questions in one prompt, overwrite `quizzes/<slug>/answers.json`, and re-run
+   `--grade`. Do not re-check failed questions individually.
+3. Allow up to two batch repair rounds.
 4. **Replacement:** If a question still fails after two repair rounds, replace it with one new
-   question of the same tier. The replacement question receives up to two repair rounds.
+   question of the same tier. The replacement question receives up to two batch repair rounds.
 5. **Removal:** If the replacement question also fails after two repair rounds, delete the question
    from `quizzes/<slug>/quiz.json`. Inform the user of the question removal and the revised total
    count. Re-run `--blind`, collect answers for all remaining questions, and re-grade.
