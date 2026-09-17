@@ -18,9 +18,10 @@ This document answers: how does the compiler and slide runtime work?
 | 8 | Fonts and typography | How does the skill comply with font licensing? |
 | 9 | Permalinks and citations | How does the compiler resolve source citations? |
 | 10 | Skill instruction design | How does `SKILL.md` guide the agent through generation? |
-| 11 | Filesystem layout | Where do built files and assets live? |
-| 12 | Test plan | How do unit tests verify compiler reliability? |
-| 13 | Sources | Where are the primary specifications? |
+| 11 | Visual design and accessibility | How do design tokens, themes, and accessibility work? |
+| 12 | Filesystem layout | Where do built files and assets live? |
+| 13 | Test plan | How do unit tests verify compiler reliability? |
+| 14 | Sources | Where are the primary specifications? |
 
 ---
 
@@ -527,7 +528,55 @@ rules. The agent reads this file during Phase 2. The file specifies:
 
 ---
 
-## 11. Filesystem layout
+## 11. Visual design system and accessibility
+
+`skills/quiz/tokens.css` defines the visual tokens specified in `vercel.com/design.md`.
+
+### Design tokens
+
+The token file defines variables for both color schemes:
+- **Colors:** Light mode sets `--bg: #ffffff`, `--fg: #000000`, `--muted: #666666`, and
+  `--border: #eaeaea`. Dark mode sets `--bg: #000000`, `--fg: #ffffff`, `--muted: #888888`, and
+  `--border: #333333`. Accent color is `--accent: #0070f3`.
+- **Type scale:** Font sizes define `--text-xs: 12px`, `--text-sm: 14px`, `--text-base: 16px`,
+  `--text-lg: 20px`, `--text-xl: 24px`, and `--text-2xl: 32px`.
+- **Spacing:** Layout padding uses `--space-1: 4px`, `--space-2: 8px`, `--space-4: 16px`,
+  `--space-6: 24px`, and `--space-8: 32px`.
+- **Border radius:** Interactive surfaces use `--radius-sm: 4px`, `--radius-md: 8px`, and
+  `--radius-lg: 12px`.
+
+### Theme configuration and resolution
+
+The page sets theme styling through the `data-theme` attribute on the root `<html>` element. The
+browser persists the user choice under the `localStorage` key `quiz:theme`.
+
+At page load, the client resolves theme state in this order:
+1. `localStorage.getItem('quiz:theme')`: if the value is `'light'` or `'dark'`, this setting wins.
+2. `window.matchMedia('(prefers-color-scheme: dark)')`: if matching, the page selects dark mode.
+3. Fallback: if no setting or media preference matches, the page defaults to dark mode.
+
+Pressing `t` toggles `data-theme` between `'light'` and `'dark'`, and saves the new value into
+`localStorage`.
+
+### Motion and focus styles
+
+Following the "Accessibility and responsive behavior" section of `vercel.com/design.md`:
+- **Reduced motion:** `@media (prefers-reduced-motion: reduce)` disables slide transitions and
+  animations (`transition: none; animation: none`).
+- **Focus rings:** All interactive controls display a visible focus indicator using
+  `:focus-visible` with a 2-pixel solid outline and a 2-pixel offset.
+
+### Accessibility structure
+
+The slide presentation complies with WCAG 2.1 AA requirements:
+- **Interactive choice elements:** Each choice renders as an HTML `<button>` element with
+  `type="button"`. This provides default keyboard activation through `Space` and `Enter`.
+- **Screen reader announcements:** A container with `aria-live="polite"` and `aria-atomic="true"`
+  announces answer validation outcomes and explanations when the learner selects a choice.
+
+---
+
+## 12. Filesystem layout
 
 The skill components and outputs follow this file structure:
 
@@ -536,6 +585,7 @@ skills/quiz/
 ├── SKILL.md              # Agent prompt instructions
 ├── build.mjs             # Zero-dependency compiler script
 ├── template.html         # HTML shell without inline fonts
+├── tokens.css            # Design tokens copied from design.md
 ├── references/
 │   └── question-rules.md # Canonical question authoring rules
 └── assets/
@@ -554,7 +604,7 @@ directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
 
 ---
 
-## 12. Test plan
+## 13. Test plan
 
 The build compiler undergoes unit testing using the native `node:test` runner.
 
@@ -575,7 +625,7 @@ The automated test suite verifies:
 
 ---
 
-## 13. Sources
+## 14. Sources
 
 - ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
 - SIL Open Font License 1.1: <https://openfontlicense.org/>
