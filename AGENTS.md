@@ -81,6 +81,9 @@ Breaking any of these invariants breaks the system design:
    shuffled deterministically by code.
 6. **No proprietary trademarks or logos appear on generated slides.** Slides use monochrome
    typographic styling.
+7. **The agent writes only the draft.** The build script `build.mjs` derives every other field.
+8. **The agent never reads `template.html` or font assets.** Reading templates wastes context
+   tokens.
 
 ## Writing
 
