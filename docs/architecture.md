@@ -70,9 +70,10 @@ The skill transforms resources into self-contained HTML slides through five sequ
 3. **Blind Check:** The agent invokes a secondary sub-agent with read access to the resource,
    passing only the questions without the answer key. The sub-agent solves each question. If the
    sub-agent misses a question or identifies ambiguity, the primary agent revises the draft.
-4. **Build:** The agent executes `node skills/quiz/build.mjs quizzes/<slug>/quiz.json`. The script
-   validates the draft against schema rules, balances choice positions, compiles Markdown to safe
-   HTML, inlines CSS and font assets, and generates `quizzes/<slug>/index.html`.
+4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
+   absolute path of the skill folder. The script validates the draft against schema rules,
+   balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
+   generates `quizzes/<slug>/index.html`.
 5. **Report:** The agent outputs the file path, an open command
    (`open ./quizzes/<slug>/index.html`), and a static hosting deployment hint.
 
@@ -224,13 +225,14 @@ export interface BuiltQuiz {
 
 ## 3. Build compiler
 
-The compiler `skills/quiz/build.mjs` operates as a stand-alone Node.js executable with zero external
+The compiler `build.mjs` sits in the skill folder and operates as a script with zero external
 dependencies. It requires Node.js version 18 or later for built-in crypto and test runner APIs.
+When invoked from another project, `SKILL.md` resolves the absolute path to `build.mjs`.
 
 ### Command line interface
 
 ```bash
-node skills/quiz/build.mjs <path-to-quiz-draft.json> [--out <output-directory>]
+node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--out <output-directory>]
 ```
 
 If `--out` is omitted, the compiler defaults to `./quizzes/<slug>/`.
