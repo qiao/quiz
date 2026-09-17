@@ -83,7 +83,20 @@ Every question must contain exactly four choices:
 - Model real engineering mistakes: inverted logic, missing edge cases, or confused terms.
 - Provide a non-empty `rationale` string for each plausible distractor explaining why it fails.
 
-## 4. Explanations and citations
+## 4. Prompt clarity and verification
+
+Design questions so that an independent reader reaches the exact correct choice:
+
+- Each question must have exactly one answer that the source material supports. Another reader of
+  the source must reach the same choice without ambiguity.
+- The prompt must not give away the answer. Avoid distinctive words in the prompt that appear only
+  in the correct choice.
+- Avoid negative questions (such as "Which is NOT..."). If a negative question is needed, display
+  "**NOT**" in bold.
+- If a prompt refers to specific code behavior, include the relevant code snippet in a fenced code
+  block, or state the exact file name.
+
+## 5. Explanations and citations
 
 ### Explanations
 - Every question must provide a non-empty `explanation`.
