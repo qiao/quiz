@@ -422,6 +422,13 @@ kbd {
   }
 }
 
+/* A finger needs a target of 44 pixels. */
+@media (pointer: coarse) {
+  .button {
+    min-height: 44px;
+  }
+}
+
 .score-table {
   width: 100%;
   margin-top: var(--vbg-space-4);
