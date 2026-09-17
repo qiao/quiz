@@ -87,8 +87,8 @@ This document answers: what did we decide, and what did we reject?
 - **Reason:** Code repositories, documentation sites, local files, and PDF guides cover the vast
   majority of developer learning sources.
 - **Rejected alternative:** Support EPUB files.
-  Rejected because EPUB extraction requires extra parsing dependencies with negligible demand
-  among software engineers.
+  Rejected because EPUB extraction requires external parsing libraries that standard runtime
+  environments do not bundle.
 - **Rejected alternative:** Unconstrained documentation crawling.
   Rejected because crawling entire domains causes network timeouts and token exhaustion.
   Crawling is bounded to 20 linked pages within the initial hostname.
@@ -142,12 +142,12 @@ This document answers: what did we decide, and what did we reject?
 - **Decision:** Exactly four choices per question: one correct, one obvious wrong, and two
   plausible wrong choices. Shuffled by code with balanced answer positions.
 - **Reason:** Four choices eliminate binary guessing. Authentic distractors based on common
-  misconceptions help learners identify knowledge gaps. Shuffling by code prevents predictable
-  answer patterns.
+  misconceptions help learners identify knowledge gaps. Programmatic shuffling in code guarantees
+  an equal 25 percent distribution across positions A, B, C, and D.
 - **Rejected alternative:** Allow variable numbers of choices (2 to 5).
   Rejected because variable options complicate slide layouts and keyboard navigation bindings.
 - **Rejected alternative:** Model shuffles choice positions.
-  Rejected because LLMs have known positional biases toward middle positions (B and C).
+  Rejected because models produce uneven position distributions without programmatic balancing.
 - **Rejected alternative:** Include "All of the above" or "None of the above".
   Rejected because these choices encourage process-of-elimination guessing rather than domain
   understanding.
@@ -165,11 +165,10 @@ This document answers: what did we decide, and what did we reject?
 
 ### D11: Question verification
 - **Decision:** Use an independent blind verification sub-agent without access to the answer key.
-- **Reason:** Question generator models sometimes produce ambiguous phrasing or multiple correct
-  answers. A blind agent solving questions from source text identifies defective items before
-  user delivery.
+- **Reason:** A blind sub-agent validates that each question has exactly one unambiguous answer
+  supported by the source text before user delivery.
 - **Rejected alternative:** No verification step.
-  Rejected because unverified model questions frequently contain errors and false statements.
+  Rejected because unverified model outputs can contain ambiguities and invalid assumptions.
 - **Rejected alternative:** Self-check by the generation agent.
   Rejected because self-evaluation carries confirmation bias and misses flawed assumptions.
 
@@ -215,8 +214,10 @@ This document answers: what did we decide, and what did we reject?
 
 ### D16: Theme selection
 - **Decision:** Match operating system preference by default, and provide a manual toggle button.
-- **Reason:** Defaulting to system settings provides an expected baseline. The manual override is
-  required because dark themes are unreadable on many conference room projectors.
+- **Reason:** Defaulting to system settings provides an expected baseline. Presenters display
+  slides in conference rooms or on external monitors where bright ambient lighting makes dark
+  backgrounds hard to read. Users need manual contrast control regardless of operating system
+  settings.
 - **Rejected alternative:** Strictly follow operating system with no toggle switcher.
   Rejected because presentation environments frequently conflict with personal system settings.
   See section 6 for the conflict record.
