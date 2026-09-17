@@ -14,7 +14,7 @@ a single self-contained HTML file that runs offline.
 Clone this repository:
 
 ```bash
-git clone https://github.com/example/quiz-skill.git ~/proj/quiz-skill
+git clone <repo-url> ~/proj/quiz-skill
 ```
 
 Create a symlink for your agent host:
