@@ -121,11 +121,16 @@ An engineer boards a flight with a technical PDF specification. The engineer pre
 `/quiz spec.pdf`. During the flight, the engineer opens the single self-contained HTML file without
 internet access and completes the quiz.
 
-### Story 4: Sharing a quiz for team onboarding
-As a secondary use, a developer shares a generated quiz with new hires for team onboarding.
-To share slides in person, a team lead connects a laptop to a conference room projector.
-The room is bright. The lead presses the T key to switch the slides to light mode, providing high
-contrast for all attendees.
+### Story 4: Sharing a quiz with a teammate
+As a secondary use, a developer shares a quiz with a teammate during team onboarding.
+The developer deploys the slides with the deployment hint, or sends the single HTML file.
+The teammate opens the quiz on their own computer and answers questions. Each browser stores
+its own progress and scores in `localStorage`.
+
+### Story 5: Presenting slides on a projector
+As a secondary use, the same developer presents the generated quiz in a conference room on a
+projector. The room has bright ambient lighting. The presenter presses the T key to switch the
+slides to light mode, providing high contrast for attendees.
 
 ---
 
