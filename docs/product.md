@@ -129,7 +129,8 @@ providing high contrast for all attendees.
 An implementation satisfies this specification when all criteria pass:
 
 ### Generation and validation
-- [ ] Running `/quiz` checks for Node.js (>= 18) before attempting compilation.
+- [ ] Running `/quiz` checks for Node.js before attempting compilation (see Section 3 of
+  [`docs/architecture.md`](architecture.md#3-build-compiler)).
 - [ ] An independent sub-agent verifies draft questions without seeing the answer key.
 - [ ] Questions adhere to the four difficulty tiers with no trivial recall questions.
 - [ ] Every question contains exactly four choices, with balanced positions across A, B, C, and D.
@@ -142,8 +143,8 @@ An implementation satisfies this specification when all criteria pass:
 - [ ] The output displays no proprietary trademarks or vendor logos.
 
 ### Interaction and interface
-- [ ] Keys 1 to 4 or A to D select choices. Enter or Right Arrow advances to the next slide.
-- [ ] Left Arrow navigates back to previous slides.
+- [ ] Slide navigation implements the keyboard controls specified in Section 7 of
+  [`docs/architecture.md`](architecture.md#7-slide-interface).
 - [ ] Learn mode reveals the explanation immediately after a selection.
 - [ ] The end slide displays the final score, tier breakdown, and a retry missed questions button.
 - [ ] The T key and header button toggle between light and dark themes.

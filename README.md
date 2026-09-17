@@ -59,12 +59,9 @@ open the slides in your browser.
 
 ## Slide controls
 
-| Key | Action |
-|---|---|
-| `1` to `4` or `a` to `d` | Select choice |
-| `Enter` or `Right Arrow` | Next slide |
-| `Left Arrow` | Previous slide |
-| `t` | Toggle light and dark theme |
+Slides support keyboard navigation (keys 1 to 4, Enter, Arrow keys, and T for theme toggle).
+Section 7 of [`docs/architecture.md`](docs/architecture.md#7-slide-interface) defines the full
+key map.
 
 ---
 

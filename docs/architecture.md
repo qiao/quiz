@@ -225,7 +225,7 @@ export interface BuiltQuiz {
 ## 3. Build compiler
 
 The compiler `skills/quiz/build.mjs` operates as a stand-alone Node.js executable with zero external
-dependencies.
+dependencies. It requires Node.js version 18 or later for built-in crypto and test runner APIs.
 
 ### Command line interface
 
@@ -462,3 +462,4 @@ The automated test suite verifies:
 - SIL OFL FAQ on Redistribution: <https://scripts.sil.org/OFL-FAQ_web>
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
 - Node.js Test Runner: <https://nodejs.org/api/test.html>
+- Node.js Releases: <https://nodejs.org/en/about/previous-releases>
