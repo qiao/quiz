@@ -5,10 +5,10 @@ import { COLOR, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const CHOICES = [
-  { letter: "A", text: "TodoList saves an edit only when the item closes" },
-  { letter: "B", text: "useLocalStorage clears the drafts on each render" },
-  { letter: "C", text: "The id is the key, so React mounts a new TodoItem" },
-  { letter: "D", text: "The browser reloads the page after each save" },
+  { letter: "A", text: "The server sends them back on each page load" },
+  { letter: "B", text: "The browser keeps the page open in memory" },
+  { letter: "C", text: "The app saves them in your browser storage" },
+  { letter: "D", text: "The app asks you to type them again" },
 ];
 
 /** Frame where the learner picks the correct choice. */
@@ -47,7 +47,7 @@ export const SlideScene: React.FC = () => {
           name="Slide prompt"
           style={{ marginTop: 28, fontSize: 48, fontWeight: 500, lineHeight: 1.25 }}
         >
-          Why does TodoItem lose its edit on a new id?
+          Why do your todos stay after you reload?
         </Interactive.Div>
         <div style={{ marginTop: 40, display: "grid", gap: 16 }}>
           {CHOICES.map((choice) => {
