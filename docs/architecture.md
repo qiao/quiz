@@ -367,15 +367,23 @@ The browser persists state in `localStorage` under `quiz:<quizId>:state`:
 
 ```typescript
 export interface StoredQuizState {
-  /** Map of question index to chosen choice ID ('a'|'b'|'c'|'d') */
+  /** Map of BuiltQuestion.id to chosen choice ID ('a'|'b'|'c'|'d') */
   answers: Record<number, 'a' | 'b' | 'c' | 'd'>;
   /** Current active slide index (0 = title, 1..N = questions, N+1 = end) */
   currentSlide: number;
 }
 ```
 
-The title and end slides provide a "Restart" button that clears this storage record and returns
-the user to slide 0.
+The `answers` map keys by `BuiltQuestion.id` (one-based question sequence number).
+
+At page load, slide navigation resolves with this precedence:
+1. If the URL contains a valid slide hash (`#0` to `#(N+1)`), the URL hash wins and determines the
+   active slide.
+2. If the URL contains no hash, `currentSlide` from `localStorage` determines the active slide.
+3. If `localStorage` holds no saved record, the presentation opens on slide 0 (title slide).
+
+The title and end slides provide a "Restart" button that clears `quiz:<quizId>:state` from
+`localStorage` and resets the presentation to slide 0.
 
 ---
 
@@ -407,6 +415,20 @@ The deck contains three distinct slide views:
 
 Event listeners ignore key inputs if the user focuses a form element or selects text on the slide.
 The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enable browser history.
+
+### Slide navigation and retry flow
+
+1. **Answer selection requirement:** On question slides, the learner must select an answer
+   before advancing. The "Next" button and keyboard forward keys (`Enter`, `Right Arrow`) remain
+   disabled until a choice is clicked. Selecting a choice reveals the explanation panel and
+   activates advancement controls.
+2. **Backward navigation:** Learners can return to previous questions with `Left Arrow`.
+   Answered questions display the selected choice, distractor rationale, and correct explanation.
+3. **Retry missed questions:** Clicking "Retry Missed Questions" keeps all questions in the deck
+   and preserves correct answers in `answers`. It deletes only the keys for incorrect questions
+   from `answers`, and navigates to the first missed question slide. When the learner returns
+   to the end slide, the view recalculates and displays the updated score, updated tier breakdown,
+   and any remaining missed questions.
 
 ---
 
