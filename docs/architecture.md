@@ -436,11 +436,11 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
 
 ### Typography stack
 
-The visual design uses monochrome typography based on Geist Sans and Geist Mono:
+The visual design uses monochrome typography based on Geist and Geist Mono:
 
 ```css
 :root {
-  --font-sans: "Geist Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Geist Mono", SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 ```
@@ -556,16 +556,37 @@ rules. The agent reads this file during Phase 2. The file specifies:
 
 ### Design tokens
 
-The token file defines variables for both color schemes:
-- **Colors:** Light mode sets `--bg: #ffffff`, `--fg: #000000`, `--muted: #666666`, and
-  `--border: #eaeaea`. Dark mode sets `--bg: #000000`, `--fg: #ffffff`, `--muted: #888888`, and
-  `--border: #333333`. Accent color is `--accent: #0070f3`.
-- **Type scale:** Font sizes define `--text-xs: 12px`, `--text-sm: 14px`, `--text-base: 16px`,
-  `--text-lg: 20px`, `--text-xl: 24px`, and `--text-2xl: 32px`.
-- **Spacing:** Layout padding uses `--space-1: 4px`, `--space-2: 8px`, `--space-4: 16px`,
-  `--space-6: 24px`, and `--space-8: 32px`.
-- **Border radius:** Interactive surfaces use `--radius-sm: 4px`, `--radius-md: 8px`, and
-  `--radius-lg: 12px`.
+`skills/quiz/tokens.css` defines tokens sourced from `vercel-brand.css`. The interface designs in
+monochrome in accordance with `design.md`. Color indicates only validation results and focus
+states. Every color cue accompanies a non-color cue, such as an icon or status word. Each color
+token uses CSS `light-dark(<light>, <dark>)`:
+
+- **Surfaces (from `vercel-brand.css`):**
+  - Canvas background: `--vbg-background-100: light-dark(oklch(1 0 0), oklch(0 0 0))`
+  - Card surface: `--vbg-background-200: light-dark(oklch(0.984 0 0), oklch(0.027 0 0))`
+- **Typography and borders (from `vercel-brand.css`):**
+  - Primary text: `--vbg-gray-1000: light-dark(oklch(0.205 0 0), oklch(0.946 0 0))`
+  - Secondary text: `--vbg-gray-900: light-dark(oklch(0.42 0 0), oklch(0.706 0 0))`
+  - Subtle border: `--vbg-gray-alpha-300: light-dark(oklch(0 0 0 / 0.1), oklch(1 0 0 / 0.13))`
+  - Default border: `--vbg-gray-alpha-400: light-dark(oklch(0 0 0 / 0.08), oklch(1 0 0 / 0.14))`
+- **Semantic indicators (from `vercel-brand.css`):**
+  - Focus ring (`--vbg-focus`): light uses blue-700 (`oklch(57.61% 0.2508 258.23)`), and dark uses
+    blue-900 (`oklch(71.7% 0.1648 250.794)`).
+  - Success (`--vbg-green-900`): light uses `oklch(51.75% 0.1453 147.65)`, and dark uses
+    `oklch(73.1% 0.2158 148.29)`.
+  - Error (`--vbg-red-700`): light uses `oklch(62.56% 0.2524 23.03)`, and dark uses
+    `oklch(62.56% 0.2234 23.03)`.
+- **Spacing scale (from `vercel-brand.css`):**
+  Values map 4px (`--vbg-space-1`), 8px (`--vbg-space-2`), 12px (`--vbg-space-3`), 16px
+  (`--vbg-space-4`), 20px (`--vbg-space-5`), 24px (`--vbg-space-6`), 32px (`--vbg-space-8`),
+  40px (`--vbg-space-10`), 48px (`--vbg-space-12`), and 64px (`--vbg-space-16`).
+- **Border radius (from `vercel-brand.css`):**
+  `--vbg-radius-small: 6px` and `--vbg-radius: 8px`. The interface uses no other radii.
+- **Type scale (from `vercel-brand.css`):**
+  Display `3rem`, page title `2.5rem`, title `2rem`, section `1.5rem`, subsection `1.25rem`, lede
+  `1.125rem`, body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
+- **Typography families (from `vercel-brand.css`):**
+  `"Geist"` for sans-serif text and `"Geist Mono"` for monospace code.
 
 ### Theme configuration and resolution
 
