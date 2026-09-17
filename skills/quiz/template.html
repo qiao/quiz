@@ -478,6 +478,43 @@ kbd {
     animation: slide-enter var(--duration-fast) var(--ease-smooth-out) both;
   }
 
+  /*
+   * Answer: the status icons draw their stroke, as in the recipe 25-checkbox-check.md, and the
+   * feedback rises in, as one line of the recipe 18-texts-reveal.md.
+   */
+  .slide.is-answering .choice-status .icon path {
+    stroke-dasharray: var(--icon-length);
+    animation: icon-draw var(--duration-medium) var(--ease-smooth-out) both;
+  }
+
+  .slide.is-answering .feedback {
+    animation: feedback-rise var(--duration-very-slow) var(--ease-smooth-out) both;
+  }
+
+  @keyframes icon-draw {
+    from {
+      stroke-dashoffset: var(--icon-length);
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes feedback-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--distance-medium));
+      filter: blur(var(--blur-medium));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
   @keyframes slide-enter {
     from {
       opacity: 0;
@@ -606,7 +643,11 @@ kbd {
     return node;
   }
 
-  const ICON_PATHS = { check: 'M3.5 8.5l3 3 6-7', cross: 'M4 4l8 8M12 4l-8 8' };
+  // Each icon path with its length in user units, rounded up, for the stroke draw animation.
+  const ICONS = {
+    check: { path: 'M3.5 8.5l3 3 6-7', length: 14 },
+    cross: { path: 'M4 4l8 8M12 4l-8 8', length: 23 },
+  };
 
   /**
    * Makes a small line icon that a status word accompanies. The icon is hidden from readers.
@@ -620,8 +661,9 @@ kbd {
     svg.setAttribute('class', 'icon');
     svg.setAttribute('viewBox', '0 0 16 16');
     svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('style', `--icon-length: ${ICONS[name].length}`);
     const path = document.createElementNS(svgNamespace, 'path');
-    path.setAttribute('d', ICON_PATHS[name]);
+    path.setAttribute('d', ICONS[name].path);
     svg.append(path);
     return svg;
   }
@@ -733,6 +775,7 @@ kbd {
       if (options.replace) history.replaceState(null, '', hash);
       else history.pushState(null, '', hash);
     }
+    slideElement.classList.remove('is-answering');
     render(options.focus !== false);
     if (moved && options.focus !== false) enterSlide(direction);
   }
@@ -752,6 +795,7 @@ kbd {
 
   slideElement.addEventListener('animationend', (event) => {
     if (event.target === slideElement) slideElement.classList.remove('is-entering');
+    if (event.animationName === 'feedback-rise') slideElement.classList.remove('is-answering');
   });
 
   function next() {
@@ -786,6 +830,7 @@ kbd {
     if (!question || state.answers[question.id]) return;
     state.answers[question.id] = letter;
     saveState();
+    slideElement.classList.add('is-answering');
     render(false);
 
     const correct = correctChoice(question);
