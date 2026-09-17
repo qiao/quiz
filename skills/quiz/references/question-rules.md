@@ -64,10 +64,12 @@ Every question must contain exactly four choices:
 - Choice text must be unique within each question. No two choices may have identical text.
 - Do not add choice letter prefixes (`A.`, `B.`, etc.). The compiler balances and assigns letters.
 - Write all four choices with similar length and the same grammatical form.
-- The correct choice must not be the longest choice, the most detailed choice, or the only choice
-  with a qualifier (such as "usually" or "in most cases"). A learner who picks the longest choice
-  must not win by guessing. The compiler rejects a draft if the correct choice is more than 20%
-  longer than the longest wrong choice (over 1.2 times its character length).
+- The correct choice must not be the most detailed choice or the only choice with a qualifier
+  (such as "usually" or "in most cases").
+- The build measures choice lengths, so that a learner who picks the longest choice does not win
+  by guessing. It rejects a correct choice over 1.2 times as long as the longest wrong choice. It
+  also rejects a quiz where the correct choice is the longest choice in more than a quarter of the
+  questions. Let the build measure, and fix the questions that its errors name.
 
 ### Correct choice
 - State the accurate technical answer directly.

@@ -165,6 +165,7 @@ function checkCitation(citation, label, errors) {
  * @param {DraftChoice[]} choices The 4 choices, each with text, and exactly one correct choice.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
+ * @returns {boolean} True when the correct choice is longer than every wrong choice.
  */
 function checkChoiceLengths(choices, label, errors) {
   let correctLength = 0;
@@ -181,6 +182,30 @@ function checkChoiceLengths(choices, label, errors) {
         'the answer',
     );
   }
+  return correctLength > longestWrong;
+}
+
+/**
+ * Rejects a quiz where the correct choice is the longest choice too often.
+ *
+ * A learner who always picks the longest choice must not do better than a random guess, so the
+ * limit is a quarter of the questions.
+ *
+ * @param {number[]} questionNumbers Numbers of the questions where the correct choice is longer
+ *   than every wrong choice.
+ * @param {number} questionCount Number of questions in the quiz.
+ * @param {string[]} errors List that receives the errors.
+ */
+function checkLongestCorrectCount(questionNumbers, questionCount, errors) {
+  const limit = Math.ceil(questionCount / CHOICE_LETTERS.length);
+  const excess = questionNumbers.length - limit;
+  if (excess > 0) {
+    errors.push(
+      `Quiz: the correct choice is the longest choice in ${questionNumbers.length} questions ` +
+        `(${questionNumbers.join(', ')}), and the limit is ${limit}. Make a wrong choice longer ` +
+        `than the correct choice in ${excess} or more of these questions`,
+    );
+  }
 }
 
 /**
@@ -189,12 +214,13 @@ function checkChoiceLengths(choices, label, errors) {
  * @param {unknown} choices Choices to check.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
+ * @returns {boolean} True when the correct choice is longer than every wrong choice.
  */
 function checkChoices(choices, label, errors) {
   if (!Array.isArray(choices) || choices.length !== 4) {
     const found = Array.isArray(choices) ? choices.length : 'no array';
     errors.push(`${label}: expected exactly 4 choices, found ${found}`);
-    return;
+    return false;
   }
   /** @type {Map<string, number>} */
   const seenTexts = new Map();
@@ -247,8 +273,9 @@ function checkChoices(choices, label, errors) {
   for (const kind of CHOICE_KINDS) {
     found[kind] = choices.filter((choice) => isObject(choice) && choice.kind === kind).length;
   }
+  let correctIsLongest = false;
   if (allTextsFilled && found.correct === 1) {
-    checkChoiceLengths(/** @type {DraftChoice[]} */ (choices), label, errors);
+    correctIsLongest = checkChoiceLengths(/** @type {DraftChoice[]} */ (choices), label, errors);
   }
 
   for (const [kind, expected] of Object.entries(KIND_COUNTS)) {
@@ -259,6 +286,7 @@ function checkChoices(choices, label, errors) {
       );
     }
   }
+  return correctIsLongest;
 }
 
 /**
@@ -287,6 +315,8 @@ export function validateDraft(draft) {
   }
 
   const tierSizes = [0, 0, 0, 0];
+  /** @type {number[]} */
+  const longestCorrect = [];
   let previousTier = 0;
   draft.questions.forEach((question, index) => {
     const label = `Question ${index + 1}`;
@@ -311,7 +341,7 @@ export function validateDraft(draft) {
     }
 
     checkFilledStrings(question, ['prompt', 'explanation'], label, errors);
-    checkChoices(question.choices, label, errors);
+    if (checkChoices(question.choices, label, errors)) longestCorrect.push(index + 1);
     checkCitation(question.citation, label, errors);
   });
 
@@ -320,6 +350,7 @@ export function validateDraft(draft) {
       `Quiz: tier sizes must differ by at most 1 question, found ${tierSizes.join(', ')}`,
     );
   }
+  checkLongestCorrectCount(longestCorrect, draft.questions.length, errors);
   return errors;
 }
 

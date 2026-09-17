@@ -381,6 +381,9 @@ Before emitting HTML, `build.mjs` checks:
 14. Unknown fields in draft objects trigger validation errors to detect property typos.
 15. The correct choice must not exceed 1.2 times the character count of the longest wrong
     choice (after trimming spaces), so that choice length does not reveal the answer.
+16. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
+    questions. A learner who always picks the longest choice then does no better than a random
+    guess. The error lists the question numbers, so that the agent fixes them in one pass.
 
 ### Error format and exit codes
 
@@ -873,7 +876,9 @@ The automated test suite organizes tests into thirteen groups:
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
    non-objects, missing or empty fields, directory-escaping slugs, invalid or descending tiers,
    tier size disparities greater than 1, choice count violations, choice kind distribution errors,
-   misplaced rationales, duplicate choice text, and bad citation lines or pages.
+   misplaced rationales, duplicate choice text, bad citation lines or pages, a correct choice
+   over 1.2 times the longest wrong choice, and a correct choice that is the longest choice in
+   more than a quarter of the questions.
 2. **`renderMarkdown`:** Verifies Markdown compilation. Tests verify HTML entity escaping, inline
    code, bold, italics, fenced code blocks with language tags, unclosed fences, paragraphs, and
    lists.

@@ -52,6 +52,21 @@ function loadDraft() {
   return JSON.parse(readFileSync(FIXTURE_URL, 'utf8'));
 }
 
+/**
+ * Sets the text of each correct choice, so that it is the longest choice only in given questions.
+ *
+ * @param {any} draft Valid draft.
+ * @param {number[]} longest Numbers of the questions where the correct choice is the longest.
+ */
+function setLongestCorrect(draft, longest) {
+  draft.questions.forEach((/** @type {any} */ question, /** @type {number} */ index) => {
+    const wrong = question.choices.filter((/** @type {any} */ choice) => choice.kind !== 'correct');
+    const length = Math.max(...wrong.map((/** @type {any} */ choice) => choice.text.length));
+    const correct = question.choices.find((/** @type {any} */ choice) => choice.kind === 'correct');
+    correct.text = 'x'.repeat(longest.includes(index + 1) ? length + 1 : length - 1);
+  });
+}
+
 describe('validateDraft', () => {
   it('accepts the valid fixture', () => {
     assert.deepEqual(validateDraft(loadDraft()), []);
@@ -178,6 +193,17 @@ describe('validateDraft', () => {
     ]);
     choices[1].text = 'In the browser address bar, next to the URL';
     assert.deepEqual(validateDraft(draft), []);
+  });
+
+  it('rejects a correct choice that is the longest in over a quarter of questions', () => {
+    const draft = loadDraft();
+    setLongestCorrect(draft, [2, 5]);
+    assert.deepEqual(validateDraft(draft), []);
+    setLongestCorrect(draft, [2, 5, 7]);
+    assert.deepEqual(validateDraft(draft), [
+      'Quiz: the correct choice is the longest choice in 3 questions (2, 5, 7), and the limit ' +
+        'is 2. Make a wrong choice longer than the correct choice in 1 or more of these questions',
+    ]);
   });
 
   it('reports a choice that is not an object and does not throw', () => {
