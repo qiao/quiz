@@ -8,7 +8,7 @@ This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |
 |---|---|---|
-| 1 | Decision log | What did we decide for Q1 to Q25? |
+| 1 | Decision log | What did we decide for D1 to D25? |
 | 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
 | 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
 | 4 | Output and presentation (D13 to D18) | How do we build and render slides? |
@@ -144,8 +144,9 @@ This document answers: what did we decide, and what did we reject?
 - **Decision:** Exactly four choices per question: one correct, one obvious wrong, and two
   plausible wrong choices. Shuffled by code with balanced answer positions.
 - **Reason:** Four choices eliminate binary guessing. Plausible distractors based on common
-  misconceptions help learners identify knowledge gaps. Programmatic shuffling in code guarantees
-  an equal 25 percent distribution across positions A, B, C, and D.
+  misconceptions help learners identify knowledge gaps. Programmatic shuffling in code balances
+  correct choices across positions A, B, C, and D, with at most a one-question difference when the
+  total count is not a multiple of 4.
 - **Rejected alternative:** Allow variable numbers of choices (2 to 5).
   Rejected because variable option counts complicate slide layouts and keyboard navigation bindings.
 - **Rejected alternative:** Model shuffles choice positions.
