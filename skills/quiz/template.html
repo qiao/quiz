@@ -886,23 +886,25 @@ kbd {
         ]),
       );
 
-    const missedList = missed.length
-      ? element(
-          'ul',
-          { class: 'list' },
-          missed.map((question) => {
-            const text = element('div', { html: question.promptHtml }).textContent.trim();
-            const short = text.length > 90 ? `${text.slice(0, 89)}…` : text;
-            const label = `Question ${question.id}: ${short}`;
-            const link = element('a', { href: `#${question.id}`, text: label });
-            return element('li', {}, [link]);
-          }),
-        )
-      : element('p', { class: 'lede', text: 'You answered all questions correctly.' });
+    const missedList = element(
+      'ul',
+      { class: 'list' },
+      missed.map((question) => {
+        const blocks = Array.from(element('div', { html: question.promptHtml }).children);
+        const text = blocks.map((block) => block.textContent.replace(/\s+/g, ' ').trim());
+        const long = text.join(' ');
+        const short = long.length > 90 ? `${long.slice(0, 89).replace(/\s+\S*$/, '')}…` : long;
+        const label = `Question ${question.id}: ${short}`;
+        const link = element('a', { href: `#${question.id}`, text: label });
+        return element('li', {}, [link]);
+      }),
+    );
 
     showSlide([
-      element('p', { class: 'meta', text: 'Result' }),
       element('h1', { text: `${correctCount} of ${questionCount} correct (${percent}%)` }),
+      missed.length
+        ? null
+        : element('p', { class: 'lede', text: 'You answered all questions correctly.' }),
       element('table', { class: 'score-table' }, [
         element('thead', {}, [
           element('tr', {}, [
@@ -912,12 +914,12 @@ kbd {
         ]),
         element('tbody', {}, rows),
       ]),
-      missed.length ? element('h2', { text: 'Missed questions' }) : null,
-      missedList,
       element('div', { class: 'actions' }, [
         missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
         button('Restart', 'secondary', restart),
       ]),
+      missed.length ? element('h2', { text: 'Missed questions' }) : null,
+      missed.length ? missedList : null,
     ]);
   }
 
