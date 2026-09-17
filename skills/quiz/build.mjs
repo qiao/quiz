@@ -15,6 +15,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 /**
  * @typedef {'correct' | 'obvious-wrong' | 'plausible-wrong'} ChoiceKind
  *
+ * @typedef {1 | 2 | 3 | 4} Tier
+ *
  * @typedef {object} DraftCitation
  * @property {string} target File path from the repository root, chapter, or URL.
  * @property {number} [lineStart] First line of the cited range.
@@ -27,7 +29,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * @property {string} [rationale] Reason that a wrong choice is wrong.
  *
  * @typedef {object} DraftQuestion
- * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {Tier} tier Difficulty tier.
  * @property {string} prompt Question text in Markdown.
  * @property {DraftChoice[]} choices Exactly 4 choices.
  * @property {string} explanation Reason that the correct choice is correct.
@@ -41,7 +43,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  */
 
 /** Pattern that a slug must match, so that it cannot leave the `quizzes/` folder. */
-export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** Names of the tiers, in tier order. */
 export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
@@ -330,7 +332,7 @@ const HTML_ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "
  * @param {string} text Raw text.
  * @returns {string} Text that is safe inside an element or an attribute value.
  */
-export function escapeHtml(text) {
+function escapeHtml(text) {
   return text.replace(/[&<>"']/g, (character) => HTML_ENTITIES[character]);
 }
 
@@ -361,7 +363,7 @@ const LIST_ITEM = /^\s*- /;
  * Renders the Markdown subset of section 4 of `docs/architecture.md` as safe HTML.
  *
  * The subset is paragraphs, lists with hyphens, fenced code, inline code, strong text, and
- * emphasis. Every other character is escaped, so raw HTML in the draft shows as text.
+ * emphasis. The function escapes every other character, so raw HTML in the draft shows as text.
  *
  * @param {string} markdown Markdown text from the draft.
  * @returns {string} Safe HTML.
@@ -500,7 +502,7 @@ export function placeChoices(draft) {
  *
  * @typedef {object} BlindQuestion
  * @property {number} id Question number, from 1.
- * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {Tier} tier Difficulty tier.
  * @property {string} prompt Question text in Markdown.
  * @property {{ id: ChoiceLetter, text: string }[]} choices Choices in page order.
  * @property {DraftCitation} citation Source of the answer.
@@ -514,15 +516,15 @@ export function placeChoices(draft) {
  * @typedef {object} SubAgentAnswer
  * @property {number} questionId Question number, from 1.
  * @property {ChoiceLetter | 'ambiguous'} choice Letter that the checker chose.
- * @property {string} [reason] Why the question is ambiguous.
+ * @property {string} [reason] Reason that the question is ambiguous.
  *
  * @typedef {object} GradeFailure
  * @property {number} questionId Question number, from 1.
- * @property {1 | 2 | 3 | 4} tier Difficulty tier.
- * @property {string} reason What the checker did.
+ * @property {Tier} tier Difficulty tier.
+ * @property {string} reason Description of what the checker did.
  *
  * @typedef {object} GradeReport
- * @property {boolean} passed True when every question passed.
+ * @property {boolean} passed Flag that is true when every question passed.
  * @property {number} totalQuestions Number of questions in the draft.
  * @property {number} passedCount Number of questions that passed.
  * @property {GradeFailure[]} failures One item for each question that failed.
@@ -800,7 +802,7 @@ export function resolveCitation(citation, facts) {
  *
  * @typedef {object} BuiltQuestion
  * @property {number} id Question number, from 1.
- * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {Tier} tier Difficulty tier.
  * @property {string} tierName Name of the tier.
  * @property {string} promptHtml Question text as safe HTML.
  * @property {BuiltChoice[]} choices Choices in page order.
