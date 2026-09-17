@@ -313,10 +313,11 @@ When invoked from another project, `SKILL.md` resolves the absolute path to `bui
 ### Command line interface
 
 ```bash
-node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind] [--grade <answers.json>]
+node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind | --grade <answers.json>]
 ```
 
 `build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
+The flags `--blind` and `--grade` are mutually exclusive options.
 
 Validation runs first for all three commands. If the draft or answers file fails validation,
 the command reports errors to standard error and exits with code 1 before performing subsequent
@@ -374,8 +375,9 @@ Before emitting HTML, `build.mjs` checks:
 10. Exactly two choices per question must have `kind: 'plausible-wrong'`.
 11. The correct choice must not define `rationale`.
 12. All three wrong choices must define non-empty `rationale` strings.
-13. If `lineStart` and `lineEnd` are present in a citation, `lineEnd` must not be less than
-    `lineStart`.
+13. If `lineStart` and `lineEnd` are present in a citation, both must be positive integers of 1 or
+    more, and `lineEnd` must not be less than `lineStart`. When `page` is present, it must be a
+    positive integer of 1 or more.
 14. Unknown fields in draft objects trigger validation errors to detect property typos.
 15. The correct choice must not exceed 1.2 times the character count of the longest wrong
     choice (after trimming spaces), so that choice length does not reveal the answer.
@@ -481,8 +483,10 @@ The `answers` map keys by `BuiltQuestion.id` (one-based question sequence number
 
 At page load, slide navigation resolves with this precedence:
 1. If the URL contains a valid slide hash (`#0` to `#(N+1)`), the URL hash wins and determines the
-   active slide.
-2. If the URL contains no hash, `currentSlide` from `localStorage` determines the active slide.
+   active slide. Navigation clamps the target to `lastOpenSlide()` (the first unanswered question,
+   or the end slide if all are answered) to prevent skipping ahead.
+2. If the URL contains no hash, `currentSlide` from `localStorage` determines the active slide,
+   clamped to `lastOpenSlide()`.
 3. If `localStorage` holds no saved record, the presentation opens on slide 0 (title slide).
 
 The title and end slides provide a "Restart" button that clears `quiz:<quizId>:state` from
@@ -732,6 +736,7 @@ token uses CSS `light-dark(<light>, <dark>)`:
 - **Typography and borders (from `vercel-brand.css`):**
   - Primary text: `--vbg-gray-1000: light-dark(oklch(0.205 0 0), oklch(0.946 0 0))`
   - Secondary text: `--vbg-gray-900: light-dark(oklch(0.42 0 0), oklch(0.706 0 0))`
+  - Track border: `--vbg-gray-400: light-dark(oklch(0.937 0 0), oklch(0.301 0 0))`
   - Subtle border: `--vbg-gray-alpha-300: light-dark(oklch(0 0 0 / 0.1), oklch(1 0 0 / 0.13))`
   - Default border: `--vbg-gray-alpha-400: light-dark(oklch(0 0 0 / 0.08), oklch(1 0 0 / 0.14))`
 - **Semantic indicators (from `vercel-brand.css`):**
@@ -749,8 +754,8 @@ token uses CSS `light-dark(<light>, <dark>)`:
 - **Border radius (from `vercel-brand.css`):**
   `--vbg-radius-small: 6px` and `--vbg-radius: 8px`. The interface uses no other radii.
 - **Type scale (from `vercel-brand.css`):**
-  Display `3rem`, page title `2.5rem`, title `2rem`, section `1.5rem`, subsection `1.25rem`, lede
-  `1.125rem`, body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
+  Page title `2.5rem`, title `2rem`, section `1.5rem`, subsection `1.25rem`, lede `1.125rem`,
+  body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
 - **Typography families (from `vercel-brand.css`):**
   `"Geist"` for sans-serif text and `"Geist Mono"` for monospace code.
 - **Motion tokens (from `transitions.dev`):**
