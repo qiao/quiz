@@ -47,6 +47,9 @@ export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
 
 const CHOICE_KINDS = ['correct', 'obvious-wrong', 'plausible-wrong'];
+
+/** Largest length of the correct choice, as a multiple of the longest wrong choice. */
+const MAX_CORRECT_LENGTH_RATIO = 1.2;
 const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
 
 const QUIZ_FIELDS = ['title', 'slug', 'source', 'questions'];
@@ -122,6 +125,36 @@ function checkCitation(citation, label, errors) {
 }
 
 /**
+ * Rejects a correct choice that is much longer than every wrong choice.
+ *
+ * A learner who picks the longest choice must not find the answer. The check runs only when the
+ * question has one correct choice and every choice has text.
+ *
+ * @param {unknown[]} choices The 4 choices of the question.
+ * @param {string} label Start of each error message.
+ * @param {string[]} errors List that receives the errors.
+ */
+function checkChoiceLengths(choices, label, errors) {
+  const valid = choices.every((choice) => isObject(choice) && isFilledString(choice.text));
+  const typed = /** @type {DraftChoice[]} */ (choices);
+  const correct = typed.filter((choice) => choice.kind === 'correct');
+  if (!valid || correct.length !== 1) return;
+
+  const correctLength = correct[0].text.trim().length;
+  const wrongLengths = typed
+    .filter((choice) => choice.kind !== 'correct')
+    .map((choice) => choice.text.trim().length);
+  const longestWrong = Math.max(...wrongLengths);
+  if (correctLength > longestWrong * MAX_CORRECT_LENGTH_RATIO) {
+    errors.push(
+      `${label}: the correct choice has ${correctLength} characters, and the longest wrong ` +
+        `choice has ${longestWrong}. Make the lengths closer, so that the length does not show ` +
+        'the answer',
+    );
+  }
+}
+
+/**
  * Checks the choices of one question.
  *
  * @param {unknown} choices Choices to check.
@@ -179,6 +212,8 @@ function checkChoices(choices, label, errors) {
       errors.push(`${choiceLabel}: 'rationale' must be a string that is not empty`);
     }
   });
+
+  checkChoiceLengths(choices, label, errors);
 
   for (const kind of CHOICE_KINDS) {
     const expected = KIND_COUNTS[/** @type {ChoiceKind} */ (kind)];

@@ -146,6 +146,21 @@ describe('validateDraft', () => {
     ]);
   });
 
+  it('rejects a correct choice that is more than 20% longer than every wrong choice', () => {
+    const draft = loadDraft();
+    const choices = draft.questions[1].choices;
+    choices[0].text = 'In the task queue, until the call stack is empty';
+    choices[1].text = 'In the browser address bar';
+    choices[2].text = 'In the microtask queue';
+    choices[3].text = 'On the call stack, below';
+    assert.deepEqual(validateDraft(draft), [
+      'Question 2: the correct choice has 48 characters, and the longest wrong choice has 26. ' +
+        'Make the lengths closer, so that the length does not show the answer',
+    ]);
+    choices[1].text = 'In the browser address bar, next to the URL';
+    assert.deepEqual(validateDraft(draft), []);
+  });
+
   it('rejects two choices with the same text', () => {
     const draft = loadDraft();
     draft.questions[1].choices[3].text = draft.questions[1].choices[2].text;
