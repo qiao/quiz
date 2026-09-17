@@ -503,9 +503,10 @@ The deck contains three distinct slide views:
    Shows tier badge, question progress ("5 of 20"), question prompt, four interactive choice cards,
    an explanation reveal panel, citation link, a "Back" button, and a "Next" button. Choice status
    displays drawn check and cross icons next to the status text.
-3. **End slide (index N + 1):** Shows total score percentage, score breakdown per tier, action
-   buttons ("Try the missed questions again" and "Restart") placed before the missed question list,
-   and links to missed questions.
+3. **End slide (index N + 1):** Shows total score percentage, a score band summary line, score
+   breakdown per tier, action buttons ("Try the missed questions again" and "Restart") placed before
+   the missed question list, and links to missed questions. Reaching the end slide from the last
+   question plays a score count-up and drops confetti for a perfect score.
 
 ### Keyboard bindings
 
@@ -539,6 +540,44 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
    from `answers`, and navigates to the first missed question slide. When the learner returns
    to the end slide, the view recalculates and displays the updated score, updated tier breakdown,
    and any remaining missed questions.
+
+### Slide transitions and feedback
+
+Transitions provide visual feedback during navigation and answers without blocking user input:
+
+1. **Slide enter transition:** Moving to a new slide with "Next" or "Back" slides the new content
+   in from the direction of travel over 250 ms (`--duration-fast`) using `--ease-smooth-out`. The
+   content translates 8 pixels (`--distance-base`), fades from opacity 0 to 1, and clears a 3 pixel
+   blur (`--blur-medium`). Moving forward translates from positive 8 pixels. Moving backward
+   translates from negative 8 pixels. Initial page loads and reloads render without animation. The
+   previous slide does not animate out because the application renders one slide at a time.
+2. **Answer status icon draw:** When the learner selects a choice, the check or cross SVG icon
+   draws its stroke over 350 ms (`--duration-medium`) with `--ease-smooth-out`. The stroke uses
+   `stroke-dasharray` and `stroke-dashoffset` with path lengths of 14 units for check and 23 units
+   for cross.
+3. **Explanation panel rise:** When the learner selects a choice, the feedback section rises 12
+   pixels (`--distance-medium`) with a fade from opacity 0 to 1 and a 3 pixel blur over 500 ms
+   (`--duration-very-slow`) with `--ease-smooth-out`. Keyboard shortcuts and focus work immediately
+   without waiting for the transition to finish.
+4. **End slide score count-up:** When the learner completes the quiz from the final question, the
+   correct question count and score percentage count up from 0 in 20 steps over 800 ms (40 ms per
+   step). The heading provides an `aria-label` with the final score string so screen readers read
+   the result without hearing intermediate counter values.
+5. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
+   view using the 500 ms rise animation. The line matches the score percentage:
+   - 100%: "Every answer is correct."
+   - 70% or more: "A good result. The missed questions show what to read next."
+   - 40% or more: "Good progress. Read the explanation of each missed question."
+   - Below 40%: "A first pass. Every explanation is one slide away."
+6. **Perfect score celebration:** When the score reaches 100% on completion, 60 confetti pieces
+   drop from the top edge. Each piece measures 8 by 14 pixels and uses page colors: primary ink
+   (`--vbg-gray-1000`), success green (`--vbg-green-900`), or secondary gray (`--vbg-gray-900`).
+   Pieces fall over 1.2 to 2 seconds with random delays up to 400 ms and rotate across a random
+   angle. The confetti container ignores pointer events, carries `aria-hidden="true"`, and detaches
+   from the DOM after 2.4 seconds.
+7. **Static fallbacks:** Reloading the page, following a direct hash link to `#<N+1>`, or enabling
+   `prefers-reduced-motion: reduce` renders the final score values and text immediately without
+   count-up or confetti.
 
 ---
 
