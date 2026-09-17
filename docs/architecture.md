@@ -625,7 +625,7 @@ Following the "Accessibility and responsive behavior" section of `vercel.com/des
 
 ### Accessibility structure
 
-The slide presentation complies with WCAG 2.1 AA requirements:
+The page targets WCAG 2.1 AA:
 - **Interactive choice elements:** Each choice renders as an HTML `<button>` element with
   `type="button"`. This provides default keyboard activation through `Space` and `Enter`.
 - **Screen reader announcements:** A container with `aria-live="polite"` and `aria-atomic="true"`
