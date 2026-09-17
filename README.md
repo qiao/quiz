@@ -66,6 +66,16 @@ key map.
 
 ---
 
+## Development
+
+Run the automated test suite:
+
+```bash
+node --test 'test/*.test.mjs'
+```
+
+---
+
 ## Design documentation
 
 Read the design specification in `docs/`:
