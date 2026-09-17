@@ -457,7 +457,73 @@ kbd {
  * Slide enter: the enter half of the transitions.dev recipe 08-page-side-by-side.md.
  * The old slide does not slide out, because the page renders one slide at a time.
  */
+/* The score ring holds the count in its center. The heading label carries the full text. */
+.score {
+  display: grid;
+  width: 144px;
+  height: 144px;
+  margin: 0;
+  place-items: center;
+}
+
+.score > *,
+.ring svg {
+  display: block;
+  grid-area: 1 / 1;
+  width: 144px;
+  height: 144px;
+}
+
+.ring circle {
+  fill: none;
+  stroke-width: 3;
+}
+
+.ring-track {
+  stroke: var(--vbg-gray-400);
+}
+
+.ring-fill {
+  stroke: var(--vbg-gray-1000);
+  stroke-dasharray: 414.69;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.ring.is-perfect .ring-fill {
+  stroke: var(--vbg-green-900);
+}
+
+.ring.is-empty .ring-fill {
+  display: none;
+}
+
+.score-text {
+  display: grid;
+  height: auto;
+  justify-items: center;
+}
+
+.score-count {
+  font-size: var(--vbg-type-title);
+  line-height: 1;
+}
+
+.score-percent {
+  margin-top: var(--vbg-space-1);
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-compact);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 @media (prefers-reduced-motion: no-preference) {
+  /* The fill moves with the count-up, which takes 800 ms. */
+  .ring-fill {
+    transition: stroke-dashoffset 800ms linear;
+  }
+
   .choice,
   .button {
     transition:
@@ -1115,16 +1181,31 @@ kbd {
     const countNode = element('span', { text: live ? '0' : String(correctCount) });
     const percentNode = element('span', { text: live ? '0' : String(percent) });
     const label = `${correctCount} of ${questionCount} correct (${percent}%)`;
-    const heading = element('h1', { 'aria-label': label }, [
-      countNode,
-      ` of ${questionCount} correct (`,
-      percentNode,
-      '%)',
+    // The ring is a circle with radius 66, so its length is 2 * PI * 66. The fill is a dash of
+    // that length, and the offset hides the part that the score did not earn.
+    const ringLength = 414.69;
+    const fillOffset = ringLength * (1 - correctCount / questionCount);
+    const ringState = percent === 100 ? ' is-perfect' : correctCount ? '' : ' is-empty';
+    const ringClass = `ring${ringState}`;
+    const ring = element('span', {
+      class: ringClass,
+      html:
+        '<svg viewBox="0 0 144 144" aria-hidden="true">' +
+        '<circle class="ring-track" cx="72" cy="72" r="66"></circle>' +
+        `<circle class="ring-fill" cx="72" cy="72" r="66" ` +
+        `style="stroke-dashoffset: ${live ? ringLength : fillOffset}"></circle></svg>`,
+    });
+    const heading = element('h1', { class: 'score', 'aria-label': label }, [
+      ring,
+      element('span', { class: 'score-text' }, [
+        element('span', { class: 'score-count' }, [countNode, `/${questionCount}`]),
+        element('span', { class: 'score-percent' }, [percentNode, '%']),
+      ]),
     ]);
     if (live) {
       countUp(countNode, correctCount);
       countUp(percentNode, percent);
-      if (percent === 100) dropConfetti();
+      if (percent === 100) setTimeout(dropConfetti, 800);
     }
 
     const rows = [1, 2, 3, 4]
@@ -1173,6 +1254,11 @@ kbd {
       missed.length ? element('h2', { text: 'Missed questions' }) : null,
       missed.length ? missedList : null,
     ]);
+    if (live) {
+      const fill = /** @type {SVGElement} */ (ring.querySelector('.ring-fill'));
+      void fill.getBoundingClientRect(); // Forces a layout, so the fill starts from empty.
+      fill.style.strokeDashoffset = String(fillOffset);
+    }
   }
 
   /**
