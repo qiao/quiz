@@ -2,8 +2,6 @@
 
 Status: draft, for review by the user. Date: 2026-09-16.
 
-Note: all paths under `skills/` and `test/` are planned.
-
 This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |

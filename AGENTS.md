@@ -13,7 +13,7 @@ Quizzes can be generated from codebases, documentation, files, or user topics.
 
 The repository holds two primary components:
 1. The design specification in markdown documents under `docs/`.
-2. The skill implementation under `skills/quiz/` (planned) and tests under `test/` (planned).
+2. The skill implementation under `skills/quiz/` and tests under `test/`.
 
 The documentation set defines the architecture:
 - `docs/README.md`: Documentation index and map.

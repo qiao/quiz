@@ -2,8 +2,6 @@
 
 Status: draft, for review by the user. Date: 2026-09-16.
 
-Note: all paths under `skills/` and `test/` are planned.
-
 This document answers: how does the compiler and slide runtime work?
 
 | Section | Title | Answers |
