@@ -78,8 +78,9 @@ The skill transforms resources into self-contained HTML slides through five sequ
    into `quizzes/<slug>/answers.json`. The agent runs
    `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to grade the
    answers. Code maps shuffled letters back to draft choices and reports failed questions. The
-   agent repairs failed questions. After two failed repair rounds, the agent replaces the
-   question with a new question of the same tier and informs the user.
+   agent repairs failed questions. After two failed repair rounds, the agent replaces the question
+   with one new question of the same tier. If the replacement question also fails after two repair
+   rounds, the agent removes the question, reports the removal to the user, and proceeds.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -339,7 +340,9 @@ During Phase 3, the primary agent uses code to verify quiz quality:
 6. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
    explanation to resolve the ambiguity.
 7. The verification allows up to two repair rounds per question. If a question fails after two
-   rounds, the agent replaces it with a new question of the same tier and notifies the user.
+   rounds, the agent replaces it with one new question of the same tier. If the replacement also
+   fails after two repair rounds, the agent removes the question and notifies the user of the
+   removal and the revised question count.
 
 ### Validation rules
 
@@ -350,7 +353,8 @@ Before emitting HTML, `build.mjs` checks:
 3. Every question must have `tier` in `[1, 2, 3, 4]`.
 4. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
 5. Tier sizes must match D8: for `N` questions, each tier holds `Math.floor(N / 4)` questions,
-   distributing remainders to earlier tiers.
+   distributing remainders to earlier tiers. If unresolvable questions are removed after exhausting
+   the replacement limit, tier sizes may differ by at most 1 question from each other.
 6. The prompt, each choice text, the explanation, and the citation target must not be empty.
 7. Every question must contain exactly four choices, and no two choices may have identical text.
 8. Exactly one choice per question must have `kind: 'correct'`.

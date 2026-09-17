@@ -130,12 +130,15 @@ This document answers: what did we decide, and what did we reject?
   Rejected because user prompts must have control over quiz length.
 
 ### D8: Difficulty progression
-- **Decision:** Four equal tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
-  no-trivia rule. If a question fails blind verification after two repair rounds, the agent replaces
-  it with a new question of the same tier to maintain tier balance.
+- **Decision:** Four balanced tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
+  no-trivia rule. If a question fails blind verification after two repair rounds, the agent
+  authors one replacement question of the same tier. If that replacement also fails after two
+  repair rounds, the agent removes the question, updates the question count, and notifies the
+  user. Tier sizes must differ by at most 1 question across all four tiers.
 - **Reason:** Gradual progression builds confidence before introducing complex code tracing and
   architectural analysis. The no-trivia rule prevents questions about line numbers or arbitrary
-  variable names. Replacing unfixable questions preserves the four-tier balance.
+  variable names. One replacement attempt limits execution loops. Allowing tier sizes to differ by
+  at most 1 handles unresolvable questions without failing the build.
 - **Rejected alternative:** Uniform difficulty across all questions.
   Rejected because random difficulty spikes disorient learners.
 - **Rejected alternative:** Free-form difficulty labels without strict tier definitions.
