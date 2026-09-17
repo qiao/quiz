@@ -9,10 +9,10 @@ This document answers: what did we decide, and what did we reject?
 | Section | Title | Answers |
 |---|---|---|
 | 1 | Decision log | What did we decide for Q1 to Q24? |
-| 2 | Packaging and scope (D1 to D6) | How is the skill packaged and scoped? |
-| 3 | Question mechanics (D7 to D12) | How are tiers and choices generated? |
-| 4 | Output and presentation (D13 to D18) | How is the quiz built and rendered? |
-| 5 | Execution and verification (D19 to D24) | How is the build executed and tested? |
+| 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
+| 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
+| 4 | Output and presentation (D13 to D18) | How do we build and render slides? |
+| 5 | Execution and verification (D19 to D24) | How do we run and test the build? |
 | 6 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
 | 7 | Sources | Where are the primary references? |
 
@@ -54,51 +54,51 @@ This document answers: what did we decide, and what did we reject?
 ### D1: Packaging and skill name
 - **Decision:** Dedicated source repository with skill at `skills/quiz/SKILL.md` and name `quiz`.
 - **Reason:** A dedicated repository supports version control, continuous integration, and
-  automated tests. The name `quiz` is concise, memorable, and quick to type.
+  automated tests. The name `quiz` is concise, familiar, and fast to type.
 - **Rejected alternative A:** Claude Code plugin format (`.claude-plugin/plugin.json`).
   Rejected because developers can add a plugin manifest later without changing the skill folder
   layout.
 - **Rejected alternative B:** Writing directly into `~/.claude/skills/quiz`.
   Rejected because it lacks git tracking, issue tracking, and automated testing.
 - **Rejected alternative C:** Names `make-quiz` or `exam`.
-  Rejected because `quiz` is shorter and matches user intuition for both quick quizzes and exams.
+  Rejected because `quiz` is shorter and matches user expectations.
 
 ### D2: Target audience
 - **Decision:** Target self-study and team onboarding. Formal exams are out of scope.
 - **Reason:** Static HTML pages deliver code and data directly to the client browser. Anyone who
   inspects page source can read the answers.
 - **Rejected alternative:** Formal exams with cheating prevention.
-  Rejected because verifying identity and hiding answers requires an authenticated web server
-  and database, which contradicts the single static file requirement.
+  Rejected because hiding answers requires an authenticated web server and database, which
+  contradicts the single static file requirement.
 
 ### D3: Generation architecture
 - **Decision:** Template plus data. The agent writes `quiz.json`, and `build.mjs` compiles it into
   `index.html`.
-- **Reason:** Generating complete HTML, CSS, and JavaScript on every model invocation causes UI
-  drift, layout bugs, and accessibility regressions. Separating data from presentation allows
-  schema validation and deterministic compilation.
+- **Reason:** Writing complete HTML, CSS, and JavaScript on every run causes visual drift and layout
+  defects. Separating data from presentation allows schema validation and deterministic
+  compilation.
 - **Rejected alternative:** Model writes complete HTML, CSS, and JavaScript directly.
-  Rejected because models frequently introduce subtle CSS defects, broken scripts, and styling
+  Rejected because models introduce subtle styling defects, broken scripts, and visual
   inconsistencies across runs.
 
 ### D4: Supported resource types in v1
 - **Decision:** Support current working directory, local paths, web URLs, PDFs, and topic prompts.
   Do not support EPUB.
-- **Reason:** Code repositories, documentation sites, local files, and PDF guides cover the vast
-  majority of developer learning sources.
+- **Reason:** Code repositories, documentation sites, local files, and PDF guides cover most
+  developer learning sources.
 - **Rejected alternative:** Support EPUB files.
   Rejected because EPUB extraction requires external parsing libraries that standard runtime
   environments do not bundle.
 - **Rejected alternative:** Unconstrained documentation crawling.
-  Rejected because crawling entire domains causes network timeouts and token exhaustion.
-  Crawling is bounded to 20 linked pages within the initial hostname.
+  Rejected because crawling entire domains causes network timeouts and token exhaustion. The skill
+  limits crawling to 20 linked pages within the initial hostname.
 
 ### D5: Resource versus focus
 - **Decision:** Both resource target and topic focus are optional in user prompts.
-- **Reason:** Users expect `/quiz` to analyze the current workspace with sensible defaults. Users
+- **Reason:** Users expect `/quiz` to analyze the current workspace with standard defaults. Users
   can specify a target path, a focus topic (for example `/quiz authentication`), or both.
 - **Rejected alternative:** Mandatory resource parameter.
-  Rejected because requiring users to specify the current path adds unnecessary command ceremony.
+  Rejected because requiring users to specify the current path adds unnecessary setup steps.
 - **Rejected alternative:** Uniform file traversal without importance weighting.
   Rejected because treating lock files, generated bundles, and vendor folders equally wastes
   model context. The skill weights core modules and public interfaces.
@@ -106,10 +106,10 @@ This document answers: what did we decide, and what did we reject?
 ### D6: Clarifying questions
 - **Decision:** Ask clarifying questions only when input is invalid, the target path is missing,
   or the current working directory is empty or the home directory.
-- **Reason:** Developers expect immediate execution when sane defaults exist.
+- **Reason:** Developers expect immediate execution when standard defaults exist.
 - **Rejected alternative:** Ask clarifying questions on every run.
   Rejected because asking confirmation questions for count, difficulty, or format slows down
-  everyday use.
+  daily use.
 - **Rejected alternative:** Never ask clarifying questions.
   Rejected because running on an empty folder or home directory produces meaningless output.
 
@@ -119,7 +119,7 @@ This document answers: what did we decide, and what did we reject?
 
 ### D7: Question count and resource limits
 - **Decision:** Default to 20 questions. Allow user prompts to override the count. If a resource
-  is too small, generate fewer questions and inform the user.
+  is small, generate fewer questions and explain the reduction to the user.
 - **Reason:** Twenty questions provide a focused fifteen-minute study session. Forcing 20 questions
   on small files creates trivial questions that test superficial details.
 - **Rejected alternative:** Strict 20-question minimum.
@@ -141,11 +141,11 @@ This document answers: what did we decide, and what did we reject?
 ### D9: Choice structure
 - **Decision:** Exactly four choices per question: one correct, one obvious wrong, and two
   plausible wrong choices. Shuffled by code with balanced answer positions.
-- **Reason:** Four choices eliminate binary guessing. Authentic distractors based on common
+- **Reason:** Four choices eliminate binary guessing. Plausible distractors based on common
   misconceptions help learners identify knowledge gaps. Programmatic shuffling in code guarantees
   an equal 25 percent distribution across positions A, B, C, and D.
 - **Rejected alternative:** Allow variable numbers of choices (2 to 5).
-  Rejected because variable options complicate slide layouts and keyboard navigation bindings.
+  Rejected because variable option counts complicate slide layouts and keyboard navigation bindings.
 - **Rejected alternative:** Model shuffles choice positions.
   Rejected because models produce uneven position distributions without programmatic balancing.
 - **Rejected alternative:** Include "All of the above" or "None of the above".
@@ -199,8 +199,8 @@ This document answers: what did we decide, and what did we reject?
 ### D14: Visual design and brand shell
 - **Decision:** Adopt the Vercel monochrome visual design system, but omit Vercel logos and
   wordmarks.
-- **Reason:** Minimalist typography, high-contrast borders, and clean spacing produce readable
-  slides. Omitting proprietary trademarks prevents confusion regarding content authorship.
+- **Reason:** Clean typography, borders, and spacing produce readable slides. Omitting proprietary
+  trademarks prevents confusion regarding content authorship.
 - **Rejected alternative:** Include official Vercel header wordmark and footer triangle logo.
   Rejected because arbitrary third-party quizzes are not official Vercel publications.
 
@@ -221,7 +221,7 @@ This document answers: what did we decide, and what did we reject?
   backgrounds hard to read. Users need manual contrast control regardless of operating system
   settings.
 - **Rejected alternative:** Strictly follow operating system with no toggle switcher.
-  Rejected because presentation environments frequently conflict with personal system settings.
+  Rejected because presentation environments conflict with personal system settings.
   See section 6 for the conflict record.
 
 ### D17: Feedback and score modes
@@ -230,9 +230,10 @@ This document answers: what did we decide, and what did we reject?
 - **Reason:** Immediate feedback reinforces comprehension when a choice is made. Tier summaries
   highlight specific knowledge gaps.
 - **Rejected alternative:** Exam mode hiding feedback until the final slide.
-  Rejected because delayed feedback diminishes learning value for self-study.
+  Rejected because delayed feedback reduces learning value for self-study.
 - **Rejected alternative:** Dual-mode switcher between learn and exam modes.
-  Rejected because extra modes add UI complexity without improving core developer onboarding.
+  Rejected because extra modes add interface complexity without improving core developer
+  onboarding.
 
 ### D18: Progress persistence
 - **Decision:** Persist quiz answers in browser `localStorage` keyed by a derived identifier
@@ -266,7 +267,7 @@ This document answers: what did we decide, and what did we reject?
   `node:test` without browser instances. The browser receives clean, safe HTML.
 - **Rejected alternative:** Client-side Markdown parser in template script.
   Rejected because client parsing increases payload size and risks browser script execution bugs.
-- **Rejected alternative:** Full external Markdown library (e.g. marked).
+- **Rejected alternative:** Full external Markdown library.
   Rejected because basic questions require only paragraphs, inline code, bold text, and code
   blocks.
 
@@ -284,8 +285,7 @@ This document answers: what did we decide, and what did we reject?
 - **Reason:** Keyboard shortcuts (1 to 4, Enter, and Arrow keys) provide fast navigation. Hash
   routing supports browser history and direct question bookmarking.
 - **Rejected alternative:** Fixed 16:9 aspect ratio container.
-  Rejected because fixed aspect containers letterbox awkwardly on mobile devices and vertical
-  monitors.
+  Rejected because fixed aspect containers letterbox on mobile devices and vertical displays.
 
 ### D23: Citation links
 - **Decision:** Build GitHub permalinks using commit SHAs when clean git remotes exist. Fall back
@@ -299,14 +299,13 @@ This document answers: what did we decide, and what did we reject?
 
 ### D24: Test strategy
 - **Decision:** Unit test `build.mjs` using the native `node:test` runner.
-- **Reason:** Verifying JSON validation, HTML escaping, and choice balancing in milliseconds with
-  zero test dependencies provides fast feedback during development.
-- **Rejected alternative:** End-to-end browser testing with Playwright or Puppeteer.
-  Rejected because heavyweight browser drivers add substantial installation and runtime
-  overhead.
+- **Reason:** Verifying JSON validation, HTML escaping, and choice balancing with zero test
+  dependencies provides fast feedback during development.
+- **Rejected alternative:** End-to-end browser testing with external browser drivers.
+  Rejected because external browser drivers require separate binary downloads and extra runtime
+  dependencies.
 - **Rejected alternative:** Model evaluation test suites in v1.
-  Rejected because model evals consume substantial tokens and time before compiler stability is
-  proven.
+  Rejected because model evals consume tokens and time before the compiler stabilizes.
 
 ---
 
@@ -329,8 +328,8 @@ choice, following documentation rule 4.
    and across desktop and narrow screens without a visible theme switcher."
 
 **Our implementation:**
-The generated HTML page follows `prefers-color-scheme` by default, but includes a discrete manual
-theme toggle button in the header and binds the key `t` to toggle themes.
+The generated HTML page follows `prefers-color-scheme` by default, but includes an unobtrusive
+manual theme toggle button in the header and binds the key `t` to toggle themes.
 
 **Reason for divergence:**
 Presenters display slides in conference rooms or on external monitors where bright ambient lighting
