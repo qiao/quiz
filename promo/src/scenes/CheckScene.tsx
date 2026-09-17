@@ -2,21 +2,21 @@ import { AbsoluteFill, Interactive, interpolate, useCurrentFrame } from "remotio
 import { COLOR, MONO } from "../theme";
 import { Caption } from "./Caption";
 
-/** Question that the checker marks as ambiguous, before the repair. */
-const REPAIRED = 7;
+/** Question that the checker marks as unclear, before the fix. */
+const FIXED = 7;
 
 /** Frames between two question cells. */
 const CELL_GAP = 1.5;
 
-/** Frame where the repaired question turns from failed to passed. */
-const REPAIR_FRAME = 38;
+/** Frame where the fixed question turns from failed to passed. */
+const FIX_FRAME = 38;
 
-/** Scene 4: a blind checker answers every question, and the skill repairs the one that fails. */
+/** Scene 4: a blind checker answers every question, and the skill fixes the one that fails. */
 export const CheckScene: React.FC = () => {
   const frame = useCurrentFrame();
   const shown = Math.min(20, Math.floor(frame / CELL_GAP));
-  const repaired = frame >= REPAIR_FRAME;
-  const passed = shown - (shown >= REPAIRED && !repaired ? 1 : 0);
+  const fixed = frame >= FIX_FRAME;
+  const passed = shown - (shown >= FIXED && !fixed ? 1 : 0);
 
   return (
     <AbsoluteFill name="Check scene" style={{ backgroundColor: COLOR.background }}>
@@ -51,7 +51,7 @@ export const CheckScene: React.FC = () => {
         {Array.from({ length: 20 }, (_, index) => {
           const number = index + 1;
           const visible = index < shown;
-          const failing = number === REPAIRED && !repaired;
+          const failing = number === FIXED && !fixed;
           const color = failing ? COLOR.red : COLOR.green;
           return (
             <div
@@ -64,18 +64,18 @@ export const CheckScene: React.FC = () => {
               }}
             >
               <span style={{ width: 70, color: COLOR.dim }}>Q{number}</span>
-              <span style={{ color }}>{failing ? "✗ ambiguous" : "✓"}</span>
-              {number === REPAIRED && repaired ? (
+              <span style={{ color }}>{failing ? "✗ unclear" : "✓"}</span>
+              {number === FIXED && fixed ? (
                 <span
                   style={{
                     color: COLOR.amber,
-                    opacity: interpolate(frame, [REPAIR_FRAME, REPAIR_FRAME + 6], [0, 1], {
+                    opacity: interpolate(frame, [FIX_FRAME, FIX_FRAME + 6], [0, 1], {
                       extrapolateLeft: "clamp",
                       extrapolateRight: "clamp",
                     }),
                   }}
                 >
-                  repaired
+                  fixed
                 </span>
               ) : null}
             </div>
