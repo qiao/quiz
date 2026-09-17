@@ -857,47 +857,36 @@ export function buildQuiz(draft, { createdAt, gitFacts }) {
  */
 
 /**
- * Replaces the one copy of a placeholder in the template.
- *
- * Split and join keep `$&` and other replacement patterns in the value as plain text.
- *
- * @param {string} template Template text.
- * @param {string} placeholder Exact placeholder text.
- * @param {string} value Text to insert.
- * @returns {string} The template with the value in place of the placeholder.
- */
-function fillPlaceholder(template, placeholder, value) {
-  const parts = template.split(placeholder);
-  if (parts.length !== 2) {
-    throw new Error(
-      `template.html must hold ${placeholder} exactly once, found ${parts.length - 1}`,
-    );
-  }
-  return parts.join(value);
-}
-
-/**
  * Writes the self-contained page for a built quiz.
  *
- * The quiz data goes into a JSON script tag. Each `<` becomes `<`, so the data cannot close
- * the tag or open a comment, and `JSON.parse` still reads it.
+ * The quiz data goes into a JSON script tag. Each `<` becomes `\u003c`, so the data cannot close
+ * the tag or open a comment, and `JSON.parse` still reads it. The function fills every placeholder
+ * in one pass, so a value that holds placeholder text stays as text.
  *
  * @param {BuiltQuiz} quiz Built quiz.
  * @param {PageParts} parts Template and assets.
  * @returns {string} The complete HTML page.
+ * @throws {Error} When the template does not hold each placeholder exactly once.
  */
 export function renderPage(quiz, parts) {
-  let page = parts.template;
-  page = fillPlaceholder(page, '{{TITLE}}', escapeHtml(quiz.title));
-  page = fillPlaceholder(page, '/*{{TOKENS_CSS}}*/', parts.tokensCss.trim());
-  page = fillPlaceholder(page, '/*{{FONTS_CSS}}*/', parts.fontsCss.trim());
-  page = fillPlaceholder(
-    page,
-    '<!--{{LICENSE}}-->',
-    `<!--\n${parts.license.trim().replaceAll('-->', '-- >')}\n-->`,
-  );
-  page = fillPlaceholder(page, '{{QUIZ_DATA}}', JSON.stringify(quiz).replace(/</g, '\\u003c'));
-  return page;
+  /** @type {Record<string, string>} */
+  const values = {
+    '{{TITLE}}': escapeHtml(quiz.title),
+    '/*{{TOKENS_CSS}}*/': parts.tokensCss.trim(),
+    '/*{{FONTS_CSS}}*/': parts.fontsCss.trim(),
+    '<!--{{LICENSE}}-->': `<!--\n${parts.license.trim().replaceAll('-->', '-- >')}\n-->`,
+    '{{QUIZ_DATA}}': JSON.stringify(quiz).replace(/</g, '\\u003c'),
+  };
+  const placeholders = Object.keys(values);
+  for (const placeholder of placeholders) {
+    const found = parts.template.split(placeholder).length - 1;
+    if (found !== 1) {
+      throw new Error(`template.html must hold ${placeholder} exactly once, found ${found}`);
+    }
+  }
+  const escaped = placeholders.map((placeholder) => placeholder.replace(/[{}*/]/g, '\\$&'));
+  const pattern = new RegExp(escaped.join('|'), 'g');
+  return parts.template.replace(pattern, (placeholder) => values[placeholder]);
 }
 
 const USAGE = `Usage:

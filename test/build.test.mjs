@@ -589,6 +589,17 @@ describe('renderPage', () => {
     assert.equal(page.match(/-->/g)?.length, 1, 'the license text closed the comment early');
   });
 
+  it('keeps placeholder text in a value as text', () => {
+    const draft = loadDraft();
+    draft.title = 'Templates with {{QUIZ_DATA}} and {{TITLE}}';
+    const quiz = buildQuiz(draft, { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
+    const page = renderPage(quiz, { ...parts, license: 'See {{QUIZ_DATA}}' });
+    const data = /<script id="quiz-data" type="application\/json">([^]*?)<\/script>/.exec(page);
+    assert.deepEqual(JSON.parse(data?.[1] ?? 'null'), quiz);
+    assert.ok(page.includes('<title>Templates with {{QUIZ_DATA}} and {{TITLE}}</title>'));
+    assert.ok(page.includes('See {{QUIZ_DATA}}'));
+  });
+
   it('throws when the template does not hold each placeholder once', () => {
     const quiz = buildQuiz(loadDraft(), { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
     assert.throws(
