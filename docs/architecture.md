@@ -354,7 +354,7 @@ Before emitting HTML, `build.mjs` checks:
 4. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
 5. The sizes of the four tiers differ by at most 1 question. The D8 split (`Math.floor(N / 4)`
    questions for each tier, with the remainder in the earlier tiers) passes this rule. A quiz that
-   lost a question after the replacement limit also passes, if each tier lost at most 1 question.
+   lost questions after the replacement limit passes only if its tier sizes still meet this rule.
 6. The prompt, each choice text, the explanation, and the citation target must not be empty.
 7. Every question must contain exactly four choices, and no two choices may have identical text.
 8. Exactly one choice per question must have `kind: 'correct'`.
