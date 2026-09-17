@@ -652,6 +652,8 @@ describe('main', () => {
       const result = project.run(/** @type {string[]} */ (args));
       assert.equal(result.code, 2, String(args));
       assert.ok(result.stderr.startsWith(`${message}\n`), result.stderr);
+      const isFileError = message.startsWith('Error: cannot read');
+      assert.equal(result.stderr.includes('Usage:'), !isFileError, result.stderr);
     }
   });
 

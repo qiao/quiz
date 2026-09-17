@@ -832,11 +832,23 @@ class CommandError extends Error {
    *
    * @param {1 | 2} code Exit code.
    * @param {string} message Text for standard error.
+   * @param {{ showUsage?: boolean }} [options] True in `showUsage` for a mistake in the arguments.
    */
-  constructor(code, message) {
+  constructor(code, message, { showUsage = false } = {}) {
     super(message);
     this.code = code;
+    this.showUsage = showUsage;
   }
+}
+
+/**
+ * Makes the error for a mistake in the command line arguments.
+ *
+ * @param {string} message Text for standard error.
+ * @returns {CommandError} An error with code 2 that also prints the usage text.
+ */
+function usageError(message) {
+  return new CommandError(2, message, { showUsage: true });
 }
 
 /**
@@ -897,21 +909,21 @@ function parseArgs(args) {
     } else if (arg === '--grade') {
       const next = args[index + 1];
       if (!next || next.startsWith('--')) {
-        throw new CommandError(2, 'Error: --grade needs the path to answers.json');
+        throw usageError('Error: --grade needs the path to answers.json');
       }
       gradePath = next;
       index += 1;
     } else if (arg.startsWith('-')) {
-      throw new CommandError(2, `Error: unknown option '${arg}'`);
+      throw usageError(`Error: unknown option '${arg}'`);
     } else {
       paths.push(arg);
     }
   }
-  if (paths.length === 0) throw new CommandError(2, 'Error: missing the path to quiz.json');
+  if (paths.length === 0) throw usageError('Error: missing the path to quiz.json');
   if (paths.length > 1) {
-    throw new CommandError(2, `Error: expected one draft path, found ${paths.length}`);
+    throw usageError(`Error: expected one draft path, found ${paths.length}`);
   }
-  if (blind && gradePath) throw new CommandError(2, 'Error: use --blind or --grade, not both');
+  if (blind && gradePath) throw usageError('Error: use --blind or --grade, not both');
   return { help: false, draftPath: paths[0], blind, gradePath };
 }
 
@@ -999,8 +1011,7 @@ export function main(args, io) {
     return 0;
   } catch (error) {
     if (error instanceof CommandError) {
-      const usage = error.code === 2 && error.message.startsWith('Error: ') ? `\n${USAGE}` : '';
-      io.stderr(`${error.message}\n${usage}`);
+      io.stderr(`${error.message}\n${error.showUsage ? `\n${USAGE}` : ''}`);
       return error.code;
     }
     throw error;
