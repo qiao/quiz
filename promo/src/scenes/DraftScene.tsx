@@ -3,10 +3,10 @@ import { COLOR, EASE_OUT, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const QUESTIONS = [
-  { tier: 1, name: "Fundamentals", text: "What does createSession() return?" },
-  { tier: 2, name: "Core", text: "When does refresh() rotate the token?" },
-  { tier: 3, name: "Advanced", text: "What occurs when two tabs refresh at once?" },
-  { tier: 4, name: "Expert", text: "Why does logout() revoke before it clears?" },
+  { tier: 1, name: "Fundamentals", text: "What does useState() return?" },
+  { tier: 2, name: "Core", text: "When does a useEffect cleanup run?" },
+  { tier: 3, name: "Advanced", text: "What occurs when a list item key changes?" },
+  { tier: 4, name: "Expert", text: "Why can useCallback not stop a child re-render?" },
 ];
 
 /** Frame where the first question row appears. */
