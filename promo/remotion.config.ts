@@ -9,6 +9,8 @@ import { Config } from "@remotion/cli/config";
 import { enableTailwind } from '@remotion/tailwind-v4';
 
 Config.setRspack(true);
-Config.setVideoImageFormat("jpeg");
+// PNG frames and BT.709 color give sharp text, correct colors, and a smaller file than JPEG frames.
+Config.setVideoImageFormat("png");
+Config.setColorSpace("bt709");
 Config.setOverwriteOutput(true);
 Config.overrideBundlerConfig(enableTailwind);
