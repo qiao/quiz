@@ -79,7 +79,7 @@ The skill transforms resources into self-contained HTML slides through five sequ
    `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to grade the
    answers. Code maps shuffled letters back to draft choices and reports failed questions. The
    agent repairs failed questions. After two failed repair rounds, the agent replaces the
-   question and informs the user.
+   question with a new question of the same tier and informs the user.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -272,7 +272,7 @@ During Phase 3, the primary agent uses code to verify quiz quality:
 6. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
    explanation to resolve the ambiguity.
 7. The verification allows up to two repair rounds per question. If a question fails after two
-   rounds, the agent replaces the question and notifies the user.
+   rounds, the agent replaces it with a new question of the same tier and notifies the user.
 
 ### Validation rules
 

@@ -131,10 +131,11 @@ This document answers: what did we decide, and what did we reject?
 
 ### D8: Difficulty progression
 - **Decision:** Four equal tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
-  no-trivia rule.
+  no-trivia rule. If a question fails blind verification after two repair rounds, the agent replaces
+  it with a new question of the same tier to maintain tier balance.
 - **Reason:** Gradual progression builds confidence before introducing complex code tracing and
   architectural analysis. The no-trivia rule prevents questions about line numbers or arbitrary
-  variable names.
+  variable names. Replacing unfixable questions preserves the four-tier balance.
 - **Rejected alternative:** Uniform difficulty across all questions.
   Rejected because random difficulty spikes disorient learners.
 - **Rejected alternative:** Free-form difficulty labels without strict tier definitions.
