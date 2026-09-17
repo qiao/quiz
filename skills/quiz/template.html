@@ -861,7 +861,8 @@ h2 {
       ? `${slide} / ${questionCount}`
       : `${answeredCount} / ${questionCount} answered`;
     const fill = document.getElementById('progress-fill');
-    fill.style.width = `${(answeredCount / questionCount) * 100}%`;
+    const progress = onQuestion ? slide : answeredCount;
+    fill.style.width = `${(progress / questionCount) * 100}%`;
     document.title = onQuestion ? `${slide}. ${quiz.title}` : quiz.title;
 
     if (slide === 0) renderTitleSlide();
