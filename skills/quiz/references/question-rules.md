@@ -12,25 +12,35 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 `Math.floor(N / 4)` questions to each tier, and distribute remainders to earlier tiers.
 
 ### Tier 1: Fundamentals
-- Purpose: verifies understanding of primary responsibilities, public entry points, and patterns.
-- Target: tests what the system does and why the system exists.
-- Focus: module roles, system boundaries, public API surfaces, and high-level patterns.
+- Thinking type: Recall.
+- Target: basic facts, core terms, main purposes, and primary entry points.
+- Code example: What does this module export, or which command flag initiates a build?
+- Book or docs example: What is the definition of a key concept, or what does chapter 1 state as
+  the main goal?
 
 ### Tier 2: Core
-- Purpose: verifies ability to trace standard execution flows and component interactions.
-- Target: tests how components coordinate during normal operation.
-- Focus: request lifecycles, event pipelines, state transitions, and data transformations.
+- Thinking type: Understand.
+- Target: execution flows, component interactions, and main mechanisms.
+- Code example: How does data flow from the parser to the validator, or what does this function
+  return on valid input?
+- Book or docs example: Why does the author recommend one approach over another, or how does a
+  described process work step by step?
 
 ### Tier 3: Advanced
-- Purpose: verifies comprehension of edge cases, boundary conditions, and error recovery.
-- Target: tests how the system handles stress, errors, and concurrent actions.
-- Focus: retry policies, race conditions, timeout handling, cache invalidation, and cleanup logic.
+- Thinking type: Apply.
+- Target: edge cases, error conditions, boundary behavior, and combining rules.
+- Code example: What error occurs when a file is missing, or how does the cache behave on invalid
+  keys?
+- Book or docs example: How does a principle apply to a new scenario, or what exception does the
+  text specify for a general rule?
 
 ### Tier 4: Expert
-- Purpose: verifies comprehension of architectural compromises and subtle design invariants.
-- Target: tests understanding of systemic tradeoffs, failure modes, and unwritten invariants.
-- Focus: consistency models, deadlock prevention, split-brain recovery, protocol limits, and limits
-  of scalability.
+- Thinking type: Analyze.
+- Target: design tradeoffs, architectural invariants, hidden assumptions, and limitations.
+- Code example: Why did the designers pick this data structure, or what invariant breaks if these
+  two calls run out of order?
+- Book or docs example: What limitation does the author identify in a technique, or how do two
+  competing guidelines balance against each other?
 
 ## 2. Prohibition on trivia
 
