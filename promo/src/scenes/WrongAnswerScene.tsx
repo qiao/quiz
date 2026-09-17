@@ -22,7 +22,7 @@ export const WrongAnswerScene: React.FC = () => {
         pickFrame={sec(0.73)}
         explanation="Both tabs share one storage, but each tab reads it only on load."
       />
-      <Caption text="See why each answer is right" from={sec(1.33)} />
+      <Caption text="See why each answer is right" from={sec(1.93)} />
     </AbsoluteFill>
   );
 };

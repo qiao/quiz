@@ -3,6 +3,12 @@ import { uiSwitch } from "@remotion/sfx";
 import { Easing, interpolate, Sequence, useCurrentFrame } from "remotion";
 import { COLOR, EASE_OUT, MONO, sec } from "../theme";
 
+/** Time from a wrong pick to the mark on the correct choice, in seconds. */
+const REVEAL_DELAY = 0.6;
+
+/** Time that a mark takes to come in, in seconds. */
+const MARK_IN = 0.25;
+
 /** One choice on the quiz slide. */
 type Choice = { letter: string; text: string };
 
@@ -24,8 +30,8 @@ type QuizSlideProps = {
 };
 
 /**
- * Quiz slide of the generated page: the learner picks a choice, the page marks the result, and a
- * wrong answer also shows the correct choice and the explanation.
+ * Quiz slide of the generated page: the learner picks a choice, and the page marks the result.
+ * After a wrong pick, the page marks the correct choice a moment later and shows the explanation.
  */
 export const QuizSlide: React.FC<QuizSlideProps> = ({
   tier,
@@ -38,13 +44,16 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
   explanation,
 }) => {
   const frame = useCurrentFrame();
-  const answered = frame >= pickFrame;
   const wrong = picked !== correct;
-  const reveal = interpolate(frame, [pickFrame + sec(0.13), pickFrame + sec(0.53)], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.bezier(...EASE_OUT),
-  });
+  const revealFrame = wrong ? pickFrame + sec(REVEAL_DELAY) : pickFrame;
+  const progress = (start: number, seconds: number) =>
+    interpolate(frame, [start, start + sec(seconds)], [0, 1], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.bezier(...EASE_OUT),
+    });
+  const revealed = frame >= revealFrame;
+  const explanationIn = progress(revealFrame + sec(0.13), 0.4);
 
   return (
     <div
@@ -66,13 +75,21 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
       <div style={{ marginTop: 20, fontSize: 46, fontWeight: 500, lineHeight: 1.25 }}>{prompt}</div>
       <div style={{ marginTop: 26, display: "grid", gap: 12 }}>
         {choices.map((choice) => {
-          const isCorrect = answered && choice.letter === correct;
-          const isWrongPick = answered && wrong && choice.letter === picked;
-          const border = isCorrect ? COLOR.green : isWrongPick ? COLOR.red : COLOR.track;
+          const isCorrect = choice.letter === correct;
+          const isPicked = choice.letter === picked;
+          const markColor = isCorrect ? COLOR.green : COLOR.red;
           let status = "";
-          if (isCorrect)
-            status = choice.letter === picked ? "✓ Your answer (Correct)" : "✓ Correct answer";
-          if (isWrongPick) status = "✗ Your answer (Incorrect)";
+          let mark = 0;
+          if (isCorrect) {
+            status = isPicked ? "✓ Your answer (Correct)" : "✓ Correct answer";
+            mark = progress(revealFrame, MARK_IN);
+          } else if (isPicked) {
+            status = "✗ Your answer (Incorrect)";
+            mark = progress(pickFrame, MARK_IN);
+          }
+          // A choice with no mark dims when the correct choice gets its mark.
+          const dim = status ? 0 : progress(revealFrame, MARK_IN);
+          const border = `color-mix(in oklab, ${markColor} ${mark * 100}%, ${COLOR.track})`;
           return (
             <div
               key={choice.letter}
@@ -83,8 +100,8 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
                 padding: "14px 28px",
                 borderRadius: 12,
                 fontSize: 30,
-                color: answered && !isCorrect && !isWrongPick ? COLOR.dim : COLOR.text,
-                boxShadow: `inset 0 0 0 ${border === COLOR.track ? 2 : 3}px ${border}`,
+                color: `color-mix(in oklab, ${COLOR.dim} ${dim * 100}%, ${COLOR.text})`,
+                boxShadow: `inset 0 0 0 ${2 + mark}px ${border}`,
               }}
             >
               <span
@@ -102,13 +119,17 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
               </span>
               <span style={{ flex: 1, paddingTop: 4 }}>
                 {choice.text}
-                {status ? (
+                {mark > 0 ? (
+                  // The status line grows as it comes in, so the choices below move down smoothly.
                   <span
                     style={{
                       display: "block",
-                      marginTop: 6,
+                      overflow: "hidden",
+                      maxHeight: mark * 40,
+                      marginTop: mark * 6,
                       fontSize: 24,
-                      color: isCorrect ? COLOR.green : COLOR.red,
+                      color: markColor,
+                      opacity: mark,
                     }}
                   >
                     {status}
@@ -119,14 +140,14 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
           );
         })}
       </div>
-      {explanation && answered ? (
+      {explanation && revealed ? (
         <div
           style={{
             marginTop: 20,
             paddingTop: 16,
             borderTop: `2px solid ${COLOR.track}`,
-            opacity: reveal,
-            translate: `0px ${(1 - reveal) * 16}px`,
+            opacity: explanationIn,
+            translate: `0px ${(1 - explanationIn) * 16}px`,
           }}
         >
           <div style={{ fontSize: 30, fontWeight: 600 }}>
