@@ -1,6 +1,6 @@
 # Architecture decisions: quiz skill
 
-Status: approved design. Date: 2026-09-16.
+Status: draft, for review by the user. Date: 2026-09-16.
 
 This document answers: what did we decide, and what did we reject?
 
