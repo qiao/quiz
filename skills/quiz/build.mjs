@@ -656,25 +656,26 @@ export function gradeAnswers(draft, file) {
  *
  * @typedef {object} GitFacts
  * @property {string} commit Full SHA of `HEAD`.
- * @property {string | null} webUrl Web address of the GitHub repository, or null.
- * @property {boolean} pushed True when a remote-tracking branch contains `HEAD`.
- * @property {GitRunner} git Runner that works in the repository root.
+ * @property {string} webUrl Web address of the GitHub repository.
+ * @property {Set<string>} linkable Cited paths that git tracks and that have no uncommitted change.
  */
 
 /**
  * Makes a git runner for a folder.
  *
  * @param {string} folder Folder where git runs.
- * @returns {GitRunner} A runner that returns the trimmed standard output, or null when git fails.
+ * @returns {GitRunner} A runner that returns the standard output with no trailing newline, or null
+ *   when git fails.
  */
-export function gitRunnerFor(folder) {
+function gitRunnerFor(folder) {
   return (args) => {
     try {
       const output = execFileSync('git', ['-C', folder, ...args], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
       });
-      return output.trim();
+      // Only the end is trimmed: a status entry such as " M file" starts with a space.
+      return output.trimEnd();
     } catch {
       return null;
     }
@@ -699,23 +700,66 @@ export function githubWebUrl(remote) {
 }
 
 /**
- * Reads the git facts that a permalink needs.
+ * Tells if a citation target is a web address.
+ *
+ * @param {string} target Citation target.
+ * @returns {boolean} True for an `http` or `https` URL.
+ */
+function isUrl(target) {
+  return /^https?:\/\//.test(target);
+}
+
+/**
+ * Gives the path of a cited file from the repository root.
+ *
+ * @param {string} target Citation target that is not a URL.
+ * @returns {string} The path with no leading `./`.
+ */
+function repoPath(target) {
+  return target.replace(/^\.\//, '');
+}
+
+/**
+ * Reads the paths in the `-z` output of `git status --porcelain`.
+ *
+ * @param {string} output Entries that end with a NUL character.
+ * @returns {string[]} Every path in the output, including the old path of a rename or a copy.
+ */
+function changedPaths(output) {
+  return output
+    .split('\0')
+    .filter(Boolean)
+    .map((entry) => (/^[ A-Z?!]{2} /.test(entry) ? entry.slice(3) : entry));
+}
+
+/**
+ * Reads the git facts that permalinks need.
+ *
+ * The number of git processes does not grow with the number of citations. The function stops at
+ * the first fact that makes a link impossible.
  *
  * @param {GitRunner} git Runner for the folder where the build runs.
- * @param {(folder: string) => GitRunner} [runnerAt] Makes a runner for the repository root.
- * @returns {GitFacts | null} The facts, or null when the folder is not in a git repository.
+ * @param {string[]} paths Cited file paths from the repository root.
+ * @returns {GitFacts | null} The facts, or null when no citation can get a link: no cited file, no
+ *   git repository, no GitHub remote, or `HEAD` on no remote-tracking branch.
  */
-export function readGitFacts(git, runnerAt = gitRunnerFor) {
-  const root = git(['rev-parse', '--show-toplevel']);
-  const commit = git(['rev-parse', 'HEAD']);
+export function readGitFacts(git, paths) {
+  if (paths.length === 0) return null;
+  const [root, commit] = (git(['rev-parse', '--show-toplevel', 'HEAD']) ?? '').split('\n');
   if (!root || !commit) return null;
   const remote = git(['remote', 'get-url', 'origin']);
-  return {
-    commit,
-    webUrl: remote ? githubWebUrl(remote) : null,
-    pushed: Boolean(git(['branch', '-r', '--contains', 'HEAD'])),
-    git: runnerAt(root),
-  };
+  const webUrl = remote ? githubWebUrl(remote) : null;
+  if (!webUrl) return null;
+  // No output means that a remote-tracking branch holds HEAD.
+  if (git(['rev-list', '-n1', 'HEAD', '--not', '--remotes']) !== '') return null;
+
+  const inRoot = (/** @type {string[]} */ args) => git(['-C', root, ...args]);
+  const tracked = inRoot(['ls-files', '-z', '--', ...paths]);
+  const status = inRoot(['status', '--porcelain', '-z', '--untracked-files=no', '--', ...paths]);
+  if (tracked === null || status === null) return null;
+  const changed = new Set(changedPaths(status));
+  const linkable = tracked.split('\0').filter((path) => path && !changed.has(path));
+  return { commit, webUrl, linkable: new Set(linkable) };
 }
 
 /**
@@ -726,18 +770,13 @@ export function readGitFacts(git, runnerAt = gitRunnerFor) {
  * citation stays plain text, so a link never points to the wrong lines.
  *
  * @param {DraftCitation} citation Citation from the draft.
- * @param {GitFacts | null} facts Git facts, or null outside a repository.
+ * @param {GitFacts | null} facts Git facts, or null when no file can get a link.
  * @returns {BuiltCitation} The citation, with `url` when a link is safe.
  */
 export function resolveCitation(citation, facts) {
-  if (/^https?:\/\//.test(citation.target)) return { ...citation, url: citation.target };
-  if (!facts || !facts.webUrl || !facts.pushed) return { ...citation };
-
-  const path = citation.target.replace(/^\.\//, '');
-  // An empty string from git status means "no change", so compare with '' and not for truth.
-  const tracked = facts.git(['ls-files', '--', path]) === path;
-  const clean = facts.git(['status', '--porcelain', '--', path]) === '';
-  if (!tracked || !clean) return { ...citation };
+  if (isUrl(citation.target)) return { ...citation, url: citation.target };
+  const path = repoPath(citation.target);
+  if (!facts || !facts.linkable.has(path)) return { ...citation };
 
   let anchor = '';
   if (citation.page) {
@@ -1058,9 +1097,11 @@ export function main(args, io) {
       return report.passed ? 0 : 3;
     }
 
+    const targets = validDraft.questions.map((question) => question.citation.target);
+    const paths = [...new Set(targets.filter((target) => !isUrl(target)).map(repoPath))];
     const quiz = buildQuiz(validDraft, {
       createdAt: buildTime(io.env),
-      gitFacts: readGitFacts(gitRunnerFor(io.cwd)),
+      gitFacts: readGitFacts(gitRunnerFor(io.cwd), paths),
     });
     const page = renderPage(quiz, readPageParts(io.skillDir));
     const outPath = join(outFolder, 'index.html');

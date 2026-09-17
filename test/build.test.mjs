@@ -1,5 +1,6 @@
 // @ts-check
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -417,27 +418,33 @@ describe('gradeAnswers', () => {
 });
 
 /**
- * Makes a fake git runner that answers from a table.
+ * Makes a fake git runner that answers from a table and records each call.
+ *
+ * A leading `-C <folder>` is not part of the table key, as with a real runner.
  *
  * @param {Record<string, string | null>} table Output for each argument list, joined with spaces.
- * @returns {(args: string[]) => string | null} A runner that returns null for an unknown command.
+ * @returns {((args: string[]) => string | null) & { calls: string[] }} The runner, which returns
+ *   null for a command that the table does not hold.
  */
 function fakeGit(table) {
-  return (args) => {
-    const key = args.join(' ');
+  /** @type {string[]} */
+  const calls = [];
+  const git = (/** @type {string[]} */ args) => {
+    const key = (args[0] === '-C' ? args.slice(2) : args).join(' ');
+    calls.push(key);
     return key in table ? table[key] : null;
   };
+  return Object.assign(git, { calls });
 }
 
+const CITED_PATHS = ['src/cache.ts', 'docs/spec.pdf'];
+
 const CLEAN_REPO = {
-  'rev-parse --show-toplevel': '/work/app',
-  'rev-parse HEAD': 'abc123',
+  'rev-parse --show-toplevel HEAD': '/work/app\nabc123',
   'remote get-url origin': 'git@github.com:acme/app.git',
-  'branch -r --contains HEAD': 'origin/main',
-  'ls-files -- src/cache.ts': 'src/cache.ts',
-  'status --porcelain -- src/cache.ts': '',
-  'ls-files -- docs/spec.pdf': 'docs/spec.pdf',
-  'status --porcelain -- docs/spec.pdf': '',
+  'rev-list -n1 HEAD --not --remotes': '',
+  'ls-files -z -- src/cache.ts docs/spec.pdf': 'src/cache.ts\0docs/spec.pdf\0',
+  'status --porcelain -z --untracked-files=no -- src/cache.ts docs/spec.pdf': '',
 };
 
 describe('githubWebUrl', () => {
@@ -457,8 +464,32 @@ describe('githubWebUrl', () => {
   });
 });
 
+describe('readGitFacts', () => {
+  it('runs no git command when no citation is a file', () => {
+    const git = fakeGit(CLEAN_REPO);
+    assert.equal(readGitFacts(git, []), null);
+    assert.deepEqual(git.calls, []);
+  });
+
+  it('runs 5 git commands for any number of cited files', () => {
+    const git = fakeGit(CLEAN_REPO);
+    assert.deepEqual(readGitFacts(git, CITED_PATHS), {
+      commit: 'abc123',
+      webUrl: 'https://github.com/acme/app',
+      linkable: new Set(CITED_PATHS),
+    });
+    assert.equal(git.calls.length, 5);
+  });
+
+  it('stops after the remote when the remote is not on GitHub', () => {
+    const git = fakeGit({ ...CLEAN_REPO, 'remote get-url origin': 'git@gitlab.com:acme/app.git' });
+    assert.equal(readGitFacts(git, CITED_PATHS), null);
+    assert.equal(git.calls.length, 2);
+  });
+});
+
 describe('resolveCitation', () => {
-  const facts = readGitFacts(fakeGit(CLEAN_REPO), () => fakeGit(CLEAN_REPO));
+  const facts = readGitFacts(fakeGit(CLEAN_REPO), CITED_PATHS);
 
   it('links a URL target to itself', () => {
     const citation = { target: 'https://example.com/docs#part' };
@@ -482,16 +513,18 @@ describe('resolveCitation', () => {
 
   it('gives no link for a changed, untracked, or unpushed file, or outside a GitHub repo', () => {
     const citation = { target: 'src/cache.ts', lineStart: 1 };
+    const status = 'status --porcelain -z --untracked-files=no -- src/cache.ts docs/spec.pdf';
     const cases = [
-      { 'status --porcelain -- src/cache.ts': ' M src/cache.ts' },
-      { 'ls-files -- src/cache.ts': '' },
-      { 'branch -r --contains HEAD': '' },
+      { [status]: ' M src/cache.ts\0' },
+      { [status]: 'R  src/cache.ts\0src/old-cache.ts\0' },
+      { 'ls-files -z -- src/cache.ts docs/spec.pdf': 'docs/spec.pdf\0' },
+      { 'rev-list -n1 HEAD --not --remotes': 'abc123' },
       { 'remote get-url origin': 'git@gitlab.com:acme/app.git' },
-      { 'rev-parse --show-toplevel': null },
+      { 'rev-parse --show-toplevel HEAD': null },
     ];
     for (const change of cases) {
       const git = fakeGit({ ...CLEAN_REPO, ...change });
-      const result = resolveCitation(citation, readGitFacts(git, () => git));
+      const result = resolveCitation(citation, readGitFacts(git, CITED_PATHS));
       assert.equal(result.url, undefined, JSON.stringify(change));
       assert.deepEqual(result, citation);
     }
@@ -616,6 +649,34 @@ describe('main', () => {
     const page = readFileSync(join(project.cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
     assert.ok(page.includes('<title>JavaScript event loop</title>'));
     assert.ok(page.includes('"createdAt":"2026-01-01T00:00:00.000Z"'));
+  });
+
+  it('links only clean, pushed files in a real git repository', () => {
+    const project = makeProject();
+    const git = (/** @type {string[]} */ ...args) =>
+      execFileSync('git', ['-C', project.cwd, ...args], { stdio: 'ignore' });
+    git('init', '-q', '-b', 'main');
+    git('remote', 'add', 'origin', 'git@github.com:acme/app.git');
+    mkdirSync(join(project.cwd, 'src'));
+    for (const name of ['clean.ts', 'changed.ts']) {
+      writeFileSync(join(project.cwd, 'src', name), 'one\ntwo\n');
+    }
+    git('add', '-A');
+    git('-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-q', '-m', 'init');
+    git('update-ref', 'refs/remotes/origin/main', 'HEAD');
+    writeFileSync(join(project.cwd, 'src', 'changed.ts'), 'one\ntwo\nthree\n');
+
+    const draft = loadDraft();
+    draft.questions[0].citation = { target: 'src/clean.ts', lineStart: 1 };
+    draft.questions[1].citation = { target: 'src/changed.ts', lineStart: 1 };
+    writeFileSync(join(project.cwd, draftPath), JSON.stringify(draft));
+    assert.equal(project.run([draftPath]).code, 0);
+
+    const page = readFileSync(join(project.cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
+    const data = /<script type="application\/json">([^]*?)<\/script>/.exec(page);
+    const [first, second] = JSON.parse(data?.[1] ?? '{}').questions;
+    assert.match(first.citation.url, /^https:\/\/github\.com\/acme\/app\/blob\/[0-9a-f]{40}\//);
+    assert.equal(second.citation.url, undefined);
   });
 
   it('writes the blind copy with --blind', () => {
