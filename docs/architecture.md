@@ -233,6 +233,71 @@ export interface BuiltQuiz {
   /** Compiled questions */
   questions: BuiltQuestion[];
 }
+
+export interface BlindChoice {
+  /** Display letter after balance shuffle: 'a' | 'b' | 'c' | 'd' */
+  id: 'a' | 'b' | 'c' | 'd';
+  /** Option text without answer markers */
+  text: string;
+}
+
+export interface BlindQuestion {
+  /** One-based sequence number matching draft position */
+  id: number;
+  /** Difficulty tier from 1 to 4 */
+  tier: 1 | 2 | 3 | 4;
+  /** Markdown question prompt */
+  prompt: string;
+  /** Exactly four choices shuffled deterministically */
+  choices: BlindChoice[];
+  /** Document citation */
+  citation: DraftCitation;
+}
+
+export interface BlindQuiz {
+  /** Human-readable quiz title */
+  title: string;
+  /** Directory and URL slug matching ^[a-z0-9]+(-[a-z0-9]+)*$ */
+  slug: string;
+  /** Resource name or path */
+  source: string;
+  /** Ordered blind questions stripped of answer keys */
+  questions: BlindQuestion[];
+}
+
+export interface SubAgentAnswer {
+  /** One-based question sequence number matching BlindQuestion.id */
+  questionId: number;
+  /** Selected choice letter or 'ambiguous' flag */
+  choice: 'a' | 'b' | 'c' | 'd' | 'ambiguous';
+  /** Explanation required when choice is 'ambiguous' */
+  reason?: string;
+}
+
+export interface SubAgentAnswerFile {
+  /** Collection of evaluated question answers */
+  answers: SubAgentAnswer[];
+}
+
+export interface GradeFailure {
+  /** One-based question sequence number */
+  questionId: number;
+  /** Difficulty tier from 1 to 4 */
+  tier: 1 | 2 | 3 | 4;
+  /** Diagnosis explaining why verification failed */
+  reason: string;
+}
+
+export interface GradeReport {
+  /** Boolean indicating whether all questions passed verification */
+  passed: boolean;
+  /** Total count of evaluated questions */
+  totalQuestions: number;
+  /** Count of questions verified successfully */
+  passedCount: number;
+  /** Detailed list of verification failures */
+  failures: GradeFailure[];
+}
 ```
 
 ---
@@ -251,13 +316,15 @@ node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind] [--grade <answers
 
 `build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
 
-When passed `--blind`, `build.mjs` produces `quiz.blind.json` in the draft directory. The compiler
-removes `kind`, `rationale`, and `explanation` fields from all choices and questions, and shuffles
-choices with the seeded generator. This prevents answer leakage to the verification sub-agent.
+When passed `--blind`, `build.mjs` produces `quiz.blind.json` (`BlindQuiz`) in the draft directory.
+The compiler removes `kind`, `rationale`, and `explanation` fields from all choices and questions,
+and shuffles choices with the seeded generator. This prevents answer leakage to the verification
+sub-agent.
 
-When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent answers against
-the draft key. Code maps shuffled choices back to draft choices using the question seed. The
-compiler prints a JSON report of passed questions and failed questions with error reasons.
+When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent answers
+(`SubAgentAnswerFile`) against the draft key. Code maps shuffled choices back to draft choices
+using the question seed. The compiler prints a JSON report (`GradeReport`) of passed questions and
+failed questions with error reasons.
 
 ### Blind check verification loop
 
