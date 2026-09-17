@@ -74,10 +74,11 @@ The skill transforms resources into self-contained HTML slides through five sequ
 3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`
    to generate `quizzes/<slug>/quiz.blind.json`. Code removes `kind`, `rationale`, and
    `explanation`, and shuffles choices. The agent invokes an independent sub-agent with read
-   access to the resource. The sub-agent returns its chosen choice ID or reports `'ambiguous'` with
-   a reason. The primary agent compares returned choices against the answer key and repairs
-   failed questions. After two failed repair rounds, the agent removes the question, rebalances
-   tier sizes, and informs the user.
+   access to the resource. The sub-agent writes answers into `quizzes/<slug>/answers.json`. The
+   agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to
+   grade the answers. Code maps shuffled letters back to draft choices and reports failed
+   questions. The agent repairs failed questions. After two failed repair rounds, the agent
+   replaces the question and informs the user.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -244,27 +245,32 @@ When invoked from another project, `SKILL.md` resolves the absolute path to `bui
 ### Command line interface
 
 ```bash
-node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind]
+node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--blind] [--grade <answers.json>]
 ```
 
 `build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
 
 When passed `--blind`, `build.mjs` produces `quiz.blind.json` in the draft directory. The compiler
 removes `kind`, `rationale`, and `explanation` fields from all choices and questions, and shuffles
-choices. This prevents answer leakage to the verification sub-agent.
+choices with the seeded generator. This prevents answer leakage to the verification sub-agent.
+
+When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent answers against
+the draft key. Code maps shuffled choices back to draft choices using the question seed. The
+compiler prints a JSON report of passed questions and failed questions with error reasons.
 
 ### Blind check verification loop
 
-During Phase 3, the primary agent uses the blind payload to verify quiz quality:
-1. The agent invokes an independent sub-agent with read access to the source material.
-2. The sub-agent evaluates each question in `quiz.blind.json` without the answer key.
-3. For each question, the sub-agent returns either its chosen choice ID (`'a'`, `'b'`, `'c'`, or
-   `'d'`) or `'ambiguous'` with a concise explanation.
-4. The primary agent checks returned answers against the draft answer key.
-5. If the sub-agent selected a distractor or marked `'ambiguous'`, the agent revises the prompt,
-   distractors, or explanation to resolve the ambiguity.
-6. The verification allows up to two repair rounds per question. If a question fails after two
-   rounds, the agent deletes the question, rebalances tier counts, and notifies the user.
+During Phase 3, the primary agent uses code to verify quiz quality:
+1. The primary agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`.
+2. The agent invokes an independent sub-agent with read access to the source material.
+3. The sub-agent evaluates each question in `quiz.blind.json` without the answer key.
+4. For each question, the sub-agent records either its chosen choice ID (`'a'`, `'b'`, `'c'`, or
+   `'d'`) or `'ambiguous'` with an explanation in `answers.json`.
+5. The primary agent executes `build.mjs --grade` to evaluate the answers.
+6. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
+   explanation to resolve the ambiguity.
+7. The verification allows up to two repair rounds per question. If a question fails after two
+   rounds, the agent replaces the question and notifies the user.
 
 ### Validation rules
 
@@ -545,7 +551,8 @@ rules. The agent reads this file during Phase 2. The file specifies:
 5. Read `references/question-rules.md`.
 6. Select an unused directory `quizzes/<slug>/`.
 7. Author draft questions into `quiz.json`.
-8. Execute blind verification with a sub-agent using `build.mjs --blind`.
+8. Execute blind verification: generate `quiz.blind.json` with `--blind`, collect sub-agent
+   answers, and evaluate them with `build.mjs --grade`.
 9. Compile the slide deck with `build.mjs` and report the local file path.
 
 ---
