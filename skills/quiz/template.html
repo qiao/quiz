@@ -497,6 +497,45 @@ kbd {
     animation-delay: 800ms;
   }
 
+  /* Confetti for a perfect score: flat pieces in the page colors that fall and turn once. */
+  .confetti {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .confetti-piece {
+    position: absolute;
+    top: -16px;
+    left: var(--x);
+    width: 8px;
+    height: 14px;
+    background: var(--vbg-gray-1000);
+    animation: confetti-fall var(--fall) ease-in var(--delay) both;
+  }
+
+  .confetti-piece.tone-1 {
+    background: var(--vbg-green-900);
+  }
+
+  .confetti-piece.tone-2 {
+    background: var(--vbg-gray-900);
+  }
+
+  @keyframes confetti-fall {
+    from {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(100vh) rotate(var(--spin));
+    }
+  }
+
   @keyframes icon-draw {
     from {
       stroke-dashoffset: var(--icon-length);
@@ -1051,6 +1090,20 @@ kbd {
     }, 40);
   }
 
+  /** Drops 60 small pieces from the top edge for a perfect score, and removes them after 2.4 s. */
+  function dropConfetti() {
+    const layer = element('div', { class: 'confetti', 'aria-hidden': 'true' });
+    for (let index = 0; index < 60; index += 1) {
+      const style =
+        `--x: ${Math.random() * 100}%; --delay: ${Math.round(Math.random() * 400)}ms; ` +
+        `--fall: ${Math.round(1200 + Math.random() * 800)}ms; ` +
+        `--spin: ${Math.round(Math.random() * 720 - 360)}deg`;
+      layer.append(element('i', { class: `confetti-piece tone-${index % 3}`, style }));
+    }
+    document.body.append(layer);
+    setTimeout(() => layer.remove(), 2400);
+  }
+
   function renderEndSlide() {
     const correctCount = quiz.questions.filter(isAnsweredCorrectly).length;
     const percent = Math.round((correctCount / questionCount) * 100);
@@ -1071,6 +1124,7 @@ kbd {
     if (live) {
       countUp(countNode, correctCount);
       countUp(percentNode, percent);
+      if (percent === 100) dropConfetti();
     }
 
     const rows = [1, 2, 3, 4]
