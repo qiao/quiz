@@ -96,3 +96,21 @@ Read the design specification in `docs/`:
 - [`docs/architecture.md`](docs/architecture.md): Technical architecture, data contracts, and
   compiler flow.
 - [`docs/decisions.md`](docs/decisions.md): Architecture decision records and conflict log.
+
+---
+
+## License and credits
+
+The skill is available under the [MIT license](LICENSE).
+
+- The quiz page uses the Geist and Geist Mono fonts, under the SIL Open Font License 1.1
+  ([`skills/quiz/assets/OFL.txt`](skills/quiz/assets/OFL.txt)). Each page holds a copy of that
+  license.
+- The colors, spacing, and type sizes in [`skills/quiz/tokens.css`](skills/quiz/tokens.css) follow
+  the public [Vercel design guide](https://vercel.com/design.md). The page shows no Vercel name or
+  logo, and this project has no connection to Vercel.
+- The motion tokens and three page transitions come from the free recipes of
+  [transitions.dev](https://transitions.dev), under its
+  [terms](https://transitions.dev/terms.html).
+- The promo video in [`promo/`](promo/) uses [Remotion](https://www.remotion.dev), which has its own
+  [license](https://www.remotion.dev/license).
