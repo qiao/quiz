@@ -1,5 +1,5 @@
 import { AbsoluteFill } from "remotion";
-import { COLOR } from "../theme";
+import { COLOR, sec } from "../theme";
 import { Caption } from "./Caption";
 import { QuizSlide } from "./QuizSlide";
 
@@ -19,9 +19,9 @@ export const SlideScene: React.FC = () => {
         ]}
         correct="C"
         picked="C"
-        pickFrame={22}
+        pickFrame={sec(0.73)}
       />
-      <Caption text="Answer each question" from={30} />
+      <Caption text="Answer each question" from={sec(1)} />
     </AbsoluteFill>
   );
 };

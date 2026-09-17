@@ -1,5 +1,5 @@
 import { AbsoluteFill } from "remotion";
-import { COLOR } from "../theme";
+import { COLOR, sec } from "../theme";
 import { Caption } from "./Caption";
 import { QuizSlide } from "./QuizSlide";
 
@@ -19,10 +19,10 @@ export const WrongAnswerScene: React.FC = () => {
         ]}
         correct="A"
         picked="C"
-        pickFrame={22}
+        pickFrame={sec(0.73)}
         explanation="Both tabs share one storage, but each tab reads it only on load."
       />
-      <Caption text="See why each answer is right" from={40} />
+      <Caption text="See why each answer is right" from={sec(1.33)} />
     </AbsoluteFill>
   );
 };

@@ -1,5 +1,5 @@
 import { Easing, Interactive, interpolate, useCurrentFrame } from "remotion";
-import { COLOR, EASE_OUT, MONO } from "../theme";
+import { COLOR, EASE_OUT, MONO, sec } from "../theme";
 
 /**
  * Caption at the bottom of a scene, which rises in at a given frame.
@@ -24,12 +24,12 @@ export const Caption: React.FC<{ text: string; from: number }> = ({ text, from }
         fontWeight: 500,
         letterSpacing: "-0.01em",
         color: COLOR.text,
-        opacity: interpolate(frame, [from, from + 12], [0, 1], {
+        opacity: interpolate(frame, [from, from + sec(0.4)], [0, 1], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
           easing: Easing.bezier(...EASE_OUT),
         }),
-        translate: interpolate(frame, [from, from + 12], ["0px 24px", "0px 0px"], {
+        translate: interpolate(frame, [from, from + sec(0.4)], ["0px 24px", "0px 0px"], {
           extrapolateLeft: "clamp",
           extrapolateRight: "clamp",
           easing: Easing.bezier(...EASE_OUT),

@@ -1,5 +1,5 @@
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
-import { COLOR, MONO } from "../theme";
+import { COLOR, MONO, sec } from "../theme";
 import { Caption } from "./Caption";
 
 /** One source file that the skill reads, or skips. */
@@ -62,7 +62,7 @@ export const ExploreScene: React.FC = () => {
             top: 120,
             fontFamily: MONO,
             fontSize: 34,
-            translate: interpolate(frame, [0, 80], ["0px 0px", `0px ${-ROW * 16}px`], {
+            translate: interpolate(frame, [0, sec(2.67)], ["0px 0px", `0px ${-ROW * 16}px`], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
               easing: Easing.bezier(0.45, 0, 0.55, 1),
@@ -95,7 +95,7 @@ export const ExploreScene: React.FC = () => {
           ))}
         </div>
       </AbsoluteFill>
-      <Caption text="Read any code, doc, or URL" from={8} />
+      <Caption text="Read any code, doc, or URL" from={sec(0.27)} />
     </AbsoluteFill>
   );
 };

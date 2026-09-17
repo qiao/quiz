@@ -1,7 +1,7 @@
 import { Audio } from "@remotion/media";
 import { uiSwitch } from "@remotion/sfx";
 import { Easing, interpolate, Sequence, useCurrentFrame } from "remotion";
-import { COLOR, EASE_OUT, MONO } from "../theme";
+import { COLOR, EASE_OUT, MONO, sec } from "../theme";
 
 /** One choice on the quiz slide. */
 type Choice = { letter: string; text: string };
@@ -40,7 +40,7 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
   const frame = useCurrentFrame();
   const answered = frame >= pickFrame;
   const wrong = picked !== correct;
-  const reveal = interpolate(frame, [pickFrame + 4, pickFrame + 16], [0, 1], {
+  const reveal = interpolate(frame, [pickFrame + sec(0.13), pickFrame + sec(0.53)], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.bezier(...EASE_OUT),

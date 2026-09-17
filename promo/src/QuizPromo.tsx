@@ -7,6 +7,7 @@ import { ExploreScene } from "./scenes/ExploreScene";
 import { ScoreScene } from "./scenes/ScoreScene";
 import { SlideScene } from "./scenes/SlideScene";
 import { WrongAnswerScene } from "./scenes/WrongAnswerScene";
+import { sec } from "./theme";
 
 /** One scene of the promo video. */
 type Scene = {
@@ -18,16 +19,16 @@ type Scene = {
 
 /** Scenes of the promo video, in order. */
 export const SCENES: Scene[] = [
-  { id: "Command", component: CommandScene, durationInFrames: 70 },
-  { id: "Explore", component: ExploreScene, durationInFrames: 80 },
-  { id: "Draft", component: DraftScene, durationInFrames: 90 },
-  { id: "Slide", component: SlideScene, durationInFrames: 60 },
-  { id: "WrongAnswer", component: WrongAnswerScene, durationInFrames: 90 },
-  { id: "Score", component: ScoreScene, durationInFrames: 100 },
+  { id: "Command", component: CommandScene, durationInFrames: sec(2.33) },
+  { id: "Explore", component: ExploreScene, durationInFrames: sec(2.67) },
+  { id: "Draft", component: DraftScene, durationInFrames: sec(3) },
+  { id: "Slide", component: SlideScene, durationInFrames: sec(2) },
+  { id: "WrongAnswer", component: WrongAnswerScene, durationInFrames: sec(3) },
+  { id: "Score", component: ScoreScene, durationInFrames: sec(3.33) },
 ];
 
 /** Length of the fade between two scenes, in frames. */
-const FADE = 8;
+const FADE = sec(0.27);
 
 /** Length of the video: the fades overlap the scenes, so each fade removes its length. */
 export const PROMO_DURATION =

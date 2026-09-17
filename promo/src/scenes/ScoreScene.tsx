@@ -9,20 +9,20 @@ import {
   Sequence,
   useCurrentFrame,
 } from "remotion";
-import { COLOR, MONO } from "../theme";
+import { COLOR, FPS, MONO, sec } from "../theme";
 import { Caption } from "./Caption";
 
 /** Frames of the first fill, which stops at 19 of 20 because one answer was wrong. */
-const FIRST_FILL = [6, 30] as const;
+const FIRST_FILL = [sec(0.2), sec(1)] as const;
 
 /** Frame where the learner presses "Try the missed questions again". */
-const RETRY_PRESS = 48;
+const RETRY_PRESS = sec(1.6);
 
 /** Frames of the second fill, after the learner answers the missed question again. */
-const SECOND_FILL = [54, 64] as const;
+const SECOND_FILL = [sec(1.8), sec(2.13)] as const;
 
 /** Frame where the confetti starts, after the ring closes. */
-const CONFETTI_START = SECOND_FILL[1] + 2;
+const CONFETTI_START = SECOND_FILL[1] + sec(0.07);
 
 const CONFETTI_COLORS = [COLOR.text, COLOR.green, COLOR.dim];
 
@@ -45,7 +45,8 @@ export const ScoreScene: React.FC = () => {
           easing: Easing.bezier(0.33, 0, 0.2, 1),
         });
   const perfect = fill === 1;
-  const confettiFrame = frame - CONFETTI_START;
+  // Time since the confetti started, in seconds.
+  const confettiTime = (frame - CONFETTI_START) / FPS;
 
   return (
     <AbsoluteFill
@@ -53,21 +54,22 @@ export const ScoreScene: React.FC = () => {
       style={{ backgroundColor: COLOR.background, alignItems: "center" }}
     >
       <AbsoluteFill name="Confetti" style={{ pointerEvents: "none" }}>
-        {confettiFrame >= 0
+        {confettiTime >= 0
           ? Array.from({ length: 70 }, (_, index) => {
               const seed = `piece-${index}`;
               const startX = random(`${seed}-x`) * 1920;
               const startY = -40 - random(`${seed}-y`) * 360;
-              const drift = (random(`${seed}-drift`) - 0.5) * 6;
-              const speed = 6 + random(`${seed}-speed`) * 8;
-              const y = startY + speed * confettiFrame + 0.35 * confettiFrame ** 2;
-              const spin = (random(`${seed}-spin`) - 0.5) * 30 * confettiFrame;
+              // Drift and speed are in pixels per second, and spin is in degrees per second.
+              const drift = (random(`${seed}-drift`) - 0.5) * 180;
+              const speed = 180 + random(`${seed}-speed`) * 240;
+              const y = startY + speed * confettiTime + 315 * confettiTime ** 2;
+              const spin = (random(`${seed}-spin`) - 0.5) * 900 * confettiTime;
               return (
                 <div
                   key={seed}
                   style={{
                     position: "absolute",
-                    left: startX + drift * confettiFrame,
+                    left: startX + drift * confettiTime,
                     top: y,
                     width: 16,
                     height: 28,
@@ -137,14 +139,19 @@ export const ScoreScene: React.FC = () => {
           fontWeight: 500,
           backgroundColor: COLOR.text,
           color: COLOR.background,
-          opacity: interpolate(frame, [34, 40, 54, 60], [0, 1, 1, 0], {
+          opacity: interpolate(frame, [sec(1.13), sec(1.33), sec(1.8), sec(2)], [0, 1, 1, 0], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           }),
-          scale: interpolate(frame, [RETRY_PRESS, RETRY_PRESS + 2, RETRY_PRESS + 4], [1, 0.94, 1], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          }),
+          scale: interpolate(
+            frame,
+            [RETRY_PRESS, RETRY_PRESS + sec(0.07), RETRY_PRESS + sec(0.13)],
+            [1, 0.94, 1],
+            {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            },
+          ),
         }}
       >
         Try the missed questions again
@@ -156,7 +163,7 @@ export const ScoreScene: React.FC = () => {
       <Sequence name="Perfect sound" from={CONFETTI_START} layout="none">
         <Audio src={ding} volume={0.5} />
       </Sequence>
-      <Caption text="Test your knowledge" from={72} />
+      <Caption text="Test your knowledge" from={sec(2.4)} />
     </AbsoluteFill>
   );
 };

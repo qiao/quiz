@@ -1,5 +1,5 @@
 import { AbsoluteFill, Easing, Interactive, interpolate, useCurrentFrame } from "remotion";
-import { COLOR, EASE_OUT, MONO } from "../theme";
+import { COLOR, EASE_OUT, MONO, sec } from "../theme";
 import { Caption } from "./Caption";
 
 const QUESTIONS = [
@@ -10,16 +10,19 @@ const QUESTIONS = [
 ];
 
 /** Frame where the first question row appears. */
-const FIRST_ROW = 22;
+const FIRST_ROW = sec(0.73);
 
 /** Frames between two question rows. */
-const ROW_GAP = 10;
+const ROW_GAP = sec(0.33);
 
 /** Scene 3: the skill writes questions in four tiers that get harder. */
 export const DraftScene: React.FC = () => {
   const frame = useCurrentFrame();
   const count = Math.round(
-    interpolate(frame, [0, 20], [0, 20], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
+    interpolate(frame, [0, sec(0.67)], [0, 20], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    }),
   );
 
   return (
@@ -42,7 +45,7 @@ export const DraftScene: React.FC = () => {
       <div style={{ position: "absolute", left: 160, right: 160, top: 270, fontFamily: MONO }}>
         {QUESTIONS.map((question, index) => {
           const start = FIRST_ROW + index * ROW_GAP;
-          const progress = interpolate(frame, [start, start + 10], [0, 1], {
+          const progress = interpolate(frame, [start, start + sec(0.33)], [0, 1], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
             easing: Easing.bezier(...EASE_OUT),
@@ -82,7 +85,7 @@ export const DraftScene: React.FC = () => {
           );
         })}
       </div>
-      <Caption text="Questions that get harder" from={52} />
+      <Caption text="Questions that get harder" from={sec(1.73)} />
     </AbsoluteFill>
   );
 };

@@ -17,6 +17,9 @@ loadFont({
 /** Frames per second of every composition. */
 export const FPS = 30;
 
+/** Returns the frame at a time in seconds. Each time stays the same at a different frame rate. */
+export const sec = (seconds: number): number => Math.round(seconds * FPS);
+
 /** Font stack for all text in the video. */
 export const MONO = "'Geist Mono', ui-monospace, monospace";
 
