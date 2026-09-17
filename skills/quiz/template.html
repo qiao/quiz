@@ -487,8 +487,14 @@ kbd {
     animation: icon-draw var(--duration-medium) var(--ease-smooth-out) both;
   }
 
-  .slide.is-answering .feedback {
+  .slide.is-answering .feedback,
+  .is-rising {
     animation: feedback-rise var(--duration-very-slow) var(--ease-smooth-out) both;
+  }
+
+  /* The warm line under the score waits for the count-up to end. */
+  .is-rising {
+    animation-delay: 800ms;
   }
 
   @keyframes icon-draw {
@@ -798,10 +804,17 @@ kbd {
     if (event.animationName === 'feedback-rise') slideElement.classList.remove('is-answering');
   });
 
+  // True when the learner reaches the end slide from the last question. A reload or a hash jump
+  // to the end slide does not set it, so the score plays its reveal only for a real finish.
+  let finishedNow = false;
+
   function next() {
     const slide = state.currentSlide;
     if (slide === 0) goTo(lastOpenSlide());
-    else if (slide <= questionCount && state.answers[slide]) goTo(slide + 1);
+    else if (slide <= questionCount && state.answers[slide]) {
+      finishedNow = slide === questionCount;
+      goTo(slide + 1);
+    }
   }
 
   function back() {
@@ -1010,10 +1023,55 @@ kbd {
     ]);
   }
 
+  /**
+   * Gives one warm line for the score band.
+   *
+   * @param {number} percent Score from 0 to 100.
+   * @returns {string} The line.
+   */
+  function scoreLine(percent) {
+    if (percent === 100) return 'Every answer is correct.';
+    if (percent >= 70) return 'A good result. The missed questions show what to read next.';
+    if (percent >= 40) return 'A fair result. Read the explanation of each missed question.';
+    return 'A first pass. Every explanation is one slide away.';
+  }
+
+  /**
+   * Counts a number up from 0 to its value in 20 steps over 800 ms.
+   *
+   * @param {HTMLElement} node Element that shows the number.
+   * @param {number} value Final value.
+   */
+  function countUp(node, value) {
+    let step = 0;
+    const timer = setInterval(() => {
+      step += 1;
+      node.textContent = String(Math.round((value * step) / 20));
+      if (step >= 20) clearInterval(timer);
+    }, 40);
+  }
+
   function renderEndSlide() {
     const correctCount = quiz.questions.filter(isAnsweredCorrectly).length;
     const percent = Math.round((correctCount / questionCount) * 100);
     const missed = quiz.questions.filter((question) => !isAnsweredCorrectly(question));
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const live = finishedNow && !reducedMotion;
+    finishedNow = false;
+
+    const countNode = element('span', { text: live ? '0' : String(correctCount) });
+    const percentNode = element('span', { text: live ? '0' : String(percent) });
+    const label = `${correctCount} of ${questionCount} correct (${percent}%)`;
+    const heading = element('h1', { 'aria-label': label }, [
+      countNode,
+      ` of ${questionCount} correct (`,
+      percentNode,
+      '%)',
+    ]);
+    if (live) {
+      countUp(countNode, correctCount);
+      countUp(percentNode, percent);
+    }
 
     const rows = [1, 2, 3, 4]
       .map((tier) => quiz.questions.filter((question) => question.tier === tier))
@@ -1043,10 +1101,8 @@ kbd {
     );
 
     showSlide([
-      element('h1', { text: `${correctCount} of ${questionCount} correct (${percent}%)` }),
-      missed.length
-        ? null
-        : element('p', { class: 'lede', text: 'You answered all questions correctly.' }),
+      heading,
+      element('p', { class: `lede ${live ? 'is-rising' : ''}`.trim(), text: scoreLine(percent) }),
       element('table', { class: 'score-table' }, [
         element('thead', {}, [
           element('tr', {}, [
