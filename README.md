@@ -22,31 +22,10 @@ blind sub-agent, and compiles a single self-contained HTML file that runs offlin
 
 The build step needs [Node.js](https://nodejs.org) 20 or later.
 
-Install the skill with the [skills CLI](https://github.com/vercel-labs/skills). It finds the agents
-on your computer, for example Claude Code:
+Install the skill with the [skills CLI](https://github.com/vercel-labs/skills):
 
 ```bash
 npx skills add qiao/quiz
-```
-
-To install by hand, clone this repository and link the skill folder into your agent host.
-
-```bash
-git clone https://github.com/qiao/quiz.git ~/proj/quiz
-```
-
-### Claude Code
-
-```bash
-mkdir -p ~/.claude/skills
-ln -s ~/proj/quiz/skills/quiz ~/.claude/skills/quiz
-```
-
-### Other agents that read ~/.agents/skills
-
-```bash
-mkdir -p ~/.agents/skills
-ln -s ~/proj/quiz/skills/quiz ~/.agents/skills/quiz
 ```
 
 ---

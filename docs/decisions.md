@@ -373,10 +373,10 @@ This document answers: what did we decide, and what did we reject?
 
 ### D25: Multi-host support
 - **Decision:** Support Claude Code first, using generic instructions in `SKILL.md`. Document
-  installation for both `~/.claude/skills` and `~/.agents/skills`.
+  one install command: `npx skills add qiao/quiz`.
 - **Reason:** Writing generic steps (such as "start a sub-agent that cannot see the answer key")
-  without proprietary tool names allows multiple agent hosts to run the skill. The README shows
-  how to symlink into either environment.
+  without proprietary tool names allows multiple agent hosts to run the skill. The skills CLI
+  links the skill into the folder of each agent host, so the README needs no step for each host.
 - **Rejected alternative A:** Claude Code only.
   Rejected because other agent hosts (such as agy) share identical skill folder structures and can
   execute the workflow.
