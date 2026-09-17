@@ -523,8 +523,8 @@ this directory path to access:
 The agent extracts key parameters from natural language prompts:
 - **Question count:** It parses explicit count phrases (for example, "10 questions", "count: 8").
   When omitted, the count defaults to 20 questions.
-- **Language:** The agent generates questions in the requested language. When omitted, it matches
-  the language of the source documents.
+- **Language:** The agent generates questions in the language of the prompt. For a bare `/quiz`
+  invocation with no prompt text, it uses the language of the conversation.
 
 ### Clarifying questions
 

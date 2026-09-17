@@ -178,7 +178,8 @@ This document answers: what did we decide, and what did we reject?
 
 ### D12: Technical language
 - **Decision:** Use natural domain terminology matching the source code and the language of the
-  prompt. The skill definition and documentation use ASD-STE100.
+  prompt. For a bare `/quiz` invocation, use the language of the conversation. The skill
+  definition and documentation use ASD-STE100.
 - **Reason:** Technical questions require exact programming language constructs and established
   framework terms.
 - **Rejected alternative:** Enforce strict ASD-STE100 vocabulary on quiz questions.
