@@ -809,6 +809,7 @@ kbd {
   const questionCount = quiz.questions.length;
   const endSlide = questionCount + 1;
   const stateKey = `quiz:${quiz.id}:state`;
+  document.getElementById('bar-title').textContent = quiz.title;
 
   /**
    * Reads the saved progress, and drops any value that does not fit this quiz.
@@ -1103,7 +1104,6 @@ kbd {
 
     const isLast = question.id === questionCount;
     const nextButton = button(isLast ? 'See the score' : 'Next', 'primary', next);
-    nextButton.id = 'next-button';
     nextButton.disabled = !answer;
     if (!answer) nextButton.title = 'Choose an answer first';
 
@@ -1223,9 +1223,8 @@ kbd {
         const text = blocks.map((block) => block.textContent.replace(/\s+/g, ' ').trim());
         const long = text.join(' ');
         const short = long.length > 90 ? `${long.slice(0, 89).replace(/\s+\S*$/, '')}…` : long;
-        const label = `Question ${question.id}: ${short}`;
-        const link = element('a', { href: `#${question.id}`, text: label });
-        return element('li', {}, [link]);
+        const linkText = `Question ${question.id}: ${short}`;
+        return element('li', {}, [element('a', { href: `#${question.id}`, text: linkText })]);
       }),
     );
 
@@ -1263,7 +1262,6 @@ kbd {
   function render(moveFocus) {
     const slide = state.currentSlide;
     const answeredCount = Object.keys(state.answers).length;
-    document.getElementById('bar-title').textContent = quiz.title;
     const onQuestion = slide >= 1 && slide <= questionCount;
     slideElement.classList.toggle('slide-question', onQuestion);
     document.getElementById('bar-count').textContent = onQuestion
