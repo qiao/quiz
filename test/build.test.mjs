@@ -1,11 +1,11 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 
 import {
   blindQuiz,
@@ -24,6 +24,24 @@ import {
 } from '../skills/quiz/build.mjs';
 
 const FIXTURE_URL = new URL('./fixtures/valid-draft.json', import.meta.url);
+
+/** @type {string[]} Temporary folders that the tests made, which the suite removes at the end. */
+const tempFolders = [];
+after(() => {
+  for (const folder of tempFolders) rmSync(folder, { recursive: true, force: true });
+});
+
+/**
+ * Makes a temporary folder that the suite removes at the end.
+ *
+ * @param {string} prefix Start of the folder name.
+ * @returns {string} The folder path.
+ */
+function tempFolder(prefix) {
+  const folder = mkdtempSync(join(tmpdir(), prefix));
+  tempFolders.push(folder);
+  return folder;
+}
 
 /**
  * Loads a fresh copy of the valid draft fixture.
@@ -610,17 +628,12 @@ describe('renderPage', () => {
 });
 
 /**
- * Makes a temporary project with the fixture draft at `quizzes/js-event-loop/quiz.json`.
+ * Makes a small skill folder with a template that holds each placeholder once.
  *
- * @returns {{ cwd: string, skillDir: string, run: (args: string[], env?: object) => any }}
- *   The project folder, the fake skill folder, and a function that runs `main` there and captures
- *   the output.
+ * @returns {string} The folder path.
  */
-function makeProject() {
-  const cwd = mkdtempSync(join(tmpdir(), 'quiz-project-'));
-  mkdirSync(join(cwd, 'quizzes/js-event-loop'), { recursive: true });
-  writeFileSync(join(cwd, 'quizzes/js-event-loop/quiz.json'), readFileSync(FIXTURE_URL));
-  const skillDir = mkdtempSync(join(tmpdir(), 'quiz-skill-'));
+function makeFakeSkill() {
+  const skillDir = tempFolder('quiz-skill-');
   mkdirSync(join(skillDir, 'assets'));
   writeFileSync(
     join(skillDir, 'template.html'),
@@ -630,6 +643,22 @@ function makeProject() {
   writeFileSync(join(skillDir, 'tokens.css'), ':root{}');
   writeFileSync(join(skillDir, 'assets/fonts.css'), '');
   writeFileSync(join(skillDir, 'assets/OFL.txt'), 'License');
+  return skillDir;
+}
+
+/**
+ * Makes a temporary project with the fixture draft at `quizzes/js-event-loop/quiz.json`.
+ *
+ * @param {string} [skillDir] Skill folder for `main`. The default is a small fake skill folder.
+ *
+ * @returns {{ cwd: string, skillDir: string, run: (args: string[], env?: object) => any }}
+ *   The project folder, the fake skill folder, and a function that runs `main` there and captures
+ *   the output.
+ */
+function makeProject(skillDir = makeFakeSkill()) {
+  const cwd = tempFolder('quiz-project-');
+  mkdirSync(join(cwd, 'quizzes/js-event-loop'), { recursive: true });
+  writeFileSync(join(cwd, 'quizzes/js-event-loop/quiz.json'), readFileSync(FIXTURE_URL));
   return {
     cwd,
     skillDir,
@@ -787,19 +816,12 @@ describe('main', () => {
 
 describe('the real skill folder', () => {
   it('builds a page with no placeholder left and no network request', () => {
-    const cwd = mkdtempSync(join(tmpdir(), 'quiz-real-'));
-    mkdirSync(join(cwd, 'quizzes/js-event-loop'), { recursive: true });
-    writeFileSync(join(cwd, 'quizzes/js-event-loop/quiz.json'), readFileSync(FIXTURE_URL));
-    let stderr = '';
-    const code = main(['quizzes/js-event-loop/quiz.json'], {
-      cwd,
-      env: { SOURCE_DATE_EPOCH: '1767225600' },
-      skillDir: fileURLToPath(new URL('../skills/quiz/', import.meta.url)),
-      stdout: () => {},
-      stderr: (text) => (stderr += text),
+    const project = makeProject(fileURLToPath(new URL('../skills/quiz/', import.meta.url)));
+    const result = project.run(['quizzes/js-event-loop/quiz.json'], {
+      SOURCE_DATE_EPOCH: '1767225600',
     });
-    assert.equal(code, 0, stderr);
-    const page = readFileSync(join(cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
+    assert.equal(result.code, 0, result.stderr);
+    const page = readFileSync(join(project.cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
 
     assert.doesNotMatch(page, /\{\{[A-Z_]+\}\}/);
     assert.doesNotMatch(page, /<(?:link|script|img|iframe)[^>]+(?:href|src)=["']?https?:/i);
