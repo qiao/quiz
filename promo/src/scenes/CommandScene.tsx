@@ -3,7 +3,7 @@ import { mouseClick } from "@remotion/sfx";
 import { AbsoluteFill, Interactive, Sequence, useCurrentFrame } from "remotion";
 import { COLOR, MONO } from "../theme";
 
-const COMMAND = "/quiz the auth flow";
+const COMMAND = "/quiz this React app";
 
 /** Frame where the first character of the command appears. */
 const TYPE_START = 10;
