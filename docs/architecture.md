@@ -73,20 +73,23 @@ The skill transforms resources into self-contained HTML slides through five sequ
    choice, one obvious wrong choice, and two plausible wrong choices.
 3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`
    to generate `quizzes/<slug>/quiz.blind.json`. Code removes `kind`, `rationale`, and
-   `explanation`, and shuffles choices. The agent invokes an independent sub-agent with read
-   access to the resource, instructing it never to read `quizzes/`. The sub-agent writes answers
-   into `quizzes/<slug>/answers.json`. The agent runs
-   `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to grade the
-   answers. Code maps shuffled letters back to draft choices and reports failed questions. The
-   agent repairs failed questions. After two failed repair rounds, the agent replaces the question
-   with one new question of the same tier. If the replacement question also fails after two repair
-   rounds, the agent removes the question, reports the removal to the user, and proceeds.
+   `explanation`, and shuffles choices. The agent starts an independent sub-agent with read
+   access to the resource, providing the blind JSON in the prompt and instructing it never to
+   read `quizzes/`. The sub-agent returns its answers in its final message as JSON matching
+   `SubAgentAnswerFile`. The agent writes that JSON to `quizzes/<slug>/answers.json` and runs
+   `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json`. Code
+   maps shuffled letters back to draft choices and reports failed questions. The agent repairs
+   failed questions. After any edit, the agent re-runs `--blind` and re-verifies all questions.
+   After two failed repair rounds, the agent replaces the question with a new question of the same
+   tier. If the replacement question also fails after two repair rounds, the agent removes the
+   question, reports the removal to the user, and proceeds.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
    generates `quizzes/<slug>/index.html`.
-5. **Report:** The agent outputs the file path, an open command
-   (`open ./quizzes/<slug>/index.html`), and a static hosting deployment hint.
+5. **Report:** The agent outputs the file path, an operating system open command (`open` on
+   macOS, `xdg-open` on Linux, `start` on Windows), and a static hosting deployment hint (for
+   example, `npx vercel quizzes/<slug>`).
 
 ---
 
