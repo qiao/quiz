@@ -131,14 +131,23 @@ An implementation satisfies this specification when all criteria pass:
 ### Generation and validation
 - [ ] Running `/quiz` checks for Node.js before attempting compilation (see Section 3 of
   [`docs/architecture.md`](architecture.md#3-build-compiler)).
+- [ ] The skill asks clarifying questions when the current working directory is empty or the home
+  directory.
 - [ ] An independent sub-agent verifies draft questions without seeing the answer key.
 - [ ] Questions adhere to the four difficulty tiers with no trivial recall questions.
+- [ ] When the user prompt specifies a question count, the skill honors the requested count.
+- [ ] Questions use the natural domain terminology and the language of the prompt.
 - [ ] Every question contains exactly four choices, with balanced positions across A, B, C, and D.
+- [ ] Code blocks render in Geist Mono with escaped HTML characters.
+- [ ] Every question includes a citation, resolving to a commit SHA permalink when clean git
+  tracking exists and falling back to text for modified files.
 - [ ] The build script validates `quiz.json` against the draft schema before writing output.
 
 ### Output and packaging
 - [ ] Output compiles into `./quizzes/<slug>/index.html`.
 - [ ] Existing folders are not overwritten; the tool appends a numeric suffix such as `-2`.
+- [ ] The agent prints the relative file path and a one-line deployment command hint upon
+  completion.
 - [ ] The generated HTML file works without internet access and makes no network requests.
 - [ ] The output displays no proprietary trademarks or vendor logos.
 
