@@ -503,9 +503,11 @@ The deck contains three distinct slide views:
 1. **Title slide (index 0):** Shows quiz title, resource source, question count, tier breakdown,
    a progress hint, a key list (displayed only on devices with a pointer that can hover), a
    "Start the quiz" button (or "Continue the quiz" when resuming), and an optional "Restart" button.
-2. **Question slide (index 1 to N):** Starts at the top so content does not jump after an answer.
-   Shows tier badge, question progress ("5 of 20"), question prompt, four interactive choice cards,
-   an explanation reveal panel, citation link, a "Back" button, and a forward button ("Next" on
+2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
+   jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
+   block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,
+   question progress ("5 of 20"), question prompt, four interactive choice cards, an explanation
+   reveal panel, citation link, a "Back" button, and a forward button ("Next" on
    questions 1 to N - 1, or "See the score" on question N). In review when all questions have
    answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
    displays drawn check and cross icons next to the status text.

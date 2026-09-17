@@ -134,9 +134,14 @@ pre {
   padding: var(--vbg-space-10) var(--vbg-space-6) var(--vbg-space-12);
 }
 
-/* A question slide starts at the top, so the prompt and choices stay in place after an answer. */
+/*
+ * A question slide starts at a fixed distance from the top, so the prompt and choices stay in place
+ * after an answer. The distance puts a block of about 600 px in the middle of the window, so every
+ * question starts at the same height, and a tall window gets more space above the question.
+ */
 .slide-question {
   justify-content: flex-start;
+  padding-top: max(var(--vbg-space-10), calc(50vh - 300px));
 }
 
 .slide:focus,
