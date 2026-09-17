@@ -296,9 +296,11 @@ To prevent positional guessing, `build.mjs` distributes correct choices evenly a
 1. Determine target assignment counts for `N` questions: `Math.floor(N / 4)` questions per slot,
    distributing remainders to earlier slots.
 2. Build an array of position targets (for example: `['a', 'b', 'c', 'd', 'a', 'b', ...]`).
-3. Deterministically shuffle this target array using a seed derived from the quiz slug.
+3. Deterministically shuffle this target array using a seed derived from the quiz identifier
+   (`quizId`, which combines the slug and the content hash).
 4. For question `i`, place the correct choice into target position `P[i]`.
-5. Place the remaining three distractors into the three open positions in deterministic order.
+5. Shuffle the three distractors with the same seeded generator, and place them into the three
+   open positions.
 6. Assign choice IDs `'a'`, `'b'`, `'c'`, and `'d'` according to their final slot.
 
 ---
