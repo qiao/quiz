@@ -692,8 +692,9 @@ token uses CSS `light-dark(<light>, <dark>)`:
     blue-900 (`oklch(71.7% 0.1648 250.794)`).
   - Success (`--vbg-green-900`): light uses `oklch(51.75% 0.1453 147.65)`, and dark uses
     `oklch(73.1% 0.2158 148.29)`.
-  - Error (`--vbg-red-700`): light uses `oklch(62.56% 0.2524 23.03)`, and dark uses
-    `oklch(62.56% 0.2234 23.03)`.
+  - Error (`--vbg-red-900`): light uses `oklch(54.99% 0.232 25.29)`, and dark uses
+    `oklch(69.96% 0.2136 22.03)`. Red-900 replaces red-700 because red-700 had a contrast of
+    4.04 to 1 in the light theme, failing the WCAG AA minimum of 4.5 to 1.
 - **Spacing scale (from `vercel-brand.css`):**
   Values map 4px (`--vbg-space-1`), 8px (`--vbg-space-2`), 12px (`--vbg-space-3`), 16px
   (`--vbg-space-4`), 20px (`--vbg-space-5`), 24px (`--vbg-space-6`), 32px (`--vbg-space-8`),
