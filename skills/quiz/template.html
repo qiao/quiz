@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{TITLE}}</title>
+<!--{{LICENSE}}-->
+<script>
+  // Sets a saved theme before the first paint, so the page does not flash the other theme.
+  try {
+    const savedTheme = localStorage.getItem('quiz:theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      document.documentElement.dataset.theme = savedTheme;
+    }
+  } catch {}
+</script>
+<style>
+/*{{FONTS_CSS}}*/
+/*{{TOKENS_CSS}}*/
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--vbg-background-100);
+  color: var(--vbg-gray-1000);
+  font-family: var(--vbg-font-sans);
+  font-size: var(--vbg-type-body);
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--vbg-focus);
+  outline-offset: 2px;
+}
+
+code,
+pre {
+  font-family: var(--vbg-font-mono);
+  font-size: 0.875em;
+}
+
+:not(pre) > code {
+  padding: 1px var(--vbg-space-1);
+  border-radius: var(--vbg-radius-small);
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+}
+
+pre {
+  margin: var(--vbg-space-3) 0;
+  padding: var(--vbg-space-3) var(--vbg-space-4);
+  overflow-x: auto;
+  border-radius: var(--vbg-radius-small);
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  line-height: 1.6;
+  text-align: left;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.bar {
+  display: flex;
+  gap: var(--vbg-space-4);
+  align-items: center;
+  padding: var(--vbg-space-3) var(--vbg-space-6);
+  box-shadow: inset 0 -1px 0 var(--vbg-gray-alpha-400);
+  font-size: var(--vbg-type-compact);
+}
+
+.bar-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-count {
+  color: var(--vbg-gray-900);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.progress {
+  height: 2px;
+  background: var(--vbg-gray-400);
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: var(--vbg-gray-1000);
+}
+
+.slide {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--vbg-space-10) var(--vbg-space-6) var(--vbg-space-12);
+}
+
+.slide:focus {
+  outline: none;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vbg-space-2) var(--vbg-space-4);
+  justify-content: space-between;
+  margin-bottom: var(--vbg-space-4);
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-label);
+  font-variant-numeric: tabular-nums;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--vbg-type-page-title);
+}
+
+h2 {
+  margin-top: var(--vbg-space-8);
+  font-size: var(--vbg-type-subsection);
+}
+
+.lede {
+  margin: var(--vbg-space-3) 0 0;
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-lede);
+  overflow-wrap: anywhere;
+}
+
+.prompt {
+  font-size: var(--vbg-type-subsection);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.prompt > :first-child,
+.rich > :first-child {
+  margin-top: 0;
+}
+
+.prompt > :last-child,
+.rich > :last-child {
+  margin-bottom: 0;
+}
+
+.prompt pre {
+  font-weight: 400;
+}
+
+.rich p,
+.rich ul {
+  margin: var(--vbg-space-2) 0;
+}
+
+.choices {
+  display: grid;
+  gap: var(--vbg-space-2);
+  margin: var(--vbg-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--vbg-space-1) var(--vbg-space-3);
+  width: 100%;
+  padding: var(--vbg-space-3) var(--vbg-space-4);
+  border: 0;
+  border-radius: var(--vbg-radius);
+  background: var(--vbg-background-100);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.choice:hover:not([aria-disabled='true']) {
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-900);
+}
+
+.choice[aria-disabled='true'] {
+  cursor: default;
+}
+
+.choice-letter {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--vbg-radius-small);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  font-family: var(--vbg-font-mono);
+  font-size: var(--vbg-type-label);
+  text-transform: uppercase;
+}
+
+.choice-body {
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.choice-status {
+  display: block;
+  margin-top: var(--vbg-space-1);
+  font-size: var(--vbg-type-label);
+  font-weight: 500;
+}
+
+.choice-rationale {
+  margin-top: var(--vbg-space-1);
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-compact);
+}
+
+.choice.is-correct {
+  box-shadow: inset 0 0 0 2px var(--vbg-green-900);
+}
+
+.choice.is-correct .choice-status {
+  color: var(--vbg-green-900);
+}
+
+.choice.is-wrong-pick {
+  box-shadow: inset 0 0 0 2px var(--vbg-red-700);
+}
+
+.choice.is-wrong-pick .choice-status {
+  color: var(--vbg-red-700);
+}
+
+.choice.is-other {
+  color: var(--vbg-gray-900);
+}
+
+.feedback {
+  margin-top: var(--vbg-space-6);
+  padding-top: var(--vbg-space-4);
+  box-shadow: inset 0 1px 0 var(--vbg-gray-alpha-400);
+}
+
+.result {
+  margin: 0 0 var(--vbg-space-2);
+  font-weight: 600;
+}
+
+.citation {
+  margin: var(--vbg-space-3) 0 0;
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-compact);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vbg-space-3);
+  align-items: center;
+  margin-top: var(--vbg-space-8);
+}
+
+.actions-end {
+  margin-left: auto;
+}
+
+.button {
+  display: inline-flex;
+  gap: var(--vbg-space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--vbg-space-4);
+  border: 0;
+  border-radius: var(--vbg-radius-small);
+  font: inherit;
+  font-size: var(--vbg-type-compact);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button-primary {
+  background: var(--vbg-gray-1000);
+  color: var(--vbg-background-100);
+}
+
+.button-secondary {
+  background: var(--vbg-background-100);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  color: var(--vbg-gray-1000);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--vbg-background-200);
+}
+
+.button-tertiary {
+  min-height: 32px;
+  padding: 0 var(--vbg-space-2);
+  background: transparent;
+  color: var(--vbg-gray-900);
+}
+
+.button-tertiary:hover {
+  color: var(--vbg-gray-1000);
+}
+
+.list {
+  margin: var(--vbg-space-3) 0 0;
+  padding-left: var(--vbg-space-5);
+}
+
+.list li + li {
+  margin-top: var(--vbg-space-1);
+}
+
+.hint {
+  margin: var(--vbg-space-6) 0 0;
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-label);
+}
+
+.score-table {
+  width: 100%;
+  margin-top: var(--vbg-space-4);
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-table th,
+.score-table td {
+  padding: var(--vbg-space-2) 0;
+  box-shadow: inset 0 -1px 0 var(--vbg-gray-alpha-400);
+  text-align: left;
+}
+
+.score-table th {
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-label);
+  font-weight: 500;
+}
+
+.score-table .numeric {
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .choice,
+  .button {
+    transition:
+      background-color 150ms ease,
+      box-shadow 150ms ease,
+      color 150ms ease;
+  }
+}
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: var(--vbg-type-title);
+  }
+
+  .prompt {
+    font-size: var(--vbg-type-lede);
+  }
+
+  .bar {
+    padding: var(--vbg-space-2) var(--vbg-space-4);
+  }
+
+  .slide {
+    justify-content: flex-start;
+    padding: var(--vbg-space-6) var(--vbg-space-4) var(--vbg-space-10);
+  }
+
+  .actions .button {
+    flex: 1;
+  }
+
+  .actions-end {
+    margin-left: 0;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <span class="bar-title" id="bar-title"></span>
+    <span class="bar-count" id="bar-count"></span>
+    <button type="button" class="button button-tertiary" id="theme-toggle"></button>
+  </header>
+  <div class="progress" aria-hidden="true">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <main class="slide" id="slide" tabindex="-1"></main>
+  <div class="visually-hidden" id="announcer" aria-live="polite" aria-atomic="true"></div>
+</div>
+<noscript>
+  <p class="slide">This quiz needs JavaScript. Turn on JavaScript and open the page again.</p>
+</noscript>
+<script id="quiz-data" type="application/json">{{QUIZ_DATA}}</script>
+<script>
+(() => {
+  'use strict';
+
+  const LETTERS = ['a', 'b', 'c', 'd'];
+  const KEY_LETTERS = { 1: 'a', 2: 'b', 3: 'c', 4: 'd', a: 'a', b: 'b', c: 'c', d: 'd' };
+  const THEME_KEY = 'quiz:theme';
+
+  const slideElement = document.getElementById('slide');
+  const announcer = document.getElementById('announcer');
+  const themeToggle = document.getElementById('theme-toggle');
+
+  /** Reads, writes, and removes browser storage, and ignores storage that the browser blocks. */
+  const storage = {
+    get(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch {}
+    },
+    remove(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch {}
+    },
+  };
+
+  /**
+   * Makes an element with attributes and children.
+   *
+   * @param {string} tag Tag name.
+   * @param {Record<string, string>} [attributes] Attributes. The `html` key sets safe HTML from the
+   *   build, and the `text` key sets plain text.
+   * @param {Array<Node | string | null>} [children] Child nodes or text.
+   * @returns {HTMLElement} The element.
+   */
+  function element(tag, attributes = {}, children = []) {
+    const node = document.createElement(tag);
+    for (const [name, value] of Object.entries(attributes)) {
+      if (name === 'html') node.innerHTML = value;
+      else if (name === 'text') node.textContent = value;
+      else node.setAttribute(name, value);
+    }
+    for (const child of children) {
+      if (child !== null) node.append(child);
+    }
+    return node;
+  }
+
+  /**
+   * Makes a button.
+   *
+   * @param {string} label Button text.
+   * @param {'primary' | 'secondary' | 'tertiary'} variant Button style.
+   * @param {() => void} onClick Action.
+   * @returns {HTMLButtonElement} The button.
+   */
+  function button(label, variant, onClick) {
+    const attributes = { type: 'button', class: `button button-${variant}`, text: label };
+    const node = element('button', attributes);
+    node.addEventListener('click', onClick);
+    return /** @type {HTMLButtonElement} */ (node);
+  }
+
+  let quiz;
+  try {
+    quiz = JSON.parse(document.getElementById('quiz-data').textContent);
+  } catch {
+    const text = 'The quiz data is not valid. Build the page again.';
+    slideElement.append(element('p', { text }));
+    return;
+  }
+
+  const questionCount = quiz.questions.length;
+  const endSlide = questionCount + 1;
+  const stateKey = `quiz:${quiz.id}:state`;
+
+  /**
+   * Reads the saved progress, and drops any value that does not fit this quiz.
+   *
+   * @returns {{ answers: Record<number, string>, currentSlide: number }} The progress.
+   */
+  function loadState() {
+    const answers = {};
+    let currentSlide = 0;
+    try {
+      const saved = JSON.parse(storage.get(stateKey) || 'null');
+      if (saved && typeof saved.answers === 'object' && saved.answers) {
+        for (const [key, letter] of Object.entries(saved.answers)) {
+          const id = Number(key);
+          if (Number.isInteger(id) && id >= 1 && id <= questionCount && LETTERS.includes(letter)) {
+            answers[id] = letter;
+          }
+        }
+      }
+      if (saved && Number.isInteger(saved.currentSlide)) currentSlide = saved.currentSlide;
+    } catch {}
+    return { answers, currentSlide };
+  }
+
+  let state = loadState();
+
+  function saveState() {
+    storage.set(stateKey, JSON.stringify(state));
+  }
+
+  /**
+   * Finds the correct choice of a question.
+   *
+   * @param {any} question Built question.
+   * @returns {any} The correct choice.
+   */
+  function correctChoice(question) {
+    return question.choices.find((choice) => choice.kind === 'correct');
+  }
+
+  function isAnsweredCorrectly(question) {
+    return state.answers[question.id] === correctChoice(question).id;
+  }
+
+  /**
+   * Gives the last slide that the learner can open. A question after an open question is locked.
+   *
+   * @returns {number} The first question with no answer, or the end slide.
+   */
+  function lastOpenSlide() {
+    const open = quiz.questions.find((question) => !state.answers[question.id]);
+    return open ? open.id : endSlide;
+  }
+
+  /**
+   * Opens a slide and updates the saved progress and the URL hash.
+   *
+   * @param {number} slide Slide index: 0 for the title, 1 to N for questions, N + 1 for the end.
+   * @param {{ replace?: boolean, focus?: boolean }} [options] Hash and focus options.
+   */
+  function goTo(slide, options = {}) {
+    const target = Math.max(0, Math.min(slide, lastOpenSlide()));
+    state.currentSlide = target;
+    saveState();
+    const hash = `#${target}`;
+    if (location.hash !== hash) {
+      if (options.replace) history.replaceState(null, '', hash);
+      else history.pushState(null, '', hash);
+    }
+    render(options.focus !== false);
+  }
+
+  function next() {
+    const slide = state.currentSlide;
+    if (slide === 0) goTo(lastOpenSlide());
+    else if (slide <= questionCount && state.answers[slide]) goTo(slide + 1);
+  }
+
+  function back() {
+    if (state.currentSlide > 0) goTo(state.currentSlide - 1);
+  }
+
+  function restart() {
+    state = { answers: {}, currentSlide: 0 };
+    storage.remove(stateKey);
+    goTo(0);
+  }
+
+  function retryMissed() {
+    const missed = quiz.questions.filter((question) => !isAnsweredCorrectly(question));
+    for (const question of missed) delete state.answers[question.id];
+    if (missed.length) goTo(missed[0].id);
+  }
+
+  /**
+   * Records the answer of the learner for the current question.
+   *
+   * @param {string} letter Choice letter.
+   */
+  function choose(letter) {
+    const question = quiz.questions[state.currentSlide - 1];
+    if (!question || state.answers[question.id]) return;
+    state.answers[question.id] = letter;
+    saveState();
+    render(false);
+
+    const correct = correctChoice(question);
+    const explanation = element('div', { html: question.explanationHtml }).textContent;
+    announcer.textContent =
+      letter === correct.id
+        ? `Correct. ${explanation}`
+        : `Not correct. The correct choice is ${correct.id.toUpperCase()}. ${explanation}`;
+    document.getElementById('next-button')?.focus();
+  }
+
+  /**
+   * Gives the text that names a citation, for example `src/cache.ts:15-32`.
+   *
+   * @param {any} citation Built citation.
+   * @returns {string} The label.
+   */
+  function citationLabel(citation) {
+    if (citation.page) return `${citation.target}, page ${citation.page}`;
+    if (citation.lineStart) {
+      const end = citation.lineEnd && citation.lineEnd !== citation.lineStart;
+      return `${citation.target}:${citation.lineStart}${end ? `-${citation.lineEnd}` : ''}`;
+    }
+    return citation.target;
+  }
+
+  function renderTitleSlide() {
+    const tierCounts = [1, 2, 3, 4]
+      .map((tier) => ({
+        tier,
+        name: quiz.questions.find((question) => question.tier === tier)?.tierName,
+        count: quiz.questions.filter((question) => question.tier === tier).length,
+      }))
+      .filter((entry) => entry.count > 0);
+    const answeredCount = Object.keys(state.answers).length;
+    const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+    const startLabel = answeredCount ? 'Continue the quiz' : 'Start the quiz';
+    const actions = element('div', { class: 'actions' }, [
+      button(startLabel, 'primary', next),
+      answeredCount ? button('Restart', 'secondary', restart) : null,
+    ]);
+
+    slideElement.replaceChildren(
+      element('p', { class: 'meta', text: `Quiz · ${plural(questionCount, 'question')}` }),
+      element('h1', { text: quiz.title }),
+      element('p', { class: 'lede', text: `Source: ${quiz.source}` }),
+      element('h2', { text: 'Tiers' }),
+      element(
+        'ol',
+        { class: 'list' },
+        tierCounts.map((entry) =>
+          element('li', { text: `${entry.name}: ${plural(entry.count, 'question')}` }),
+        ),
+      ),
+      element('p', {
+        class: 'hint',
+        text:
+          'Answer a question to see the explanation. Your progress stays in this browser. ' +
+          'Keys: 1 to 4 or A to D choose, Enter or the right arrow goes on, the left arrow goes ' +
+          'back, and T changes the theme.',
+      }),
+      actions,
+    );
+  }
+
+  function renderQuestionSlide(question) {
+    const answer = state.answers[question.id];
+    const correct = correctChoice(question);
+
+    const choices = element(
+      'ol',
+      { class: 'choices' },
+      question.choices.map((choice, index) => {
+        const status = [];
+        let stateClass = '';
+        if (answer) {
+          if (choice.id === correct.id) {
+            stateClass = 'is-correct';
+            const mine = answer === choice.id;
+            status.push(mine ? '✓ Correct. This is your choice.' : '✓ Correct choice');
+          } else if (choice.id === answer) {
+            stateClass = 'is-wrong-pick';
+            status.push('✗ Not correct. This is your choice.');
+          } else {
+            stateClass = 'is-other';
+          }
+        }
+        const body = element('span', { class: 'choice-body' }, [
+          element('span', { class: 'rich', html: choice.textHtml }),
+          status.length ? element('span', { class: 'choice-status', text: status[0] }) : null,
+          answer && choice.rationaleHtml
+            ? element('span', { class: 'choice-rationale rich', html: choice.rationaleHtml })
+            : null,
+        ]);
+        const node = element(
+          'button',
+          {
+            type: 'button',
+            class: `choice ${stateClass}`.trim(),
+            'aria-disabled': answer ? 'true' : 'false',
+            'aria-keyshortcuts': `${index + 1} ${choice.id.toUpperCase()}`,
+          },
+          [element('span', { class: 'choice-letter', text: choice.id }), body],
+        );
+        node.addEventListener('click', () => choose(choice.id));
+        return element('li', {}, [node]);
+      }),
+    );
+
+    let feedback = null;
+    if (answer) {
+      const citation = question.citation;
+      const source = citation.url
+        ? element('a', {
+            href: citation.url,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            text: citationLabel(citation),
+          })
+        : element('code', { text: citationLabel(citation) });
+      const resultText =
+        answer === correct.id
+          ? 'Correct.'
+          : `Not correct. The correct choice is ${correct.id.toUpperCase()}.`;
+      feedback = element('section', { class: 'feedback', 'aria-label': 'Explanation' }, [
+        element('p', { class: 'result', text: resultText }),
+        element('div', { class: 'rich', html: question.explanationHtml }),
+        element('p', { class: 'citation' }, ['Source: ', source]),
+      ]);
+    }
+
+    const isLast = question.id === questionCount;
+    const nextButton = button(isLast ? 'See the score' : 'Next', 'primary', next);
+    nextButton.id = 'next-button';
+    nextButton.disabled = !answer;
+    if (!answer) nextButton.title = 'Choose an answer first';
+
+    slideElement.replaceChildren(
+      element('div', { class: 'meta' }, [
+        element('span', { text: `Tier ${question.tier} · ${question.tierName}` }),
+        element('span', { text: `Question ${question.id} of ${questionCount}` }),
+      ]),
+      element('div', { class: 'prompt rich', html: question.promptHtml }),
+      choices,
+      feedback,
+      element('div', { class: 'actions' }, [
+        button('Back', 'secondary', back),
+        element('span', { class: 'actions-end' }, [nextButton]),
+      ]),
+    );
+  }
+
+  function renderEndSlide() {
+    const correctCount = quiz.questions.filter(isAnsweredCorrectly).length;
+    const percent = Math.round((correctCount / questionCount) * 100);
+    const missed = quiz.questions.filter((question) => !isAnsweredCorrectly(question));
+
+    const rows = [1, 2, 3, 4]
+      .map((tier) => quiz.questions.filter((question) => question.tier === tier))
+      .filter((questions) => questions.length > 0)
+      .map((questions) =>
+        element('tr', {}, [
+          element('td', { text: `Tier ${questions[0].tier} · ${questions[0].tierName}` }),
+          element('td', {
+            class: 'numeric',
+            text: `${questions.filter(isAnsweredCorrectly).length} of ${questions.length}`,
+          }),
+        ]),
+      );
+
+    const missedList = missed.length
+      ? element(
+          'ul',
+          { class: 'list' },
+          missed.map((question) => {
+            const text = element('div', { html: question.promptHtml }).textContent.trim();
+            const short = text.length > 90 ? `${text.slice(0, 89)}…` : text;
+            const label = `Question ${question.id}: ${short}`;
+            const link = element('a', { href: `#${question.id}`, text: label });
+            return element('li', {}, [link]);
+          }),
+        )
+      : element('p', { class: 'lede', text: 'You answered all questions correctly.' });
+
+    slideElement.replaceChildren(
+      element('p', { class: 'meta', text: 'Result' }),
+      element('h1', { text: `${correctCount} of ${questionCount} correct (${percent}%)` }),
+      element('table', { class: 'score-table' }, [
+        element('thead', {}, [
+          element('tr', {}, [
+            element('th', { scope: 'col', text: 'Tier' }),
+            element('th', { scope: 'col', class: 'numeric', text: 'Correct' }),
+          ]),
+        ]),
+        element('tbody', {}, rows),
+      ]),
+      element('h2', { text: 'Missed questions' }),
+      missedList,
+      element('div', { class: 'actions' }, [
+        missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
+        button('Restart', 'secondary', restart),
+      ]),
+    );
+  }
+
+  /**
+   * Draws the current slide, the bar, and the progress line.
+   *
+   * @param {boolean} moveFocus True to move the focus to the slide, for a new slide.
+   */
+  function render(moveFocus) {
+    const slide = state.currentSlide;
+    const answeredCount = Object.keys(state.answers).length;
+    document.getElementById('bar-title').textContent = quiz.title;
+    const onQuestion = slide >= 1 && slide <= questionCount;
+    document.getElementById('bar-count').textContent = onQuestion
+      ? `${slide} / ${questionCount}`
+      : `${answeredCount} / ${questionCount} answered`;
+    const fill = document.getElementById('progress-fill');
+    fill.style.width = `${(answeredCount / questionCount) * 100}%`;
+    document.title = onQuestion ? `${slide}. ${quiz.title}` : quiz.title;
+
+    if (slide === 0) renderTitleSlide();
+    else if (slide === endSlide) renderEndSlide();
+    else renderQuestionSlide(quiz.questions[slide - 1]);
+
+    if (moveFocus) {
+      slideElement.focus({ preventScroll: true });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function currentTheme() {
+    const saved = storage.get(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    const other = theme === 'dark' ? 'light' : 'dark';
+    themeToggle.textContent = `Use ${other} theme`;
+    themeToggle.setAttribute('aria-keyshortcuts', 'T');
+  }
+
+  function toggleTheme() {
+    const theme = currentTheme() === 'dark' ? 'light' : 'dark';
+    storage.set(THEME_KEY, theme);
+    applyTheme(theme);
+  }
+
+  themeToggle.addEventListener('click', toggleTheme);
+  applyTheme(currentTheme());
+
+  document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (target instanceof HTMLElement) {
+      if (target.isContentEditable || ['INPUT', 'SELECT', 'TEXTAREA'].includes(target.tagName)) {
+        return;
+      }
+    }
+    if (String(window.getSelection() || '').length > 0) return;
+
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    const slide = state.currentSlide;
+    if (slide >= 1 && slide <= questionCount && KEY_LETTERS[key]) {
+      event.preventDefault();
+      choose(KEY_LETTERS[key]);
+    } else if (key === 't') {
+      event.preventDefault();
+      toggleTheme();
+    } else if (key === 'ArrowRight' || key === 'Enter') {
+      // Enter on a focused button or link activates that control, so do not also go on.
+      if (key === 'Enter' && target instanceof HTMLElement && target.closest('button, a')) return;
+      event.preventDefault();
+      next();
+    } else if (key === 'ArrowLeft') {
+      event.preventDefault();
+      back();
+    }
+  });
+
+  window.addEventListener('hashchange', () => {
+    const match = /^#(\d+)$/.exec(location.hash);
+    if (match && Number(match[1]) !== state.currentSlide) goTo(Number(match[1]), { replace: true });
+  });
+
+  const hashMatch = /^#(\d+)$/.exec(location.hash);
+  const startSlide = hashMatch ? Number(hashMatch[1]) : state.currentSlide;
+  goTo(startSlide, { replace: true, focus: false });
+})();
+</script>
+</body>
+</html>
