@@ -17,9 +17,10 @@ This document answers: how does the compiler and slide runtime work?
 | 7 | Slide interface | How do keyboard controls and slide states work? |
 | 8 | Fonts and typography | How does the skill comply with font licensing? |
 | 9 | Permalinks and citations | How does the compiler resolve source citations? |
-| 10 | Filesystem layout | Where do built files and assets live? |
-| 11 | Test plan | How do unit tests verify compiler reliability? |
-| 12 | Sources | Where are the primary specifications? |
+| 10 | Skill instruction design | How does `SKILL.md` guide the agent through generation? |
+| 11 | Filesystem layout | Where do built files and assets live? |
+| 12 | Test plan | How do unit tests verify compiler reliability? |
+| 13 | Sources | Where are the primary specifications? |
 
 ---
 
@@ -466,7 +467,67 @@ The compiler resolves citation permalinks during compilation:
 
 ---
 
-## 10. Filesystem layout
+## 10. Skill instruction design
+
+`SKILL.md` contains the operational instructions for the AI agent.
+
+### Runtime environment check
+
+The agent verifies that Node.js sits on the system path and meets the version requirement:
+1. Run `node --version`.
+2. Parse the major version number.
+3. If Node.js is missing or below version 18, stop execution and report that the build compiler
+   requires Node.js 18 or later.
+
+### Path discovery
+
+The agent identifies the absolute path to its skill folder from the location of `SKILL.md`. It uses
+this directory path to access:
+- `references/question-rules.md` during authoring.
+- `build.mjs` during blind checks and compilation.
+- `template.html` and assets during build operations.
+
+### Prompt parsing
+
+The agent extracts key parameters from natural language prompts:
+- **Question count:** It parses explicit count phrases (for example, "10 questions", "count: 8").
+  When omitted, the count defaults to 20 questions.
+- **Language:** The agent generates questions in the requested language. When omitted, it matches
+  the language of the source documents.
+
+### Clarifying questions
+
+The agent asks a clarifying question before authoring when:
+1. The working directory is empty.
+2. The working directory is the user home directory (`~`), where recursive scanning would inspect
+   unrelated personal files.
+3. The prompt specifies no target file and the repository contains multiple independent projects.
+
+### Canonical question rules
+
+`skills/quiz/references/question-rules.md` holds the single canonical source of question authoring
+rules. The agent reads this file during Phase 2. The file specifies:
+- Progressive tiers from Fundamentals to Expert (D8).
+- The prohibition on trivia such as arbitrary numbers or variable names.
+- Choice composition: 1 correct, 1 obvious wrong, and 2 plausible wrong (D9).
+- Quality standards for distractors and misconceptions (D10).
+
+### Step sequence
+
+`SKILL.md` directs the agent through nine execution steps:
+1. Verify Node.js runtime version.
+2. Resolve absolute skill directory path.
+3. Parse prompt parameters and ask clarifying questions if the scope is ambiguous.
+4. Scan and read source material.
+5. Read `references/question-rules.md`.
+6. Select an unused directory `quizzes/<slug>/`.
+7. Author draft questions into `quiz.json`.
+8. Execute blind verification with a sub-agent using `build.mjs --blind`.
+9. Compile the slide deck with `build.mjs` and report the local file path.
+
+---
+
+## 11. Filesystem layout
 
 The skill components and outputs follow this file structure:
 
@@ -475,6 +536,8 @@ skills/quiz/
 ├── SKILL.md              # Agent prompt instructions
 ├── build.mjs             # Zero-dependency compiler script
 ├── template.html         # HTML shell without inline fonts
+├── references/
+│   └── question-rules.md # Canonical question authoring rules
 └── assets/
     ├── fonts.css         # WOFF2 base64 webfonts and CSS rules
     └── OFL.txt           # SIL Open Font License 1.1 text
@@ -491,7 +554,7 @@ directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
 
 ---
 
-## 11. Test plan
+## 12. Test plan
 
 The build compiler undergoes unit testing using the native `node:test` runner.
 
@@ -512,7 +575,7 @@ The automated test suite verifies:
 
 ---
 
-## 12. Sources
+## 13. Sources
 
 - ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
 - SIL Open Font License 1.1: <https://openfontlicense.org/>
