@@ -81,14 +81,10 @@ Completion criterion: Technical knowledge gathered from the resource.
 
 ## 5. Read question rules
 
-Read `<skill-dir>/references/question-rules.md` to review the canonical authoring requirements.
+Read `<skill-dir>/references/question-rules.md`. It is the one source of every authoring rule:
+tiers, trivia, choices, clarity, coverage, explanations, and citations.
 
-- Review the four progressive tiers: Fundamentals (1), Core (2), Advanced (3), and Expert (4).
-- Review the prohibition on trivia.
-- Review choice composition: exactly one correct choice, one obvious wrong choice, and two
-  plausible wrong choices per question.
-
-Completion criterion: Authoring rules loaded and understood before drafting.
+Completion criterion: Authoring rules loaded before drafting.
 
 ## 6. Select unused output directory
 
@@ -131,13 +127,6 @@ Format `quiz.json` with this structure:
   ]
 }
 ```
-
-Key authoring requirements:
-- Questions follow non-decreasing tiers (1 to 4). Tier sizes must differ by at most 1 question.
-- Each question has exactly 4 choices: 1 `correct` (no rationale), 1 `obvious-wrong`
-  (with rationale), and 2 `plausible-wrong` (with rationale).
-- The correct choice text must not exceed 1.2 times the length of the longest wrong choice.
-- Local citations use paths relative to the repository root. PDF citations specify `page`.
 
 Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 
