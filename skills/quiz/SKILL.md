@@ -133,7 +133,9 @@ Command behavior and exit codes:
 Read the complete content of `quizzes/<slug>/quiz.blind.json`.
 
 Start a sub-agent with read access to the source material. Provide these instructions:
-1. Include the entire JSON content of `quiz.blind.json` directly in the sub-agent prompt.
+1. Include the JSON content of `quiz.blind.json` directly in the sub-agent prompt. Do not give
+   the sub-agent the draft `quiz.json`, the explanations, the rationales, or any hint about the
+   answers.
 2. Instruct the sub-agent that it must never read any file under `quizzes/`.
 3. The sub-agent must answer every question using only the source material.
 4. For each question, the sub-agent selects choice letter `'a'`, `'b'`, `'c'`, or `'d'`. If a
