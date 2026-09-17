@@ -503,10 +503,12 @@ The deck contains three distinct slide views:
    Shows tier badge, question progress ("5 of 20"), question prompt, four interactive choice cards,
    an explanation reveal panel, citation link, a "Back" button, and a "Next" button. Choice status
    displays drawn check and cross icons next to the status text.
-3. **End slide (index N + 1):** Shows total score percentage, a score band summary line, score
-   breakdown per tier, action buttons ("Try the missed questions again" and "Restart") placed before
-   the missed question list, and links to missed questions. Reaching the end slide from the last
-   question plays a score count-up and drops confetti for a perfect score.
+3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
+   and percent in its center and replaces the big score heading. The heading label keeps the full
+   text for screen readers. Shows a score band summary line, score breakdown per tier, action
+   buttons ("Try the missed questions again" and "Restart") placed before the missed question list,
+   and links to missed questions. Reaching the end slide from the last question animates the ring
+   fill and count-up over 800 ms, and drops confetti after the ring closes for a 100% score.
 
 ### Keyboard bindings
 
@@ -559,25 +561,27 @@ Transitions provide visual feedback during navigation and answers without blocki
    pixels (`--distance-medium`) with a fade from opacity 0 to 1 and a 3 pixel blur over 500 ms
    (`--duration-very-slow`) with `--ease-smooth-out`. Keyboard shortcuts and focus work immediately
    without waiting for the transition to finish.
-4. **End slide score count-up:** When the learner completes the quiz from the final question, the
-   correct question count and score percentage count up from 0 in 20 steps over 800 ms (40 ms per
-   step). The heading provides an `aria-label` with the final score string so screen readers read
-   the result without hearing intermediate counter values.
+4. **End slide score ring and count-up:** The end slide presents the score in a thin ring (144 px,
+   3 px stroke). The track uses `--vbg-gray-400`. The fill uses ink (`--vbg-gray-1000`) with a
+   rounded cap, turned to start at 12 o'clock. At 100%, the fill turns green (`--vbg-green-900`). At
+   zero, only the track shows. The heading wraps the ring, count, and percent, and keeps the full
+   text in its `aria-label` for screen readers. On a real finish from the last question, the fill
+   moves with the 800 ms count-up from empty to final value, while the count and percent count up
+   in 20 steps over 800 ms.
 5. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
    view using the 500 ms rise animation. The line matches the score percentage:
    - 100%: "Every answer is correct."
    - 70% or more: "A good result. The missed questions show what to read next."
    - 40% or more: "Good progress. Read the explanation of each missed question."
    - Below 40%: "A first pass. Every explanation is one slide away."
-6. **Perfect score celebration:** When the score reaches 100% on completion, 60 confetti pieces
-   drop from the top edge. Each piece measures 8 by 14 pixels and uses page colors: primary ink
-   (`--vbg-gray-1000`), success green (`--vbg-green-900`), or secondary gray (`--vbg-gray-900`).
-   Pieces fall over 1.2 to 2 seconds with random delays up to 400 ms and rotate across a random
-   angle. The confetti container ignores pointer events, carries `aria-hidden="true"`, and detaches
-   from the DOM after 2.4 seconds.
+6. **Perfect score celebration:** When the score reaches 100% on completion, confetti starts after
+   800 ms once the ring closes. Sixty confetti pieces drop from the top edge. Each piece measures
+   8 by 14 pixels and uses page colors: primary ink (`--vbg-gray-1000`), success green
+   (`--vbg-green-900`), or secondary gray (`--vbg-gray-900`). Pieces fall over 1.2 to 2 seconds
+   with random delays up to 400 ms and rotate across a random angle. The confetti container ignores
+   pointer events, carries `aria-hidden="true"`, and detaches from the DOM after 2.4 seconds.
 7. **Static fallbacks:** Reloading the page, following a direct hash link to `#<N+1>`, or enabling
-   `prefers-reduced-motion: reduce` renders the final score values and text immediately without
-   count-up or confetti.
+   `prefers-reduced-motion: reduce` draws the final state at once without count-up or confetti.
 
 ---
 
@@ -791,8 +795,8 @@ Transitions follow `prefers-reduced-motion` settings:
      `25-checkbox-check.md`.
   3. Feedback panel: 500 ms rise with fade and blur using the pattern of recipe
      `18-texts-reveal.md`.
-  4. End slide score reveal: 800 ms numerical count-up, followed by the 500 ms rise of the score
-     band line, and a 2.4-second confetti drop for a 100% score.
+  4. End slide score reveal: 800 ms score ring fill and count-up, followed by the 500 ms rise of
+     the score band line, and a 2.4-second confetti drop for a 100% score.
 - **Focus rings:** All interactive controls display a visible focus indicator using
   `:focus-visible` with a 2-pixel solid outline and a 2-pixel offset.
 
