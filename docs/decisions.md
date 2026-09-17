@@ -6,13 +6,13 @@ This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |
 |---|---|---|
-| 1 | Decision log | What did we decide for D1 to D25? |
+| 1 | Decision log | What did we decide for D1 to D26? |
 | 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
 | 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
-| 4 | Output and presentation (D13 to D18) | How do we build and render slides? |
+| 4 | Output and presentation (D13 to D18, D26) | How do we build and render slides? |
 | 5 | Execution and verification (D19 to D24) | How do we run and test the build? |
 | 6 | Agent hosts (D25) | Which agent environments do we support? |
-| 7 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
+| 7 | Conflict records: theme and stillness | Why does the design diverge from Vercel rules? |
 | 8 | Sources | Where are the primary references? |
 
 ---
@@ -46,6 +46,7 @@ This document answers: what did we decide, and what did we reject?
 | D23 | Citations | Git permalink with commit SHA | Prevents broken source references |
 | D24 | Tests | Unit tests with `node:test` | Deterministic validation of compiler |
 | D25 | Hosts | Claude Code first, generic steps | Runs on Claude Code and agy hosts |
+| D26 | Motion | Free recipes, own confetti | Brings joy and feedback without input blocking |
 
 ---
 
@@ -204,7 +205,7 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 4. Output and presentation (D13 to D18)
+## 4. Output and presentation (D13 to D18, D26)
 
 ### D13: Output location and deployment
 - **Decision:** Save quizzes to `./quizzes/<slug>/index.html`. If the folder exists, append a
@@ -265,6 +266,45 @@ This document answers: what did we decide, and what did we reject?
 - **Rejected alternative:** Key storage solely by slug.
   Rejected because regenerating a quiz with new questions at an existing slug would load obsolete
   answer state.
+
+### D26: Motion and score celebrations
+- **Decision:** Adopt three free transition patterns from `transitions.dev` (`08-page-side-by-side`
+  enter half, `25-checkbox-check` icon stroke draw, and `18-texts-reveal` feedback rise) using
+  tokens from `skills/transitions-dev/_root.css` at commit
+  `598d3d6ad89dabb4bdf742fd2e887ca53914a888`.
+  Implement custom lightweight DOM confetti for 100% scores. Enforce that all motion resides inside
+  `@media (prefers-reduced-motion: no-preference)`.
+- **Reason:** Transitions provide visual confirmation of learner actions and bring joy on quiz
+  completion without blocking clicks or keyboard controls. Using the free recipes complies with
+  `https://transitions.dev/terms.html`. The terms permit using free transition recipes in products,
+  but forbid redistributing them as a standalone transition library. The transitions.dev confetti
+  burst is a paid Pro item, so the skill implements an own 60-piece CSS confetti animation.
+- **Adopted recipes:**
+  - `08-page-side-by-side.md`: Enter half used for slide transitions. The incoming slide moves 8px
+    from the direction of travel, fades from 0 to 1, and clears a 3px blur over 250 ms with
+    `--ease-smooth-out`.
+  - `25-checkbox-check.md`: SVG stroke draw animation on status icons over 350 ms.
+  - `18-texts-reveal.md`: Feedback rise animation of 12px with fade and 3px blur over 500 ms,
+    reused for the score band summary line.
+- **Rejected alternatives (8 recipes):**
+  - `02-number-pop-in.md`: Digit-by-digit spans in the score heading would break screen reader
+    announcements. The 20-step count-up already provides score progression.
+  - `26-spinning-counter.md`: A 1.4-second spinning slot reel with SVG motion blur resembles a
+    gambling interface and requires complex JavaScript runtime generation.
+  - `10-success-check.md`: A 40-pixel bob, 80-degree rotation, and 10-pixel blur are excessive for
+    a simple validation indicator. The checkbox stroke draw is the light form.
+  - `12-error-state-shake.md`: Shaking the card on an incorrect answer punishes the learner. The
+    status cross and rationale text convey the result clearly without negative reinforcement.
+  - `04-text-states-swap.md`: The progress indicator changes alongside the slide, which already
+    animates. Adding a three-phase timer introduces JavaScript complexity for redundant feedback.
+  - `09-icon-swap.md`: The manual theme button uses text labels rather than morphing SVG icons.
+  - `14-skeleton-reveal.md`: The application holds all question data locally and loads nothing
+    asynchronously.
+  - `16-tabs-sliding.md`: The slide presentation contains no tabbed navigation interfaces.
+- **Rejected alternative (transitions.dev Pro confetti):**
+  - The transitions.dev confetti burst is a Pro item under `https://transitions.dev/terms.html`.
+    The custom CSS confetti uses 60 colored elements and standard DOM cleanup without external
+    assets.
 
 ---
 
@@ -346,16 +386,17 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 7. Conflict record: theme toggle
+## 7. Conflict records: theme toggle and stillness
 
-This section records the contradiction between the source design document and our implementation
-choice, following documentation rule 4.
+This section records contradictions between the source design document and our implementation
+choices, following documentation rule 4.
 
 | Source document | External rule | Chosen rule | Reference |
 |---|---|---|---|
 | `vercel.com/design.md` | No visible switcher | Manual toggle button | Section 4 (D16) |
+| `vercel.com/design.md` | Default to stillness | Transitions and confetti | Section 4 (D26) |
 
-### Detailed discrepancy
+### Theme toggle
 
 **Source rule:**
 `http://vercel.com/design.md` specifies two constraints:
@@ -373,10 +414,32 @@ Presenters display slides in conference rooms or on external monitors where brig
 makes dark backgrounds hard to read. Users need manual contrast control regardless of operating
 system settings.
 
+### Stillness and motion
+
+**Source rule:**
+`http://vercel.com/design.md` section `Accessibility and responsive behavior` specifies:
+"Default to stillness. Animations should be opt-in or reserved for intentional micro-interactions:
+a subtle hover, a smooth accordion, a crisp drawer. Never add scroll reveals, staggered entry
+animations, bounce effects, or parallax."
+
+**Our implementation:**
+The generated HTML page animates three state changes (slide enter, answer feedback, and score
+count-up) and displays a one-time confetti burst for a perfect score. The page uses no scroll
+reveals, bounce effects, or parallax. Every animation and transition sits inside the media query
+`@media (prefers-reduced-motion: no-preference)`. When the user enables reduced motion, all
+animations are disabled and the page renders complete and static immediately.
+
+**Reason for divergence:**
+The user requested slide transitions and celebratory motion on the score page to bring joy upon
+completing a quiz. Micro-interactions for slide advancement, icon drawing, feedback elevation, and
+the score reveal provide visual feedback on learner progress without blocking input or delaying
+interaction.
+
 ---
 
 ## 8. Sources
 
 - ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
+- transitions.dev Terms: <https://transitions.dev/terms.html>
 - Node.js Test Runner: <https://nodejs.org/api/test.html>
