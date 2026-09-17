@@ -18,15 +18,15 @@ This document answers: what are we building, and why?
 
 ## 1. The core problem
 
-Engineers must learn unfamiliar codebases, technical documentation, and complex systems rapidly.
-Writing practice questions manually takes hours. Raw language model generations often produce
-superficial trivia, hallucinated statements, or unbalanced choices that learners can easily guess.
-Existing quiz software requires user accounts, external databases, or heavy web frameworks.
+Engineers who explore unfamiliar codebases, documentation, or technical systems need practice
+questions to verify their mental models. They need questions that evaluate system comprehension,
+execution flow, and design trade-offs rather than trivia. They also need a simple presentation
+format that opens locally without network access, third-party accounts, or server infrastructure.
 
-The `quiz` skill solves these problems. It analyzes local repositories, documentation sites, files,
-or general topics. It generates four tiers of multiple-choice questions without trivia. It verifies
-the questions with a blind sub-agent and compiles them into a single self-contained HTML slide page.
-The page works offline and runs in any modern browser.
+The `quiz` skill addresses these needs. It inspects local repositories, documentation sites, files,
+or user topics. It generates four tiers of multiple-choice questions without trivia. It verifies
+the questions with an independent blind sub-agent and compiles them into a single self-contained
+HTML slide page. The page works offline and runs in any modern browser.
 
 ---
 
@@ -149,6 +149,7 @@ An implementation satisfies this specification when all criteria pass:
 - [ ] The end slide displays the final score, tier breakdown, and a retry missed questions button.
 - [ ] The T key and header button toggle between light and dark themes.
 - [ ] Progress persists in `localStorage` with a derived ID, and the restart button clears it.
+- [ ] Controls and contrast ratios comply with WCAG 2.1 AA specifications.
 
 ---
 
