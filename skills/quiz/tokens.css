@@ -64,7 +64,8 @@
 /*
  * Motion tokens for the slide, answer, and score transitions.
  * Source: https://github.com/Jakubantalik/transitions.dev, file skills/transitions-dev/_root.css
- * at commit 598d3d6ad89dabb4bdf742fd2e887ca53914a888. The terms at https://transitions.dev/terms.html
+ * at commit 598d3d6ad89dabb4bdf742fd2e887ca53914a888. The terms, at
+ * https://transitions.dev/terms.html,
  * permit use in a product. Only the free recipes are used. The names are the source names.
  */
 :root {

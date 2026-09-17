@@ -452,13 +452,44 @@ kbd {
   text-align: right;
 }
 
+/*
+ * Motion. Every animation sits inside this media query, so the page is complete with no motion.
+ * Slide enter: the enter half of the transitions.dev recipe 08-page-side-by-side.md.
+ * The old slide does not slide out, because the page renders one slide at a time.
+ */
 @media (prefers-reduced-motion: no-preference) {
   .choice,
   .button {
     transition:
-      background-color 150ms ease,
-      box-shadow 150ms ease,
-      color 150ms ease;
+      background-color var(--duration-quick) ease,
+      box-shadow var(--duration-quick) ease,
+      color var(--duration-quick) ease;
+  }
+
+  .slide[data-enter='next'] {
+    --enter-x: var(--distance-base);
+  }
+
+  .slide[data-enter='back'] {
+    --enter-x: calc(var(--distance-base) * -1);
+  }
+
+  .slide.is-entering {
+    animation: slide-enter var(--duration-fast) var(--ease-smooth-out) both;
+  }
+
+  @keyframes slide-enter {
+    from {
+      opacity: 0;
+      transform: translateX(var(--enter-x, 0px));
+      filter: blur(var(--blur-medium));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      filter: blur(0);
+    }
   }
 }
 
@@ -693,6 +724,8 @@ kbd {
    */
   function goTo(slide, options = {}) {
     const target = Math.max(0, Math.min(slide, lastOpenSlide()));
+    const direction = target > state.currentSlide ? 'next' : 'back';
+    const moved = target !== state.currentSlide;
     state.currentSlide = target;
     saveState();
     const hash = `#${target}`;
@@ -701,7 +734,25 @@ kbd {
       else history.pushState(null, '', hash);
     }
     render(options.focus !== false);
+    if (moved && options.focus !== false) enterSlide(direction);
   }
+
+  /**
+   * Plays the enter transition of a new slide. The slide comes in from the side of travel. The
+   * CSS plays the animation only when the system does not ask for reduced motion.
+   *
+   * @param {'next' | 'back'} direction Side of travel.
+   */
+  function enterSlide(direction) {
+    slideElement.classList.remove('is-entering');
+    slideElement.dataset.enter = direction;
+    void slideElement.offsetWidth; // Forces a reflow, so the animation starts again.
+    slideElement.classList.add('is-entering');
+  }
+
+  slideElement.addEventListener('animationend', (event) => {
+    if (event.target === slideElement) slideElement.classList.remove('is-entering');
+  });
 
   function next() {
     const slide = state.currentSlide;
