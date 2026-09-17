@@ -164,12 +164,12 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answe
 ```
 
 Command behavior and exit codes:
-- The command exits with code 0 when execution succeeds, or code 1 if validation of the draft or
-  answers file fails. Usage errors exit with code 2.
-- The command prints a `GradeReport` as JSON.
-- Parse the report and inspect the `passed` field.
-- If `passed` is `true`, proceed to step 9.
-- If `passed` is `false`, inspect the `failures` array.
+- The command prints a `GradeReport` as JSON to standard output.
+- Exit code 0 means that all questions passed verification (`passed: true`). Proceed to step 9.
+- Exit code 3 means that the grade ran and at least one question failed (`passed: false`). Inspect
+  the `failures` array in the report and repair failed questions in step 8d.
+- Validation failures in the draft or answers file exit with code 1 and write diagnostics to
+  standard error. Usage errors exit with code 2.
 
 ### Step 8d: Repair failed questions
 Any edit to `quiz.json` changes the quiz identifier hash, which changes the choice shuffle seed
