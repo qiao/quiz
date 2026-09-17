@@ -40,6 +40,14 @@ Extract resource target, topic focus, question count, and language from the user
 
 - **Target and focus:** The prompt can provide a resource path, a focus topic, or both. If omitted,
   the target defaults to the current working directory.
+- **Focus versus topic:** When prompt words do not name a path or URL (for example,
+  `/quiz authentication flow` or `/quiz TCP congestion control`):
+  1. Search the current working directory for matching files or code symbols.
+  2. If the working directory contains matching material, treat the words as a focus within the
+     workspace.
+  3. If the working directory has no matching material, treat the words as a free-standing topic.
+     Gather facts using web search and model knowledge, cite URL sources, and state in the final
+     report that the quiz uses web sources.
 - **Question count:** Parse explicit count requests (such as "10 questions"). If omitted, the count
   defaults to 20 questions.
 - **Language:** Author questions in the language of the prompt. For a bare `/quiz` invocation,
@@ -49,6 +57,8 @@ Extract resource target, topic focus, question count, and language from the user
   2. The prompt names no resource, and the current working directory is empty.
   3. The prompt names no resource, and the current working directory is the user home
      directory (`~`).
+  4. The prompt specifies a free-standing topic, and the current working directory is the user home
+     directory (`~`), to confirm where to save the quiz output directory.
   Do not ask confirmation questions for count, difficulty, or layout when valid defaults exist.
 
 Completion criterion: Target resource, focus topic, count, and language are determined, or user
@@ -213,6 +223,7 @@ Command behavior and exit codes:
   on Windows.
 - Print a one-line deployment hint for static hosting (for example,
   `npx vercel quizzes/<slug>` or `npx netlify deploy --dir=quizzes/<slug>`).
+- If the quiz covers a free-standing topic, state in the report that the quiz uses web sources.
 
 Completion criterion: `quizzes/<slug>/index.html` exists on disk and the user receives the file
 path, open command, and deployment hint.

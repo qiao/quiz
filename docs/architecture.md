@@ -623,14 +623,20 @@ The agent extracts key parameters from natural language prompts:
   When omitted, the count defaults to 20 questions.
 - **Language:** The agent generates questions in the language of the prompt. For a bare `/quiz`
   invocation with no prompt text, it uses the language of the conversation.
+- **Focus versus topic:** When prompt words name neither a path nor a URL, the agent searches the
+  working directory first. If matching source files exist, it treats the prompt as a focus within
+  the local workspace. If no matching material exists, it treats the prompt as a free-standing
+  topic using web search and URL citations.
 
 ### Clarifying questions
 
 The agent asks a clarifying question before authoring when:
 1. A specified target path does not exist.
-2. The prompt names no resource, and the working directory is empty.
-3. The prompt names no resource, and the working directory is the user home directory (`~`), where
-   recursive scanning would inspect unrelated personal files.
+2. The prompt names no resource or topic, and the working directory is empty.
+3. The prompt names no resource or topic, and the working directory is the user home directory
+   (`~`), where recursive scanning would inspect unrelated personal files.
+4. The prompt specifies a free-standing topic, and the working directory is the user home directory
+   (`~`), to confirm where to save the quiz output folder.
 
 ### Canonical question rules
 

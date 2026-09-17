@@ -95,18 +95,28 @@ This document answers: what did we decide, and what did we reject?
   limits crawling to 20 linked pages within the initial hostname.
 
 ### D5: Resource versus focus
-- **Decision:** Both resource target and topic focus are optional in user prompts.
-- **Reason:** Users expect `/quiz` to analyze the current workspace with standard defaults. Users
-  can specify a target path, a focus topic (for example `/quiz authentication`), or both.
+- **Decision:** Both resource target and topic focus are optional in user prompts. When a prompt
+  contains words with no path or URL, search the current working directory first. If the workspace
+  contains matching files or symbols, treat the words as a focus inside the workspace. If the
+  workspace contains no matching material, treat the words as a free-standing topic using web search
+  and URL citations. Write the output to `quizzes/<slug>/` in the working directory. If the working
+  directory is the home directory (`~`), ask the user where to save the output folder.
+- **Reason:** Users expect `/quiz authentication` to focus on authentication code inside an active
+  workspace, but expect `/quiz TCP congestion control` to generate a conceptual quiz from web
+  sources when not in a networking project.
 - **Rejected alternative:** Mandatory resource parameter.
   Rejected because requiring users to specify the current path adds unnecessary setup steps.
 - **Rejected alternative:** Uniform file traversal without importance weighting.
   Rejected because treating lock files, generated bundles, and vendor folders equally wastes
   model context. The skill weights core modules and public interfaces.
+- **Rejected alternative:** Always treat ambiguous words as workspace focus.
+  Rejected because running `/quiz quantum computing` in an unrelated repository would fail or
+  produce distorted questions instead of exploring the intended subject via web research.
 
 ### D6: Clarifying questions
-- **Decision:** Ask clarifying questions only when a target path does not exist, or when the prompt
-  names no resource while the current working directory is empty or the home directory. If the
+- **Decision:** Ask clarifying questions only when a target path does not exist, when the prompt
+  names no resource or topic while the current working directory is empty or the home directory,
+  or when a topic quiz runs in the home directory (`~`) to choose an output destination. If the
   prompt names an explicit URL, document, or path, proceed without asking.
 - **Reason:** Developers expect immediate execution when standard defaults exist or when the
   prompt provides an unambiguous resource.
