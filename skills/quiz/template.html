@@ -383,6 +383,38 @@ h2 {
   font-size: var(--vbg-type-label);
 }
 
+.keys {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--vbg-space-2) var(--vbg-space-4);
+  margin: var(--vbg-space-3) 0 0;
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-label);
+}
+
+.keys dt,
+.keys dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0 var(--vbg-space-1);
+  border-radius: var(--vbg-radius-small);
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  color: var(--vbg-gray-1000);
+  font-family: var(--vbg-font-mono);
+  font-size: var(--vbg-type-label);
+}
+
+/* A device with no keyboard and no hover, for example a phone, does not show the key list. */
+@media (hover: none) and (pointer: coarse) {
+  .keys {
+    display: none;
+  }
+}
+
 .score-table {
   width: 100%;
   margin-top: var(--vbg-space-4);
@@ -702,11 +734,31 @@ h2 {
       answeredCount ? button('Restart', 'secondary', restart) : null,
     ]);
 
+    const keyRows = [
+      { keys: ['1 to 4', 'A to D'], action: 'Choose an answer' },
+      { keys: ['Enter', 'Right Arrow'], action: 'Go on' },
+      { keys: ['Left Arrow'], action: 'Go back' },
+      { keys: ['T'], action: 'Change the theme' },
+    ];
+    const keyList = element(
+      'dl',
+      { class: 'keys', 'aria-label': 'Keys' },
+      keyRows.flatMap((row) => [
+        element(
+          'dt',
+          {},
+          row.keys.flatMap((key, index) => [index ? ' or ' : null, element('kbd', { text: key })]),
+        ),
+        element('dd', { text: row.action }),
+      ]),
+    );
+
     showSlide([
-      element('p', { class: 'meta', text: `Quiz · ${plural(questionCount, 'question')}` }),
       element('h1', { text: quiz.title }),
       element('p', { class: 'lede', text: `Source: ${quiz.source}` }),
-      element('h2', { text: 'Tiers' }),
+      element('h2', {
+        text: `${plural(questionCount, 'question')} in ${plural(tierCounts.length, 'tier')}`,
+      }),
       element(
         'ol',
         { class: 'list' },
@@ -716,11 +768,9 @@ h2 {
       ),
       element('p', {
         class: 'hint',
-        text:
-          'Answer a question to see the explanation. Your progress stays in this browser. ' +
-          'Keys: 1 to 4 or A to D choose, Enter or Right Arrow advances, Left Arrow moves back, ' +
-          'and T toggles theme.',
+        text: 'Answer a question to see the explanation. Your progress stays in this browser.',
       }),
+      keyList,
       actions,
     ]);
   }
