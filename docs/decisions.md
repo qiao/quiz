@@ -322,17 +322,20 @@ choice, following documentation rule 4.
 ### Detailed discrepancy
 
 **Source rule:**
-`http://vercel.com/design.md` specifies: "Follow prefers-color-scheme. Do not add a visible
-switcher."
+`http://vercel.com/design.md` specifies two constraints:
+1. Section `Color, surfaces, and boundaries`: "Light and dark themes are implicit; do not add a
+   visible switcher."
+2. Section `Accessibility and responsive behavior`: "The page must remain usable in light and dark
+   and across desktop and narrow screens without a visible theme switcher."
 
 **Our implementation:**
 The generated HTML page follows `prefers-color-scheme` by default, but includes a discrete manual
 theme toggle button in the header and binds the key `t` to toggle themes.
 
 **Reason for divergence:**
-Presentation slides are frequently displayed on external conference room projectors or shared
-monitors where dark themes have insufficient contrast. Users require manual contrast control
-regardless of host operating system settings.
+Presenters display slides in conference rooms or on external monitors where bright ambient lighting
+makes dark backgrounds hard to read. Users need manual contrast control regardless of operating
+system settings.
 
 ---
 
