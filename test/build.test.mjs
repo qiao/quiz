@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import {
+  blindQuiz,
   choiceOrders,
   quizIdOf,
   renderMarkdown,
@@ -254,5 +255,29 @@ describe('choiceOrders', () => {
     });
     assert.equal(obviousSlots.size, 4);
     assert.ok(inDraftOrder.length < orders.length / 2, `${inDraftOrder.length} in draft order`);
+  });
+});
+
+describe('blindQuiz', () => {
+  it('removes every field that shows the answer', () => {
+    const text = JSON.stringify(blindQuiz(loadDraft()));
+    for (const field of ['"kind"', '"rationale"', '"explanation"']) {
+      assert.ok(!text.includes(field), `${field} is in the blind copy`);
+    }
+  });
+
+  it('shows the choices in the same order as the page', () => {
+    const draft = loadDraft();
+    const blind = blindQuiz(draft);
+    const orders = choiceOrders(draft);
+    blind.questions.forEach((question, index) => {
+      assert.equal(question.id, index + 1);
+      assert.equal(question.tier, draft.questions[index].tier);
+      assert.deepEqual(
+        question.choices.map((choice) => choice.text),
+        orders[index].map((choice) => draft.questions[index].choices[choice].text),
+      );
+      assert.deepEqual(question.choices.map((choice) => choice.id), ['a', 'b', 'c', 'd']);
+    });
   });
 });

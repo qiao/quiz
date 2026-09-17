@@ -425,3 +425,49 @@ export function choiceOrders(draft) {
     );
   });
 }
+
+/** Letters that name the choice positions on a slide. */
+export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
+
+/**
+ * @typedef {typeof CHOICE_LETTERS[number]} ChoiceLetter
+ *
+ * @typedef {object} BlindQuestion
+ * @property {number} id Question number, from 1.
+ * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {string} prompt Question text in Markdown.
+ * @property {{ id: ChoiceLetter, text: string }[]} choices Choices in page order.
+ * @property {DraftCitation} citation Source of the answer.
+ *
+ * @typedef {object} BlindQuiz
+ * @property {string} title Title of the quiz.
+ * @property {string} slug Folder name of the quiz.
+ * @property {string} source Resource that the quiz covers.
+ * @property {BlindQuestion[]} questions Questions with no answer key.
+ */
+
+/**
+ * Makes the copy of the quiz that the blind checker reads.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @returns {BlindQuiz} The quiz with no `kind`, `rationale`, or `explanation`, and with the choices
+ *   in page order.
+ */
+export function blindQuiz(draft) {
+  const orders = choiceOrders(draft);
+  return {
+    title: draft.title,
+    slug: draft.slug,
+    source: draft.source,
+    questions: draft.questions.map((question, index) => ({
+      id: index + 1,
+      tier: question.tier,
+      prompt: question.prompt,
+      choices: orders[index].map((choiceIndex, slot) => ({
+        id: CHOICE_LETTERS[slot],
+        text: question.choices[choiceIndex].text,
+      })),
+      citation: question.citation,
+    })),
+  };
+}
