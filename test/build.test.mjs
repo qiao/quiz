@@ -5,6 +5,7 @@ import { describe, it } from 'node:test';
 
 import {
   blindQuiz,
+  buildQuiz,
   choiceOrders,
   githubWebUrl,
   gradeAnswers,
@@ -454,5 +455,33 @@ describe('resolveCitation', () => {
       assert.equal(result.url, undefined, JSON.stringify(change));
       assert.deepEqual(result, citation);
     }
+  });
+});
+
+describe('buildQuiz', () => {
+  it('derives ids, tier names, letters, and HTML from the draft', () => {
+    const draft = loadDraft();
+    const quiz = buildQuiz(draft, { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
+    const orders = choiceOrders(draft);
+
+    assert.equal(quiz.id, quizIdOf(draft));
+    assert.equal(quiz.createdAt, '2026-01-02T03:04:05.000Z');
+    assert.equal(quiz.questions.length, 8);
+    quiz.questions.forEach((question, index) => {
+      const source = draft.questions[index];
+      assert.equal(question.id, index + 1);
+      const tierNames = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
+      assert.equal(question.tierName, tierNames[source.tier - 1]);
+      assert.equal(question.promptHtml, renderMarkdown(source.prompt));
+      assert.equal(question.explanationHtml, renderMarkdown(source.explanation));
+      assert.equal(question.citation.url, source.citation.target);
+      question.choices.forEach((choice, slot) => {
+        const sourceChoice = source.choices[orders[index][slot]];
+        assert.equal(choice.id, ['a', 'b', 'c', 'd'][slot]);
+        assert.equal(choice.kind, sourceChoice.kind);
+        assert.equal(choice.textHtml, renderMarkdown(sourceChoice.text));
+        assert.equal('rationaleHtml' in choice, sourceChoice.kind !== 'correct');
+      });
+    });
   });
 });

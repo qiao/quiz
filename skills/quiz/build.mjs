@@ -688,3 +688,65 @@ export function resolveCitation(citation, facts) {
   const encodedPath = path.split('/').map(encodeURIComponent).join('/');
   return { ...citation, url: `${facts.webUrl}/blob/${facts.commit}/${encodedPath}${anchor}` };
 }
+
+/**
+ * @typedef {object} BuiltChoice
+ * @property {ChoiceLetter} id Letter of the position on the slide.
+ * @property {string} textHtml Choice text as safe HTML.
+ * @property {ChoiceKind} kind Role of the choice.
+ * @property {string} [rationaleHtml] Reason that a wrong choice is wrong, as safe HTML.
+ *
+ * @typedef {object} BuiltQuestion
+ * @property {number} id Question number, from 1.
+ * @property {1 | 2 | 3 | 4} tier Difficulty tier.
+ * @property {string} tierName Name of the tier.
+ * @property {string} promptHtml Question text as safe HTML.
+ * @property {BuiltChoice[]} choices Choices in page order.
+ * @property {string} explanationHtml Reason that the correct choice is correct, as safe HTML.
+ * @property {BuiltCitation} citation Source of the answer, with a link when one is safe.
+ *
+ * @typedef {object} BuiltQuiz
+ * @property {string} id Quiz id from `quizIdOf`.
+ * @property {string} title Title of the quiz, as plain text.
+ * @property {string} slug Folder name of the quiz.
+ * @property {string} source Resource that the quiz covers, as plain text.
+ * @property {string} createdAt Build time in ISO 8601 form.
+ * @property {BuiltQuestion[]} questions Questions in tier order.
+ */
+
+/**
+ * Derives the page data from a valid draft.
+ *
+ * @param {QuizDraft} draft Valid draft.
+ * @param {{ createdAt: string, gitFacts: GitFacts | null }} options Build time and git facts.
+ * @returns {BuiltQuiz} The data that the page reads.
+ */
+export function buildQuiz(draft, { createdAt, gitFacts }) {
+  const orders = choiceOrders(draft);
+  return {
+    id: quizIdOf(draft),
+    title: draft.title,
+    slug: draft.slug,
+    source: draft.source,
+    createdAt,
+    questions: draft.questions.map((question, index) => ({
+      id: index + 1,
+      tier: question.tier,
+      tierName: TIER_NAMES[question.tier - 1],
+      promptHtml: renderMarkdown(question.prompt),
+      choices: orders[index].map((choiceIndex, slot) => {
+        const choice = question.choices[choiceIndex];
+        /** @type {BuiltChoice} */
+        const built = {
+          id: CHOICE_LETTERS[slot],
+          textHtml: renderMarkdown(choice.text),
+          kind: choice.kind,
+        };
+        if (choice.rationale) built.rationaleHtml = renderMarkdown(choice.rationale);
+        return built;
+      }),
+      explanationHtml: renderMarkdown(question.explanation),
+      citation: resolveCitation(question.citation, gitFacts),
+    })),
+  };
+}
