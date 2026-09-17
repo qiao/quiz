@@ -96,7 +96,17 @@ Design questions so that an independent reader reaches the exact correct choice:
 - If a prompt refers to specific code behavior, include the relevant code snippet in a fenced code
   block, or state the exact file name.
 
-## 5. Explanations and citations
+## 5. Coverage
+
+Spread questions across the target resource:
+
+- No two questions may test the same fact. Every question must evaluate a distinct concept or
+  mechanism.
+- Spread questions across the modules, chapters, or documentation pages that the prompt or focus
+  covers.
+- Avoid clustering multiple questions around a single function, file, or paragraph.
+
+## 6. Explanations and citations
 
 ### Explanations
 - Every question must provide a non-empty `explanation`.
