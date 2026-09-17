@@ -137,7 +137,13 @@ pre {
   padding: var(--vbg-space-10) var(--vbg-space-6) var(--vbg-space-12);
 }
 
-.slide:focus {
+/* A question slide starts at the top, so the prompt and choices stay in place after an answer. */
+.slide-question {
+  justify-content: flex-start;
+}
+
+.slide:focus,
+.feedback:focus {
   outline: none;
 }
 
@@ -658,7 +664,9 @@ h2 {
       letter === correct.id
         ? `Correct. ${explanation}`
         : `Not correct. The correct choice is ${correct.id.toUpperCase()}. ${explanation}`;
-    document.getElementById('next-button')?.focus();
+    // The focus moves to the feedback and not to a button, so Enter still goes on. The view does
+    // not scroll, so the choice that the learner picked stays where it was.
+    document.getElementById('feedback')?.focus({ preventScroll: true });
   }
 
   /**
@@ -775,7 +783,13 @@ h2 {
         answer === correct.id
           ? 'Correct.'
           : `Not correct. The correct choice is ${correct.id.toUpperCase()}.`;
-      feedback = element('section', { class: 'feedback', 'aria-label': 'Explanation' }, [
+      const feedbackAttributes = {
+        class: 'feedback',
+        id: 'feedback',
+        tabindex: '-1',
+        'aria-label': 'Explanation',
+      };
+      feedback = element('section', feedbackAttributes, [
         element('p', { class: 'result', text: resultText }),
         element('div', { class: 'rich', html: question.explanationHtml }),
         element('p', { class: 'citation' }, ['Source: ', source]),
@@ -866,6 +880,7 @@ h2 {
     const answeredCount = Object.keys(state.answers).length;
     document.getElementById('bar-title').textContent = quiz.title;
     const onQuestion = slide >= 1 && slide <= questionCount;
+    slideElement.classList.toggle('slide-question', onQuestion);
     document.getElementById('bar-count').textContent = onQuestion
       ? `${slide} / ${questionCount}`
       : `${answeredCount} / ${questionCount} answered`;
