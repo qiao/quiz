@@ -9,10 +9,10 @@ import { describe, it } from 'node:test';
 import {
   blindQuiz,
   buildQuiz,
-  choiceOrders,
   githubWebUrl,
   gradeAnswers,
   main,
+  placeChoices,
   quizIdOf,
   readGitFacts,
   renderMarkdown,
@@ -259,22 +259,37 @@ describe('quizIdOf', () => {
   });
 });
 
-describe('choiceOrders', () => {
-  it('gives the same order for the same draft', () => {
-    assert.deepEqual(choiceOrders(loadDraft()), choiceOrders(loadDraft()));
+/**
+ * Gives the draft index of each choice in page order, for each question.
+ *
+ * @param {any} draft Valid draft.
+ * @returns {number[][]} The draft indices.
+ */
+function orders(draft) {
+  return placeChoices(draft).map((placed) => placed.map((item) => item.draftIndex));
+}
+
+describe('placeChoices', () => {
+  it('gives the same placement for the same draft', () => {
+    assert.deepEqual(placeChoices(loadDraft()), placeChoices(loadDraft()));
   });
 
-  it('gives a permutation of the 4 choices for each question', () => {
-    for (const order of choiceOrders(makeDraft(40))) {
-      assert.deepEqual([...order].sort(), [0, 1, 2, 3]);
-    }
+  it('places each of the 4 choices one time, under the letters a to d', () => {
+    const draft = makeDraft(40);
+    placeChoices(draft).forEach((placed, index) => {
+      assert.deepEqual(placed.map((item) => item.letter), ['a', 'b', 'c', 'd']);
+      assert.deepEqual(placed.map((item) => item.draftIndex).sort(), [0, 1, 2, 3]);
+      for (const item of placed) {
+        assert.equal(item.choice, draft.questions[index].choices[item.draftIndex]);
+      }
+    });
   });
 
   it('balances the correct position for each count from 1 to 40', () => {
     for (let count = 1; count <= 40; count += 1) {
       const draft = makeDraft(count);
       const slots = [0, 0, 0, 0];
-      choiceOrders(draft).forEach((order) => {
+      orders(draft).forEach((order) => {
         slots[order.indexOf(0)] += 1;
       });
       assert.ok(Math.max(...slots) - Math.min(...slots) <= 1, `count ${count}: ${slots}`);
@@ -282,14 +297,14 @@ describe('choiceOrders', () => {
   });
 
   it('does not keep the draft order of the wrong choices', () => {
-    const orders = choiceOrders(makeDraft(40, 'wrong order'));
-    const obviousSlots = new Set(orders.map((order) => order.indexOf(1)));
-    const inDraftOrder = orders.filter((order) => {
+    const all = orders(makeDraft(40, 'wrong order'));
+    const obviousSlots = new Set(all.map((order) => order.indexOf(1)));
+    const inDraftOrder = all.filter((order) => {
       const wrong = order.filter((choice) => choice !== 0);
       return wrong.join() === '1,2,3';
     });
     assert.equal(obviousSlots.size, 4);
-    assert.ok(inDraftOrder.length < orders.length / 2, `${inDraftOrder.length} in draft order`);
+    assert.ok(inDraftOrder.length < all.length / 2, `${inDraftOrder.length} in draft order`);
   });
 });
 
@@ -300,13 +315,10 @@ describe('choiceOrders', () => {
  * @returns {any} An answer file with every answer correct.
  */
 function correctAnswers(draft) {
-  const letters = ['a', 'b', 'c', 'd'];
   return {
-    answers: choiceOrders(draft).map((order, index) => ({
+    answers: placeChoices(draft).map((placed, index) => ({
       questionId: index + 1,
-      choice: letters[
-        order.findIndex((choice) => draft.questions[index].choices[choice].kind === 'correct')
-      ],
+      choice: placed.find((item) => item.choice.kind === 'correct')?.letter,
     })),
   };
 }
@@ -322,13 +334,13 @@ describe('blindQuiz', () => {
   it('shows the choices in the same order as the page', () => {
     const draft = loadDraft();
     const blind = blindQuiz(draft);
-    const orders = choiceOrders(draft);
+    const placed = placeChoices(draft);
     blind.questions.forEach((question, index) => {
       assert.equal(question.id, index + 1);
       assert.equal(question.tier, draft.questions[index].tier);
       assert.deepEqual(
         question.choices.map((choice) => choice.text),
-        orders[index].map((choice) => draft.questions[index].choices[choice].text),
+        placed[index].map((item) => item.choice.text),
       );
       assert.deepEqual(question.choices.map((choice) => choice.id), ['a', 'b', 'c', 'd']);
     });
@@ -381,8 +393,7 @@ describe('gradeAnswers', () => {
   it('reports a wrong choice, an ambiguous question, and a missing answer', () => {
     const draft = loadDraft();
     const file = correctAnswers(draft);
-    const orders = choiceOrders(draft);
-    const obviousLetter = ['a', 'b', 'c', 'd'][orders[4].indexOf(1)];
+    const obviousLetter = placeChoices(draft)[4].find((item) => item.draftIndex === 1)?.letter;
     file.answers[4].choice = obviousLetter;
     file.answers[6] = { questionId: 7, choice: 'ambiguous', reason: 'Two choices are true.' };
     file.answers.pop();
@@ -491,7 +502,7 @@ describe('buildQuiz', () => {
   it('derives ids, tier names, letters, and HTML from the draft', () => {
     const draft = loadDraft();
     const quiz = buildQuiz(draft, { createdAt: '2026-01-02T03:04:05.000Z', gitFacts: null });
-    const orders = choiceOrders(draft);
+    const placed = placeChoices(draft);
 
     assert.equal(quiz.id, quizIdOf(draft));
     assert.equal(quiz.createdAt, '2026-01-02T03:04:05.000Z');
@@ -505,7 +516,7 @@ describe('buildQuiz', () => {
       assert.equal(question.explanationHtml, renderMarkdown(source.explanation));
       assert.equal(question.citation.url, source.citation.target);
       question.choices.forEach((choice, slot) => {
-        const sourceChoice = source.choices[orders[index][slot]];
+        const sourceChoice = placed[index][slot].choice;
         assert.equal(choice.id, ['a', 'b', 'c', 'd'][slot]);
         assert.equal(choice.kind, sourceChoice.kind);
         assert.equal(choice.textHtml, renderMarkdown(sourceChoice.text));

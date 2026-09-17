@@ -46,6 +46,9 @@ export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 /** Names of the tiers, in tier order. */
 export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
 
+/** Letters that name the choice positions on a slide. */
+export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
+
 /** Number of choices of each kind that a question must have. */
 const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
 const CHOICE_KINDS = Object.keys(KIND_COUNTS);
@@ -455,38 +458,45 @@ function shuffleInPlace(items, random) {
 }
 
 /**
- * Decides the display order of the choices of each question.
+ * @typedef {typeof CHOICE_LETTERS[number]} ChoiceLetter
+ *
+ * @typedef {object} PlacedChoice
+ * @property {ChoiceLetter} letter Letter of the position on the page.
+ * @property {number} draftIndex Index of the choice in the draft.
+ * @property {DraftChoice} choice Choice from the draft.
+ */
+
+/**
+ * Places the choices of each question on the page.
  *
  * The correct choice goes to each of the 4 positions an equal number of times, and the remainder
  * goes to the earlier positions. The wrong choices fill the open positions in a random order. The
- * seed is the quiz id, so the blind copy, the grade, and the page all use the same order.
+ * seed is the quiz id, so the blind copy, the grade, and the page all use the same placement.
  *
  * @param {QuizDraft} draft Valid draft.
- * @returns {number[][]} For each question, the draft indices of its choices in display order.
+ * @returns {PlacedChoice[][]} For each question, its choices in page order.
  * @example
- * choiceOrders(draft)[0]; // [2, 0, 3, 1]: position a shows draft choice 2
+ * placeChoices(draft)[0][0]; // { letter: 'a', draftIndex: 2, choice: { ... } }
  */
-export function choiceOrders(draft) {
+export function placeChoices(draft) {
   const random = createRandom(quizIdOf(draft));
-  const correctSlots = draft.questions.map((_, index) => index % 4);
+  const correctSlots = draft.questions.map((_, index) => index % CHOICE_LETTERS.length);
   shuffleInPlace(correctSlots, random);
 
   return draft.questions.map((question, questionIndex) => {
     const correctIndex = question.choices.findIndex((choice) => choice.kind === 'correct');
-    const wrongIndexes = [0, 1, 2, 3].filter((index) => index !== correctIndex);
-    shuffleInPlace(wrongIndexes, random);
-    const correctSlot = correctSlots[questionIndex];
-    return [0, 1, 2, 3].map((slot) =>
-      slot === correctSlot ? correctIndex : /** @type {number} */ (wrongIndexes.shift()),
-    );
+    const order = [0, 1, 2, 3].filter((index) => index !== correctIndex);
+    shuffleInPlace(order, random);
+    order.splice(correctSlots[questionIndex], 0, correctIndex);
+    return order.map((draftIndex, slot) => ({
+      letter: CHOICE_LETTERS[slot],
+      draftIndex,
+      choice: question.choices[draftIndex],
+    }));
   });
 }
 
-/** Letters that name the choice positions on a slide. */
-export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
-
 /**
- * @typedef {typeof CHOICE_LETTERS[number]} ChoiceLetter
  *
  * @typedef {object} BlindQuestion
  * @property {number} id Question number, from 1.
@@ -526,7 +536,7 @@ export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
  *   in page order.
  */
 export function blindQuiz(draft) {
-  const orders = choiceOrders(draft);
+  const placed = placeChoices(draft);
   return {
     title: draft.title,
     slug: draft.slug,
@@ -535,10 +545,7 @@ export function blindQuiz(draft) {
       id: index + 1,
       tier: question.tier,
       prompt: question.prompt,
-      choices: orders[index].map((choiceIndex, slot) => ({
-        id: CHOICE_LETTERS[slot],
-        text: question.choices[choiceIndex].text,
-      })),
+      choices: placed[index].map(({ letter, choice }) => ({ id: letter, text: choice.text })),
       citation: question.citation,
     })),
   };
@@ -600,7 +607,7 @@ export function validateAnswers(file, questionCount) {
  *   the checker missed, marked as ambiguous, or did not answer.
  */
 export function gradeAnswers(draft, file) {
-  const orders = choiceOrders(draft);
+  const placed = placeChoices(draft);
   const answers = new Map(file.answers.map((answer) => [answer.questionId, answer]));
   /** @type {GradeFailure[]} */
   const failures = [];
@@ -616,17 +623,19 @@ export function gradeAnswers(draft, file) {
     } else if (answer.choice === 'ambiguous') {
       fail(`The checker marked the question as ambiguous: ${answer.reason}`);
     } else {
-      const slot = CHOICE_LETTERS.indexOf(answer.choice);
-      const choiceIndex = orders[index][slot];
-      const chosen = question.choices[choiceIndex];
-      if (chosen.kind !== 'correct') {
-        const correctLetter = CHOICE_LETTERS[orders[index].findIndex(
-          (other) => question.choices[other].kind === 'correct',
-        )];
+      const choices = placed[index];
+      const chosen = /** @type {PlacedChoice} */ (
+        choices.find((item) => item.letter === answer.choice)
+      );
+      const correct = /** @type {PlacedChoice} */ (
+        choices.find((item) => item.choice.kind === 'correct')
+      );
+      if (chosen !== correct) {
         const note = answer.reason ? ` The checker said: ${answer.reason}` : '';
         fail(
-          `The checker chose ${answer.choice}, which is draft choice ${choiceIndex + 1} ` +
-            `('${chosen.kind}'): "${chosen.text}". The correct choice is ${correctLetter}.${note}`,
+          `The checker chose ${answer.choice}, which is draft choice ${chosen.draftIndex + 1} ` +
+            `('${chosen.choice.kind}'): "${chosen.choice.text}". ` +
+            `The correct choice is ${correct.letter}.${note}`,
         );
       }
     }
@@ -776,7 +785,7 @@ export function resolveCitation(citation, facts) {
  * @returns {BuiltQuiz} The data that the page reads.
  */
 export function buildQuiz(draft, { createdAt, gitFacts }) {
-  const orders = choiceOrders(draft);
+  const placed = placeChoices(draft);
   return {
     id: quizIdOf(draft),
     title: draft.title,
@@ -788,14 +797,9 @@ export function buildQuiz(draft, { createdAt, gitFacts }) {
       tier: question.tier,
       tierName: TIER_NAMES[question.tier - 1],
       promptHtml: renderMarkdown(question.prompt),
-      choices: orders[index].map((choiceIndex, slot) => {
-        const choice = question.choices[choiceIndex];
+      choices: placed[index].map(({ letter, choice }) => {
         /** @type {BuiltChoice} */
-        const built = {
-          id: CHOICE_LETTERS[slot],
-          textHtml: renderMarkdown(choice.text),
-          kind: choice.kind,
-        };
+        const built = { id: letter, textHtml: renderMarkdown(choice.text), kind: choice.kind };
         if (choice.rationale) built.rationaleHtml = renderMarkdown(choice.rationale);
         return built;
       }),
