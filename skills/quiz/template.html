@@ -474,7 +474,7 @@ kbd {
 
 .ring-fill {
   stroke: var(--vbg-gray-1000);
-  stroke-dasharray: 414.69;
+  stroke-dasharray: 100;
   stroke-linecap: round;
   transform: rotate(-90deg);
   transform-origin: center;
@@ -1175,19 +1175,17 @@ kbd {
     const countNode = element('span', { text: live ? '0' : String(correctCount) });
     const percentNode = element('span', { text: live ? '0' : String(percent) });
     const label = `${correctCount} of ${questionCount} correct (${percent}%)`;
-    // The ring is a circle with radius 66, so its length is 2 * PI * 66. The fill is a dash of
-    // that length, and the offset hides the part that the score did not earn.
-    const ringLength = 414.69;
-    const fillOffset = ringLength * (1 - correctCount / questionCount);
+    // The fill circle has a path length of 100, so the fill is a dash of 100 and the offset
+    // hides the percent that the score did not earn.
+    const fillOffset = 100 - (correctCount / questionCount) * 100;
     const ringState = percent === 100 ? ' is-perfect' : correctCount ? '' : ' is-empty';
-    const ringClass = `ring${ringState}`;
     const ring = element('span', {
-      class: ringClass,
+      class: `ring${ringState}`,
       html:
         '<svg viewBox="0 0 144 144" aria-hidden="true">' +
         '<circle class="ring-track" cx="72" cy="72" r="66"></circle>' +
-        `<circle class="ring-fill" cx="72" cy="72" r="66" ` +
-        `style="stroke-dashoffset: ${live ? ringLength : fillOffset}"></circle></svg>`,
+        `<circle class="ring-fill" cx="72" cy="72" r="66" pathLength="100" ` +
+        `style="stroke-dashoffset: ${live ? 100 : fillOffset}"></circle></svg>`,
     });
     const heading = element('h1', { class: 'score', 'aria-label': label }, [
       ring,
