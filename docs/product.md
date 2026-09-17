@@ -165,7 +165,8 @@ An implementation satisfies this specification when all criteria pass:
 - [ ] Slide navigation implements the keyboard controls specified in Section 7 of
   [`docs/architecture.md`](architecture.md#7-slide-interface).
 - [ ] Learn mode reveals the explanation immediately after a selection.
-- [ ] The end slide displays the final score, tier breakdown, and a retry missed questions button.
+- [ ] The end slide displays the score ring, tier breakdown, and a retry missed questions
+  button.
 - [ ] The T key and header button toggle between light and dark themes.
 - [ ] Progress persists in `localStorage` with a derived ID, and the restart button clears it.
 - [ ] Controls and contrast ratios comply with WCAG 2.1 AA specifications.
