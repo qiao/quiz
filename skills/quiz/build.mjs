@@ -807,9 +807,12 @@ export function renderPage(quiz, parts) {
 }
 
 const USAGE = `Usage:
-  node build.mjs <quiz.json>                         Write index.html next to the draft.
-  node build.mjs <quiz.json> --blind                 Write quiz.blind.json for the blind checker.
-  node build.mjs <quiz.json> --grade <answers.json>  Print a grade report as JSON.
+  node <skill-dir>/build.mjs <quiz.json>
+      Write index.html next to the draft.
+  node <skill-dir>/build.mjs <quiz.json> --blind
+      Write quiz.blind.json for the blind checker.
+  node <skill-dir>/build.mjs <quiz.json> --grade <answers.json>
+      Print a grade report as JSON.
 
 Run the command from the project folder. Relative paths start from that folder.
 Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage error,

@@ -660,7 +660,7 @@ describe('main', () => {
   it('prints the usage with --help', () => {
     const result = makeProject().run(['--help']);
     assert.equal(result.code, 0);
-    assert.match(result.stdout, /^Usage:\n {2}node build\.mjs <quiz\.json>/);
+    assert.match(result.stdout, /^Usage:\n {2}node <skill-dir>\/build\.mjs <quiz\.json>\n/);
   });
 });
 
