@@ -43,8 +43,9 @@ specifies that behavior.
 **Commit fine-grained.** One logical change per commit. Any commit can be reverted cleanly without
 affecting unrelated work. Use commit subjects in the format `area: change`.
 
-**Use kebab-case for file names.** Every markdown file, script, stylesheet, and test uses lowercase
-letters, numbers, and hyphens.
+**Use kebab-case for file names.** Every script, stylesheet, test, and documentation file uses
+lowercase letters, numbers, and hyphens. Established conventions permit uppercase names for
+`AGENTS.md`, `CLAUDE.md`, `README.md`, and `SKILL.md`.
 
 **Doc comments.** Follow standard JSDoc or TSDoc syntax (`/** ... */`).
 - Omit type annotations in TypeScript files.
