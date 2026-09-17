@@ -35,12 +35,13 @@ self-testing, and the user can share it with others.
 
 The product serves two user roles:
 
-1. **The learner (primary):** A developer using an agent runtime (such as Claude Code or agy).
-   The developer runs `/quiz` and takes the generated quiz to test personal understanding.
+1. **The self-tester (primary):** A developer using an agent runtime (such as Claude Code or agy).
+   The self-tester runs `/quiz` and takes the generated quiz to test personal understanding.
 2. **The recipient (secondary):** A team member, peer, or student who receives a shared quiz file
    or link to test knowledge, such as during team onboarding.
 
-Both users navigate the slide deck in a web browser using keyboard controls or touch taps.
+Both roles are learners when they take the quiz. They navigate the slide deck in a web browser
+using keyboard controls or touch taps.
 
 ---
 
