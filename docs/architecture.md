@@ -377,6 +377,8 @@ Before emitting HTML, `build.mjs` checks:
 13. If `lineStart` and `lineEnd` are present in a citation, `lineEnd` must not be less than
     `lineStart`.
 14. Unknown fields in draft objects trigger validation errors to detect property typos.
+15. The correct choice must not exceed 1.2 times the character count of the longest wrong
+    choice (after trimming spaces), so that choice length does not reveal the answer.
 
 ### Error format and exit codes
 
