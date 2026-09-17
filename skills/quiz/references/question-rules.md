@@ -116,7 +116,9 @@ Spread questions across the target resource:
 
 ### Citations
 - Every question must provide a `citation` object.
-- Provide a non-empty `target` identifying the relative file path, documentation URL, or topic.
+- Provide a non-empty `target` identifying the file path, documentation URL, or topic. For local
+  files, specify the path relative to the git repository root of the resource. The build compiler
+  uses this root path to resolve git permalinks.
 - For local files, include `lineStart` and `lineEnd` when the fact lives in a specific code block.
   `lineEnd` must be greater than or equal to `lineStart`.
 - For PDF documents, specify the `page` number.
