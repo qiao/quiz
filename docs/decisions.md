@@ -105,14 +105,17 @@ This document answers: what did we decide, and what did we reject?
   model context. The skill weights core modules and public interfaces.
 
 ### D6: Clarifying questions
-- **Decision:** Ask clarifying questions only when input is invalid, the target path is missing,
-  or the current working directory is empty or the home directory.
-- **Reason:** Developers expect immediate execution when standard defaults exist.
+- **Decision:** Ask clarifying questions only when a target path does not exist, or when the prompt
+  names no resource while the current working directory is empty or the home directory. If the
+  prompt names an explicit URL, document, or path, proceed without asking.
+- **Reason:** Developers expect immediate execution when standard defaults exist or when the
+  prompt provides an unambiguous resource.
 - **Rejected alternative:** Ask clarifying questions on every run.
   Rejected because asking confirmation questions for count, difficulty, or format slows down
   daily use.
 - **Rejected alternative:** Never ask clarifying questions.
-  Rejected because running on an empty folder or home directory produces meaningless output.
+  Rejected because running without a resource in an empty folder or home directory produces
+  meaningless output.
 
 ---
 

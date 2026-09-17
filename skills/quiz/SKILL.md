@@ -46,8 +46,9 @@ Extract resource target, topic focus, question count, and language from the user
   author questions in the conversation language.
 - **Clarifying questions:** Ask a clarifying question only when:
   1. The target path does not exist.
-  2. The current working directory is empty.
-  3. The current working directory is the user home directory (`~`).
+  2. The prompt names no resource, and the current working directory is empty.
+  3. The prompt names no resource, and the current working directory is the user home
+     directory (`~`).
   Do not ask confirmation questions for count, difficulty, or layout when valid defaults exist.
 
 Completion criterion: Target resource, focus topic, count, and language are determined, or user

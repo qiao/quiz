@@ -627,9 +627,10 @@ The agent extracts key parameters from natural language prompts:
 ### Clarifying questions
 
 The agent asks a clarifying question before authoring when:
-1. The working directory is empty.
-2. The working directory is the user home directory (`~`), where recursive scanning would inspect
-   unrelated personal files.
+1. A specified target path does not exist.
+2. The prompt names no resource, and the working directory is empty.
+3. The prompt names no resource, and the working directory is the user home directory (`~`), where
+   recursive scanning would inspect unrelated personal files.
 
 ### Canonical question rules
 
