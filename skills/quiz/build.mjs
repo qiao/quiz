@@ -371,43 +371,38 @@ export function renderMarkdown(markdown) {
   const blocks = [];
   let index = 0;
 
+  /**
+   * Moves past the lines that pass a test, from the current line.
+   *
+   * @param {(line: string) => boolean} test Test for one line.
+   * @returns {string[]} The lines that passed, in order.
+   */
+  const takeWhile = (test) => {
+    const start = index;
+    while (index < lines.length && test(lines[index])) index += 1;
+    return lines.slice(start, index);
+  };
+
   while (index < lines.length) {
     const line = lines[index];
     const fence = FENCE_START.exec(line);
     if (fence) {
-      /** @type {string[]} */
-      const code = [];
       index += 1;
-      while (index < lines.length && !FENCE_END.test(lines[index])) {
-        code.push(lines[index]);
-        index += 1;
-      }
+      const code = takeWhile((next) => !FENCE_END.test(next));
       index += 1;
       const language = fence[1] ? ` data-lang="${escapeHtml(fence[1])}"` : '';
       blocks.push(`<pre${language}><code>${escapeHtml(code.join('\n'))}</code></pre>`);
     } else if (line.trim() === '') {
       index += 1;
     } else if (LIST_ITEM.test(line)) {
-      /** @type {string[]} */
-      const items = [];
-      while (index < lines.length && LIST_ITEM.test(lines[index])) {
-        items.push(`<li>${renderInline(lines[index].replace(LIST_ITEM, ''))}</li>`);
-        index += 1;
-      }
-      blocks.push(`<ul>${items.join('')}</ul>`);
+      const items = takeWhile((next) => LIST_ITEM.test(next));
+      const html = items.map((item) => `<li>${renderInline(item.replace(LIST_ITEM, ''))}</li>`);
+      blocks.push(`<ul>${html.join('')}</ul>`);
     } else {
-      /** @type {string[]} */
-      const words = [];
-      while (
-        index < lines.length &&
-        lines[index].trim() !== '' &&
-        !FENCE_START.test(lines[index]) &&
-        !LIST_ITEM.test(lines[index])
-      ) {
-        words.push(lines[index].trim());
-        index += 1;
-      }
-      blocks.push(`<p>${renderInline(words.join(' '))}</p>`);
+      const paragraph = takeWhile(
+        (next) => next.trim() !== '' && !FENCE_START.test(next) && !LIST_ITEM.test(next),
+      );
+      blocks.push(`<p>${renderInline(paragraph.map((part) => part.trim()).join(' '))}</p>`);
     }
   }
   return blocks.join('');
