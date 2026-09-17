@@ -64,9 +64,11 @@ The skill transforms resources into self-contained HTML slides through five sequ
 1. **Explore:** The agent identifies target files. If no path is given, it scans the current
    directory while ignoring `.git`, `node_modules`, lock files, and `quizzes/`. For large PDFs,
    it reads the table of contents first. For URLs, it crawls up to 20 pages on the same domain.
-2. **Draft:** The agent authors questions into `quizzes/<slug>/quiz.json` conforming to the
-   `QuizDraft` schema. It creates four equal tiers: Fundamentals, Core, Advanced, and Expert.
-   Each question has one correct choice, one obvious wrong choice, and two plausible wrong choices.
+2. **Draft:** The agent selects an unused folder `quizzes/<slug>` before authoring. If
+   `quizzes/<slug>` exists, the agent increments the suffix to `<slug>-2`. The agent authors
+   questions into `quizzes/<slug>/quiz.json` conforming to the `QuizDraft` schema. It creates
+   four equal tiers: Fundamentals, Core, Advanced, and Expert. Each question has one correct
+   choice, one obvious wrong choice, and two plausible wrong choices.
 3. **Blind Check:** The agent invokes a secondary sub-agent with read access to the resource,
    passing only the questions without the answer key. The sub-agent solves each question. If the
    sub-agent misses a question or identifies ambiguity, the primary agent revises the draft.
@@ -232,10 +234,10 @@ When invoked from another project, `SKILL.md` resolves the absolute path to `bui
 ### Command line interface
 
 ```bash
-node <skill-dir>/build.mjs <path-to-quiz-draft.json> [--out <output-directory>]
+node <skill-dir>/build.mjs <path-to-quiz-draft.json>
 ```
 
-If `--out` is omitted, the compiler defaults to `./quizzes/<slug>/`.
+`build.mjs` writes `index.html` directly into the directory containing the input draft JSON file.
 
 ### Validation rules
 
@@ -436,8 +438,9 @@ quizzes/
     └── index.html        # Compiled self-contained presentation (BuiltQuiz)
 ```
 
-If directory `quizzes/<slug>` exists, the generator checks for `quizzes/<slug>-2`, incrementing
-the integer suffix until finding an unused directory name.
+The agent picks an unused folder before writing the draft. If directory `quizzes/<slug>` exists,
+the agent checks for `quizzes/<slug>-2`, incrementing the integer suffix until finding an unused
+directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
 
 ---
 
