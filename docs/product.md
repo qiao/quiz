@@ -21,7 +21,7 @@ This document answers: what are we building, and why?
 Engineers who explore unfamiliar codebases, documentation, or technical systems need practice
 questions to test their own mental models. They need questions that evaluate system comprehension,
 execution flow, and design trade-offs rather than trivia. They also need a self-contained format
-that opens locally for personal study, with the option to share slides with others.
+that opens locally for personal self-testing, with the option to share slides with others.
 
 The `quiz` skill addresses these needs. A developer runs `/quiz` to generate four tiers of
 multiple-choice questions from local code, documentation, files, or technical topics. An

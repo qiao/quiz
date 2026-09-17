@@ -67,7 +67,7 @@ This document answers: what did we decide, and what did we reject?
 
 ### D2: Target audience
 - **Decision:** Target personal self-testing first, with optional sharing for team onboarding and
-  peer study. Formal exams are out of scope.
+  peer testing. Formal exams are out of scope.
 - **Reason:** Static HTML pages deliver code and data directly to the client browser. Anyone who
   inspects page source can read the answers.
 - **Rejected alternative:** Formal exams with cheating prevention.
@@ -239,7 +239,7 @@ This document answers: what did we decide, and what did we reject?
 - **Reason:** Immediate feedback reinforces comprehension when a choice is made. Tier summaries
   highlight specific knowledge gaps.
 - **Rejected alternative:** Exam mode hiding feedback until the final slide.
-  Rejected because delayed feedback reduces learning value for self-study.
+  Rejected because delayed feedback reduces learning value for self-testing.
 - **Rejected alternative:** Dual-mode switcher between learn and exam modes.
   Rejected because extra modes add interface complexity without improving personal self-testing.
 
