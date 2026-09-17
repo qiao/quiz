@@ -106,6 +106,23 @@ function checkUnknownFields(object, allowed, label, errors, prefix = '') {
 }
 
 /**
+ * Adds one error for each field that is not a string with text.
+ *
+ * @param {Record<string, unknown>} object Object to check.
+ * @param {string[]} fields Field names that must hold text.
+ * @param {string} label Start of each error message.
+ * @param {string[]} errors List that receives the errors.
+ * @param {string} [prefix] Text before each field name, for example `citation.`.
+ */
+function checkFilledStrings(object, fields, label, errors, prefix = '') {
+  for (const field of fields) {
+    if (!isFilledString(object[field])) {
+      errors.push(`${label}: '${prefix}${field}' must be a string that is not empty`);
+    }
+  }
+}
+
+/**
  * Checks the citation of one question.
  *
  * @param {unknown} citation Citation to check.
@@ -118,9 +135,7 @@ function checkCitation(citation, label, errors) {
     return;
   }
   checkUnknownFields(citation, CITATION_FIELDS, label, errors, 'citation.');
-  if (!isFilledString(citation.target)) {
-    errors.push(`${label}: 'citation.target' must be a string that is not empty`);
-  }
+  checkFilledStrings(citation, ['target'], label, errors, 'citation.');
   for (const field of ['lineStart', 'lineEnd', 'page']) {
     const value = citation[field];
     // A missing number is valid, and 0 is not, so compare with undefined.
@@ -200,13 +215,12 @@ function checkChoices(choices, label, errors) {
     if (!validKind) {
       errors.push(`${choiceLabel}: 'kind' must be ${oneOf(CHOICE_KINDS)}, found '${kind}'`);
     }
+    checkFilledStrings(choice, ['text'], choiceLabel, errors);
     if (isFilledString(choice.text)) {
       const key = String(choice.text).trim();
       const first = seenTexts.get(key);
       if (first) errors.push(`${label}: choices ${first} and ${number} have the same text`);
       else seenTexts.set(key, number);
-    } else {
-      errors.push(`${choiceLabel}: 'text' must be a string that is not empty`);
     }
 
     if (kind === 'correct') {
@@ -251,11 +265,7 @@ export function validateDraft(draft) {
   if (!isObject(draft)) return ['Quiz: the draft must be a JSON object'];
 
   checkUnknownFields(draft, QUIZ_FIELDS, 'Quiz', errors);
-  for (const field of ['title', 'source']) {
-    if (!isFilledString(draft[field])) {
-      errors.push(`Quiz: '${field}' must be a string that is not empty`);
-    }
-  }
+  checkFilledStrings(draft, ['title', 'source'], 'Quiz', errors);
   if (typeof draft.slug !== 'string' || !SLUG_PATTERN.test(draft.slug)) {
     errors.push(`Quiz: 'slug' must match ${SLUG_PATTERN.source}, found '${draft.slug}'`);
   }
@@ -288,11 +298,7 @@ export function validateDraft(draft) {
       errors.push(`${label}: 'tier' must be ${tiers}, found ${JSON.stringify(tier)}`);
     }
 
-    for (const field of ['prompt', 'explanation']) {
-      if (!isFilledString(question[field])) {
-        errors.push(`${label}: '${field}' must be a string that is not empty`);
-      }
-    }
+    checkFilledStrings(question, ['prompt', 'explanation'], label, errors);
     checkChoices(question.choices, label, errors);
     checkCitation(question.citation, label, errors);
   });
