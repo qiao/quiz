@@ -106,8 +106,9 @@ Adhere strictly to these invariants:
   `kind: "obvious-wrong"`, and two with `kind: "plausible-wrong"`.
 - Explanations and rationales: omit `rationale` on the correct choice. Provide a non-empty
   `rationale` on all three wrong choices. Provide a non-empty `explanation` on each question.
-- Citations: provide a `target` path or URL. Add `lineStart` and `lineEnd` when referencing local
-  files.
+- Citations: provide a `target` path or URL. For local files, specify the path relative to the
+  git repository root of the resource, with `lineStart` and `lineEnd`. For PDF documents, specify
+  the `page` number.
 
 Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 
