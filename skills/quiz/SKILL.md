@@ -138,7 +138,8 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind
 
 Command behavior and exit codes:
 - Validation runs first. If draft validation fails, the command exits with code 1 and writes
-  diagnostics to standard error. Usage errors (such as missing files) exit with code 2.
+  diagnostics to standard error. Fix every listed error in `quizzes/<slug>/quiz.json` and run
+  `--blind` again, before starting the checker sub-agent. Usage errors exit with code 2.
 - When validation succeeds, the command exits with code 0, writes `quizzes/<slug>/quiz.blind.json`
   with stripped answer keys and shuffled choices, and prints the generated path.
 
