@@ -1,54 +1,15 @@
-# Remotion video
+# Quiz skill promo video
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.apng">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+This folder holds the promo video of the `quiz` skill, made with
+[Remotion](https://www.remotion.dev). The video is 1920 by 1080 pixels, 30 frames per second, and
+13.4 seconds long.
 
-Welcome to your Remotion project!
-
-## Commands
-
-**Install Dependencies**
-
-```console
-npm i
+```bash
+npm i                                                # install the packages
+npx remotion studio                                  # preview and edit the video
+npx remotion render QuizPromo out/quiz-promo.mp4     # render the video
 ```
 
-**Start Preview**
-
-```console
-npm run dev
-```
-
-**Render video**
-
-```console
-npx remotion render
-```
-
-**Upgrade Remotion**
-
-```console
-npx remotion upgrade
-```
-
-## Docs
-
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
-
-## Help
-
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
-
-## Issues
-
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
-
-## License
-
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+Each scene is a file in `src/scenes/`, and `src/QuizPromo.tsx` joins the scenes with fades. The
+Geist fonts in `public/fonts/` use the SIL Open Font License (`public/fonts/OFL.txt`). The sound
+effects load from `remotion.media` when the video renders.
