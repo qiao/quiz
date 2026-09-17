@@ -237,7 +237,7 @@ export interface BuiltQuiz {
 
 ## 3. Build compiler
 
-The compiler `build.mjs` sits in the skill folder and operates as a script with zero external
+The compiler `build.mjs` sits in the skill folder. It runs as a script with zero external
 dependencies. It requires Node.js version 18 or later for built-in crypto and test runner APIs.
 When invoked from another project, `SKILL.md` resolves the absolute path to `build.mjs`.
 
@@ -628,22 +628,25 @@ directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
 
 ## 13. Test plan
 
-The build compiler undergoes unit testing using the native `node:test` runner.
+Unit tests verify compiler behavior using the native `node:test` runner.
 
 ### Test suite: `test/build.test.mjs`
 
 The automated test suite verifies:
-1. **Validation gates:** Rejects drafts missing fields, drafts with invalid tier numbers, and
-   drafts with improper choice distributions.
-2. **Shuffling balance:** Verifies that across 100 sample builds, choice positions A, B, C, and D
-   receive equal allocation within 1 position margin.
-3. **HTML escaping:** Validates that `<script>`, `onerror`, and HTML tags in Markdown prompts are
-   correctly encoded.
-4. **Script boundary safety:** Validates that `</script>` and `<!--` within embedded JSON data are
-   escaped, reads the embedded JSON back from the generated HTML, and verifies that `JSON.parse`
-   successfully parses the payload.
-5. **Offline self-containment:** Validates that the output file contains zero external HTTP/HTTPS
-   URL requests in `<link>` or `<script>` tags.
+1. **Validation gates:** Rejects drafts missing fields, drafts with invalid tier numbers, drafts
+   with descending tiers, drafts with improper choice distributions, and drafts with invalid slugs
+   (such as `../../slug`).
+2. **Deterministic builds:** Accepts `SOURCE_DATE_EPOCH` or an environment override to set
+   `createdAt` so tests produce reproducible output across runs.
+3. **Shuffling balance:** Verifies that across 100 sample builds, choice positions A, B, C, and D
+   receive equal allocation within a 1-position margin.
+4. **HTML escaping:** Validates that `<script>`, `onerror`, and HTML tags in Markdown prompts are
+   correctly encoded into safe HTML entities.
+5. **Script boundary safety and parsing:** Validates that `</script>` and `<!--` within embedded
+   JSON data are escaped with `\u003c`, extracts the embedded JSON payload directly from the
+   generated HTML, and verifies that `JSON.parse` parses the payload without error.
+6. **Offline self-containment:** Validates that the output file contains zero external HTTP or
+   HTTPS requests in `<link>` tags, `<script>` tags, or CSS `url()` and `@import` rules.
 
 ---
 
@@ -655,3 +658,4 @@ The automated test suite verifies:
 - Vercel Brand Guidelines: <https://vercel.com/design.md>
 - Node.js Test Runner: <https://nodejs.org/api/test.html>
 - Node.js Releases: <https://nodejs.org/en/about/previous-releases>
+- Reproducible Builds Specification: <https://reproducible-builds.org/specs/source-date-epoch/>
