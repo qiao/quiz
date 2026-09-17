@@ -5,10 +5,10 @@ import { COLOR, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const CHOICES = [
-  { letter: "A", text: "React moves the item and keeps its state" },
-  { letter: "B", text: "React ignores a key after the first render" },
-  { letter: "C", text: "React unmounts it and mounts a new instance" },
-  { letter: "D", text: "The browser reloads the whole page" },
+  { letter: "A", text: "TodoList saves an edit only when the item closes" },
+  { letter: "B", text: "useLocalStorage clears the drafts on each render" },
+  { letter: "C", text: "The id is the key, so React mounts a new TodoItem" },
+  { letter: "D", text: "The browser reloads the page after each save" },
 ];
 
 /** Frame where the learner picks the correct choice. */
@@ -47,7 +47,7 @@ export const SlideScene: React.FC = () => {
           name="Slide prompt"
           style={{ marginTop: 28, fontSize: 48, fontWeight: 500, lineHeight: 1.25 }}
         >
-          What occurs when a list item key changes?
+          Why does TodoItem lose its edit on a new id?
         </Interactive.Div>
         <div style={{ marginTop: 40, display: "grid", gap: 16 }}>
           {CHOICES.map((choice) => {
