@@ -74,11 +74,12 @@ The skill transforms resources into self-contained HTML slides through five sequ
 3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`
    to generate `quizzes/<slug>/quiz.blind.json`. Code removes `kind`, `rationale`, and
    `explanation`, and shuffles choices. The agent invokes an independent sub-agent with read
-   access to the resource. The sub-agent writes answers into `quizzes/<slug>/answers.json`. The
-   agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to
-   grade the answers. Code maps shuffled letters back to draft choices and reports failed
-   questions. The agent repairs failed questions. After two failed repair rounds, the agent
-   replaces the question and informs the user.
+   access to the resource, instructing it never to read `quizzes/`. The sub-agent writes answers
+   into `quizzes/<slug>/answers.json`. The agent runs
+   `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade answers.json` to grade the
+   answers. Code maps shuffled letters back to draft choices and reports failed questions. The
+   agent repairs failed questions. After two failed repair rounds, the agent replaces the
+   question and informs the user.
 4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
    absolute path of the skill folder. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -262,7 +263,8 @@ compiler prints a JSON report of passed questions and failed questions with erro
 
 During Phase 3, the primary agent uses code to verify quiz quality:
 1. The primary agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`.
-2. The agent invokes an independent sub-agent with read access to the source material.
+2. The agent invokes an independent sub-agent with read access to the source material. The
+   sub-agent instructions forbid reading files in `quizzes/` to prevent answer key exposure.
 3. The sub-agent evaluates each question in `quiz.blind.json` without the answer key.
 4. For each question, the sub-agent records either its chosen choice ID (`'a'`, `'b'`, `'c'`, or
    `'d'`) or `'ambiguous'` with an explanation in `answers.json`.
@@ -551,8 +553,9 @@ rules. The agent reads this file during Phase 2. The file specifies:
 5. Read `references/question-rules.md`.
 6. Select an unused directory `quizzes/<slug>/`.
 7. Author draft questions into `quiz.json`.
-8. Execute blind verification: generate `quiz.blind.json` with `--blind`, collect sub-agent
-   answers, and evaluate them with `build.mjs --grade`.
+8. Execute blind verification: generate `quiz.blind.json` with `--blind`, invoke the sub-agent
+   with instructions forbidding access to `quizzes/`, collect answers, and evaluate them with
+   `build.mjs --grade`.
 9. Compile the slide deck with `build.mjs` and report the local file path.
 
 ---
