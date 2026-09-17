@@ -479,12 +479,12 @@ kbd {
   stroke: var(--vbg-gray-400);
 }
 
+/* The fill starts at 12 o'clock through the rotate attribute in the markup, which needs no
+   origin box, so every SVG engine turns it the same way. */
 .ring-fill {
   stroke: var(--vbg-gray-1000);
   stroke-dasharray: 100;
   stroke-linecap: round;
-  transform: rotate(-90deg);
-  transform-origin: center;
 }
 
 .ring.is-perfect .ring-fill {
@@ -1210,6 +1210,7 @@ kbd {
         '<svg viewBox="0 0 144 144" aria-hidden="true">' +
         '<circle class="ring-track" cx="72" cy="72" r="66"></circle>' +
         `<circle class="ring-fill" cx="72" cy="72" r="66" pathLength="100" ` +
+        `transform="rotate(-90 72 72)" ` +
         `style="stroke-dashoffset: ${live ? 100 : fillOffset}"></circle></svg>`,
     });
     const heading = element('h1', { class: 'score', 'aria-label': label }, [
