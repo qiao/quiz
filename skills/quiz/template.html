@@ -1104,6 +1104,8 @@ kbd {
     }
 
     const isLast = question.id === questionCount;
+    // A learner who reviews a question from the score slide can go back to it in one step.
+    const reviewing = !isLast && lastOpenSlide() === endSlide;
     const nextButton = button(isLast ? 'See the score' : 'Next', 'primary', next);
     nextButton.disabled = !answer;
     if (!answer) nextButton.title = 'Choose an answer first';
@@ -1118,6 +1120,7 @@ kbd {
       feedback,
       element('div', { class: 'actions' }, [
         button('Back', 'secondary', back),
+        reviewing ? button('See the score', 'tertiary', () => goTo(endSlide)) : null,
         element('span', { class: 'actions-end' }, [nextButton]),
       ]),
     ]);
