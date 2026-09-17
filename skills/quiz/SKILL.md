@@ -159,19 +159,15 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind
   with stripped answer keys and shuffled choices, and prints its file path.
 
 ### Step 8b: Invoke the blind sub-agent
-Read the complete content of `quizzes/<slug>/quiz.blind.json`.
-
-Start a sub-agent with read access to the source material. Provide these instructions:
-1. Include the JSON content of `quiz.blind.json` directly in the sub-agent prompt. Do not give
-   the sub-agent the draft `quiz.json`, the explanations, the rationales, or any hint about the
-   answers.
-2. Instruct the sub-agent that it must never read any file under `quizzes/`.
-3. The sub-agent must answer every question using only the source material.
-4. For each question, the sub-agent selects choice letter `'a'`, `'b'`, `'c'`, or `'d'`. If a
-   question has multiple valid answers or no correct answer, the sub-agent selects `'ambiguous'`
-   and explains why in `reason`.
-5. The sub-agent returns its answers in its final message as valid JSON matching
-   `SubAgentAnswerFile`:
+Start a sub-agent with read access to the source material. Give it the path of the blind quiz,
+not its content, so that you do not write the quiz again. The prompt holds only the path and
+these instructions:
+1. Read the quiz at `quizzes/<slug>/quiz.blind.json`. Never read, list, or search any other path
+   under `quizzes/`, because the answer key is there.
+2. Answer every question using only the source material.
+3. For each question, select choice letter `'a'`, `'b'`, `'c'`, or `'d'`. If a question has
+   multiple valid answers or no correct answer, select `'ambiguous'` and explain why in `reason`.
+4. Return the answers in the final message as valid JSON matching `SubAgentAnswerFile`:
 
 ```json
 {
