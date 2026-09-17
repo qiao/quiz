@@ -47,11 +47,11 @@ affecting unrelated work. Use commit subjects in the format `area: change`.
 lowercase letters, numbers, and hyphens. Established conventions permit uppercase names for
 `AGENTS.md`, `CLAUDE.md`, `README.md`, and `SKILL.md`.
 
-**Doc comments.** Follow standard JSDoc or TSDoc syntax (`/** ... */`).
-- Omit type annotations in TypeScript files.
+**Doc comments and type checking.**
+- Start each `.mjs` file with `// @ts-check`.
+- Follow standard JSDoc syntax (`/** ... */`) with type annotations in tags (`@param`, `@returns`).
 - Start comments on types, interfaces, and properties with a noun phrase.
 - Start comments on functions and methods with a verb phrase.
-- Document parameters with `@param` and return values with `@returns`.
 
 ## Visual explanations and type snippets
 
