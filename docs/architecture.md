@@ -496,13 +496,16 @@ The title and end slides provide a "Restart" button that clears `quiz:<quizId>:s
 
 The deck contains three distinct slide views:
 
-1. **Title slide (index 0):** Shows quiz title, resource source, question count, tier legend, and a
-   "Start Quiz" button.
-2. **Question slide (index 1 to N):** Shows tier badge, question progress ("5 of 20"), question
-   prompt, four interactive choice cards, explanation reveal panel, citation link, a "Back" button,
-   and a "Next" button.
-3. **End slide (index N + 1):** Shows total score percentage, score breakdown per tier, links to
-   missed questions, a "Retry Missed Questions" button, and a "Restart" button.
+1. **Title slide (index 0):** Shows quiz title, resource source, question count, tier breakdown,
+   a progress hint, a key list (displayed only on devices with a pointer that can hover), a
+   "Start the quiz" button (or "Continue the quiz" when resuming), and an optional "Restart" button.
+2. **Question slide (index 1 to N):** Starts at the top so content does not jump after an answer.
+   Shows tier badge, question progress ("5 of 20"), question prompt, four interactive choice cards,
+   an explanation reveal panel, citation link, a "Back" button, and a "Next" button. Choice status
+   displays drawn check and cross icons next to the status text.
+3. **End slide (index N + 1):** Shows total score percentage, score breakdown per tier, action
+   buttons ("Try the missed questions again" and "Restart") placed before the missed question list,
+   and links to missed questions.
 
 ### Keyboard bindings
 
@@ -525,8 +528,9 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
 
 1. **Answer selection requirement:** On question slides, the learner must select an answer
    before advancing. The "Next" button and keyboard forward keys (`Enter`, `Right Arrow`) remain
-   disabled until a choice is clicked. Selecting a choice reveals the explanation panel and
-   activates advancement controls.
+   disabled until a choice is clicked. Selecting a choice reveals the explanation panel, displays
+   a drawn check or cross icon next to the choice status, and moves focus to the explanation
+   section without scrolling so `Enter` can advance to the next slide.
 2. **Backward navigation:** Learners can return to previous questions by clicking the "Back"
    button or pressing `Left Arrow`. Answered questions display the selected choice, distractor
    rationale, and correct explanation.
