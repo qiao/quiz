@@ -24,7 +24,7 @@ This document answers: what did we decide, and what did we reject?
 | # | Topic | Choice | Core reason |
 |---|---|---|---|
 | D1 | Packaging | Source repo with symlink | Enables version control and test runs |
-| D2 | Audience | Self-study and team onboarding | Static HTML cannot prevent inspection |
+| D2 | Audience | Self-testing with optional sharing | Static HTML cannot prevent inspection |
 | D3 | Architecture | Template plus data | Separates questions from slide layout |
 | D4 | Resources | All except EPUB | Covers common developer formats |
 | D5 | Focus | Optional resource and focus | Supports zero-config and targeted runs |
