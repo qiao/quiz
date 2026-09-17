@@ -6,9 +6,12 @@ import { describe, it } from 'node:test';
 import {
   blindQuiz,
   choiceOrders,
+  githubWebUrl,
   gradeAnswers,
   quizIdOf,
+  readGitFacts,
   renderMarkdown,
+  resolveCitation,
   validateAnswers,
   validateDraft,
 } from '../skills/quiz/build.mjs';
@@ -369,5 +372,87 @@ describe('gradeAnswers', () => {
     );
     assert.match(report.failures[1].reason, /ambiguous: Two choices are true\./);
     assert.equal(report.failures[2].reason, 'The checker gave no answer for this question.');
+  });
+});
+
+/**
+ * Makes a fake git runner that answers from a table.
+ *
+ * @param {Record<string, string | null>} table Output for each argument list, joined with spaces.
+ * @returns {(args: string[]) => string | null} A runner that returns null for an unknown command.
+ */
+function fakeGit(table) {
+  return (args) => {
+    const key = args.join(' ');
+    return key in table ? table[key] : null;
+  };
+}
+
+const CLEAN_REPO = {
+  'rev-parse --show-toplevel': '/work/app',
+  'rev-parse HEAD': 'abc123',
+  'remote get-url origin': 'git@github.com:acme/app.git',
+  'branch -r --contains HEAD': 'origin/main',
+  'ls-files -- src/cache.ts': 'src/cache.ts',
+  'status --porcelain -- src/cache.ts': '',
+  'ls-files -- docs/spec.pdf': 'docs/spec.pdf',
+  'status --porcelain -- docs/spec.pdf': '',
+};
+
+describe('githubWebUrl', () => {
+  it('reads the SSH, SSH URL, and HTTPS forms of a GitHub remote', () => {
+    for (const remote of [
+      'git@github.com:acme/app.git',
+      'ssh://git@github.com/acme/app.git',
+      'https://github.com/acme/app.git',
+      'https://token@github.com/acme/app',
+    ]) {
+      assert.equal(githubWebUrl(remote), 'https://github.com/acme/app', remote);
+    }
+  });
+
+  it('returns null for a remote that is not on GitHub', () => {
+    assert.equal(githubWebUrl('git@gitlab.com:acme/app.git'), null);
+  });
+});
+
+describe('resolveCitation', () => {
+  const facts = readGitFacts(fakeGit(CLEAN_REPO), () => fakeGit(CLEAN_REPO));
+
+  it('links a URL target to itself', () => {
+    const citation = { target: 'https://example.com/docs#part' };
+    assert.deepEqual(resolveCitation(citation, null), { ...citation, url: citation.target });
+  });
+
+  it('makes a permalink with a line range for a clean, pushed file', () => {
+    assert.equal(
+      resolveCitation({ target: 'src/cache.ts', lineStart: 15, lineEnd: 32 }, facts).url,
+      'https://github.com/acme/app/blob/abc123/src/cache.ts#L15-L32',
+    );
+    assert.equal(
+      resolveCitation({ target: './src/cache.ts', lineStart: 7, lineEnd: 7 }, facts).url,
+      'https://github.com/acme/app/blob/abc123/src/cache.ts#L7',
+    );
+    assert.equal(
+      resolveCitation({ target: 'docs/spec.pdf', page: 12 }, facts).url,
+      'https://github.com/acme/app/blob/abc123/docs/spec.pdf#page=12',
+    );
+  });
+
+  it('gives no link for a changed, untracked, or unpushed file, or outside a GitHub repo', () => {
+    const citation = { target: 'src/cache.ts', lineStart: 1 };
+    const cases = [
+      { 'status --porcelain -- src/cache.ts': ' M src/cache.ts' },
+      { 'ls-files -- src/cache.ts': '' },
+      { 'branch -r --contains HEAD': '' },
+      { 'remote get-url origin': 'git@gitlab.com:acme/app.git' },
+      { 'rev-parse --show-toplevel': null },
+    ];
+    for (const change of cases) {
+      const git = fakeGit({ ...CLEAN_REPO, ...change });
+      const result = resolveCitation(citation, readGitFacts(git, () => git));
+      assert.equal(result.url, undefined, JSON.stringify(change));
+      assert.deepEqual(result, citation);
+    }
   });
 });

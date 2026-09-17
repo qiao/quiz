@@ -6,6 +6,7 @@
  * writes the page. Section 3 of `docs/architecture.md` specifies the command line.
  */
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 
 /**
@@ -583,4 +584,107 @@ export function gradeAnswers(draft, file) {
     passedCount: draft.questions.length - failures.length,
     failures,
   };
+}
+
+/**
+ * @typedef {DraftCitation & { url?: string }} BuiltCitation
+ *
+ * @typedef {(args: string[]) => string | null} GitRunner
+ *
+ * @typedef {object} GitFacts
+ * @property {string} commit Full SHA of `HEAD`.
+ * @property {string | null} webUrl Web address of the GitHub repository, or null.
+ * @property {boolean} pushed True when a remote-tracking branch contains `HEAD`.
+ * @property {GitRunner} git Runner that works in the repository root.
+ */
+
+/**
+ * Makes a git runner for a folder.
+ *
+ * @param {string} folder Folder where git runs.
+ * @returns {GitRunner} A runner that returns the trimmed standard output, or null when git fails.
+ */
+export function gitRunnerFor(folder) {
+  return (args) => {
+    try {
+      const output = execFileSync('git', ['-C', folder, ...args], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      return output.trim();
+    } catch {
+      return null;
+    }
+  };
+}
+
+/** Pattern for the SSH, SSH URL, and HTTPS forms of a GitHub remote. */
+const GITHUB_REMOTE = new RegExp(
+  '^(?:git@github\\.com:|ssh://git@github\\.com/|https://(?:[^@/]+@)?github\\.com/)' +
+    '([^/]+)/([^/]+?)(?:\\.git)?/?$',
+);
+
+/**
+ * Converts a GitHub remote URL to the web address of the repository.
+ *
+ * @param {string} remote Output of `git remote get-url origin`.
+ * @returns {string | null} For example `https://github.com/acme/app`, or null for another host.
+ */
+export function githubWebUrl(remote) {
+  const match = GITHUB_REMOTE.exec(remote.trim());
+  return match ? `https://github.com/${match[1]}/${match[2]}` : null;
+}
+
+/**
+ * Reads the git facts that a permalink needs.
+ *
+ * @param {GitRunner} git Runner for the folder where the build runs.
+ * @param {(folder: string) => GitRunner} [runnerAt] Makes a runner for the repository root.
+ * @returns {GitFacts | null} The facts, or null when the folder is not in a git repository.
+ */
+export function readGitFacts(git, runnerAt = gitRunnerFor) {
+  const root = git(['rev-parse', '--show-toplevel']);
+  const commit = git(['rev-parse', 'HEAD']);
+  if (!root || !commit) return null;
+  const remote = git(['remote', 'get-url', 'origin']);
+  return {
+    commit,
+    webUrl: remote ? githubWebUrl(remote) : null,
+    pushed: Boolean(git(['branch', '-r', '--contains', 'HEAD'])),
+    git: runnerAt(root),
+  };
+}
+
+/**
+ * Adds a link to a citation when a reader can open the cited source.
+ *
+ * A URL target links to itself. A file links to a GitHub permalink only when the file is tracked,
+ * has no uncommitted change, and `HEAD` is on a remote-tracking branch. In every other case the
+ * citation stays plain text, so a link never points to the wrong lines.
+ *
+ * @param {DraftCitation} citation Citation from the draft.
+ * @param {GitFacts | null} facts Git facts, or null outside a repository.
+ * @returns {BuiltCitation} The citation, with `url` when a link is safe.
+ */
+export function resolveCitation(citation, facts) {
+  if (/^https?:\/\//.test(citation.target)) return { ...citation, url: citation.target };
+  if (!facts || !facts.webUrl || !facts.pushed) return { ...citation };
+
+  const path = citation.target.replace(/^\.\//, '');
+  // An empty string from git status means "no change", so compare with '' and not for truth.
+  const tracked = facts.git(['ls-files', '--', path]) === path;
+  const clean = facts.git(['status', '--porcelain', '--', path]) === '';
+  if (!tracked || !clean) return { ...citation };
+
+  let anchor = '';
+  if (citation.page) {
+    anchor = `#page=${citation.page}`;
+  } else if (citation.lineStart) {
+    const end = citation.lineEnd;
+    anchor = end && end !== citation.lineStart
+      ? `#L${citation.lineStart}-L${end}`
+      : `#L${citation.lineStart}`;
+  }
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  return { ...citation, url: `${facts.webUrl}/blob/${facts.commit}/${encodedPath}${anchor}` };
 }
