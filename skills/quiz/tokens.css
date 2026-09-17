@@ -60,3 +60,21 @@
 :root[data-theme='dark'] {
   color-scheme: dark;
 }
+
+/*
+ * Motion tokens for the slide, answer, and score transitions.
+ * Source: https://github.com/Jakubantalik/transitions.dev, file skills/transitions-dev/_root.css
+ * at commit 598d3d6ad89dabb4bdf742fd2e887ca53914a888. The terms at https://transitions.dev/terms.html
+ * permit use in a product. Only the free recipes are used. The names are the source names.
+ */
+:root {
+  --duration-stagger: 40ms;
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
+  --duration-very-slow: 500ms;
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --distance-base: 8px;
+  --distance-medium: 12px;
+  --blur-medium: 3px;
+}
