@@ -247,10 +247,10 @@ This document answers: what did we decide, and what did we reject?
   See section 7 for the conflict record.
 
 ### D17: Feedback and score modes
-- **Decision:** Learn mode with instant answer feedback, end slide summary by tier, and a button
-  to retry missed questions.
-- **Reason:** Immediate feedback reinforces comprehension when a choice is made. Tier summaries
-  highlight specific knowledge gaps.
+- **Decision:** Learn mode with instant answer feedback, end slide score ring and summary by tier,
+  and a button to retry missed questions.
+- **Reason:** Immediate feedback reinforces comprehension when a choice is made. The score ring
+  and tier summaries highlight progress and specific knowledge gaps.
 - **Rejected alternative:** Exam mode hiding feedback until the final slide.
   Rejected because delayed feedback reduces learning value for self-testing.
 - **Rejected alternative:** Dual-mode switcher between learn and exam modes.
