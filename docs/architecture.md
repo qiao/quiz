@@ -532,7 +532,6 @@ The agent asks a clarifying question before authoring when:
 1. The working directory is empty.
 2. The working directory is the user home directory (`~`), where recursive scanning would inspect
    unrelated personal files.
-3. The prompt specifies no target file and the repository contains multiple independent projects.
 
 ### Canonical question rules
 
