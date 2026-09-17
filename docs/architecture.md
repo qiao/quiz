@@ -505,7 +505,9 @@ The deck contains three distinct slide views:
    "Start the quiz" button (or "Continue the quiz" when resuming), and an optional "Restart" button.
 2. **Question slide (index 1 to N):** Starts at the top so content does not jump after an answer.
    Shows tier badge, question progress ("5 of 20"), question prompt, four interactive choice cards,
-   an explanation reveal panel, citation link, a "Back" button, and a "Next" button. Choice status
+   an explanation reveal panel, citation link, a "Back" button, and a forward button ("Next" on
+   questions 1 to N - 1, or "See the score" on question N). In review when all questions have
+   answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
    displays drawn check and cross icons next to the status text.
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
@@ -812,6 +814,7 @@ The page targets WCAG 2.1 AA:
   `type="button"`. This provides default keyboard activation through `Space` and `Enter`.
 - **Screen reader announcements:** A container with `aria-live="polite"` and `aria-atomic="true"`
   announces answer validation outcomes and explanations when the learner selects a choice.
+- **Touch targets:** Buttons use a minimum height of 44 pixels on devices with a coarse pointer.
 
 ---
 
