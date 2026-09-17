@@ -206,8 +206,11 @@ Command behavior and exit codes:
 - The compiler validates the draft, balances answer positions across choices, compiles Markdown to
   safe HTML, inlines CSS and font assets, and writes `quizzes/<slug>/index.html`.
 - Print the relative output path: `quizzes/<slug>/index.html`.
-- Print the browser open command: `open ./quizzes/<slug>/index.html`.
-- Print a one-line deployment hint for static hosting (such as `npx serve quizzes/<slug>`).
+- Print a browser command to view the slides: `open ./quizzes/<slug>/index.html` on macOS,
+  `xdg-open ./quizzes/<slug>/index.html` on Linux, or `start quizzes\<slug>\index.html`
+  on Windows.
+- Print a one-line deployment hint for static hosting (for example,
+  `npx vercel quizzes/<slug>` or `npx netlify deploy --dir=quizzes/<slug>`).
 
 Completion criterion: `quizzes/<slug>/index.html` exists on disk and the user receives the file
 path, open command, and deployment hint.
