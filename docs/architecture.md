@@ -280,8 +280,9 @@ The build compiler supports:
 
 1. Raw prompt and choice text passes through HTML entity encoding (`&`, `<`, `>`, `"`, `'`).
 2. Fenced code block contents pass through HTML entity encoding before insertion into `<code>` tags.
-3. Embedded JSON in the HTML page replaces `</script` with `<\/script` and `<!--` with `<\!--` to
-   prevent script breakout vulnerabilities.
+3. Embedded JSON in the HTML page replaces every `<` character with the unicode escape
+   `\u003c`. This single rule covers `</script>` and `<!--` sequences while keeping the payload
+   valid JSON that `JSON.parse` parses directly in the browser.
 
 ---
 
@@ -449,7 +450,8 @@ The automated test suite verifies:
 3. **HTML escaping:** Validates that `<script>`, `onerror`, and HTML tags in Markdown prompts are
    correctly encoded.
 4. **Script boundary safety:** Validates that `</script>` and `<!--` within embedded JSON data are
-   escaped.
+   escaped, reads the embedded JSON back from the generated HTML, and verifies that `JSON.parse`
+   successfully parses the payload.
 5. **Offline self-containment:** Validates that the output file contains zero external HTTP/HTTPS
    URL requests in `<link>` or `<script>` tags.
 
