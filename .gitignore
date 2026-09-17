@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Editor and operating system
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
