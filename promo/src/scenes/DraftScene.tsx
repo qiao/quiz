@@ -3,10 +3,10 @@ import { COLOR, EASE_OUT, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const QUESTIONS = [
-  { tier: 1, name: "Fundamentals", text: "What does useFetch() return to TodoList?" },
-  { tier: 2, name: "Core", text: "When does AuthContext refresh the session?" },
-  { tier: 3, name: "Advanced", text: "Why does TodoItem lose its edit on a new id?" },
-  { tier: 4, name: "Expert", text: "Why does useUndoReducer save diffs, not states?" },
+  { tier: 1, name: "Fundamentals", text: "Where does the app keep your todos?" },
+  { tier: 2, name: "Core", text: "What does the app do when you check a todo?" },
+  { tier: 3, name: "Advanced", text: "Why do your todos stay after you reload?" },
+  { tier: 4, name: "Expert", text: "Why can two open tabs show different todos?" },
 ];
 
 /** Frame where the first question row appears. */
