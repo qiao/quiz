@@ -1,0 +1,358 @@
+# Architecture decisions: quiz skill
+
+Status: approved design. Date: 2026-09-16.
+
+This document answers: what did we decide, and what did we reject?
+
+| Section | Title | Answers |
+|---|---|---|
+| 1 | Decision log | What did we decide for Q1 to Q24? |
+| 2 | Packaging and scope (D1 to D6) | How is the skill packaged and scoped? |
+| 3 | Question mechanics (D7 to D12) | How are tiers and choices generated? |
+| 4 | Output and presentation (D13 to D18) | How is the quiz built and rendered? |
+| 5 | Execution and verification (D19 to D24) | How is the build executed and tested? |
+| 6 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
+| 7 | Sources | Where are the primary references? |
+
+```text
+Draft Phase (Agent):
++---------------------+
+|      Resource       | ──(explore / read)──> [Agent Generator]
++---------------------+                              │
+                                                     ▼ writes
+                                            +-----------------+
+                                            |    quiz.json    | (QuizDraft)
+                                            +-----------------+
+Build Phase (build.mjs):                             │
+                                                     ▼ reads & validates
++---------------------+                     +-----------------+
+|    template.html    |                     |    build.mjs    |
++---------------------+                     +-----------------+
+           │                                         │ compiles
+           ▼                                         ▼
++-------------------------------------------------------------+
+|                 quizzes/<slug>/index.html                   | (BuiltQuiz)
++-------------------------------------------------------------+
+```
+
+---
+
+## 1. Decision log
+
+| # | Topic | Choice | Core reason |
+|---|---|---|---|
+| D1 | Packaging | Source repo with symlink | Enables version control and test runs |
+| D2 | Audience | Self-study and team onboarding | Static HTML cannot prevent inspection |
+| D3 | Architecture | Template plus data | Separates questions from slide layout |
+| D4 | Resources | All except EPUB | Covers common developer formats |
+| D5 | Focus | Optional resource and focus | Supports zero-config and targeted runs |
+| D6 | Clarification | Ask only when input is invalid | Reduces interactive CLI friction |
+| D7 | Count | Default 20, reduce if small | Prevents trivial filler questions |
+| D8 | Difficulty | Four progressive tiers | Builds mastery from recall to analysis |
+| D9 | Choice rules | Seven structural rules | Removes guessing shortcuts |
+| D10 | Explanations | Correct plus distractors | Explains why wrong options fail |
+| D11 | Verification | Blind check sub-agent | Detects ambiguous and duplicate answers |
+| D12 | Language | Natural domain terminology | Preserves code conventions |
+| D13 | Output path | `./quizzes/<slug>/index.html` | Keeps repository root clean |
+| D14 | Brand shell | Style only, no logos | Avoids trademark misrepresentation |
+| D15 | Assets | Self-contained HTML file | Allows offline use with zero network calls |
+| D16 | Theme | OS preference plus toggle | Supports external projector display |
+| D17 | Feedback | Learn mode with review | Reinforces memory on answer selection |
+| D18 | Persistence | Storage with derived ID | Prevents state collision across versions |
+| D19 | Runtime | Node.js ESM without packages | Fast execution with standard libraries |
+| D20 | Formatting | Markdown compiled at build | Allows unit testing of HTML safety |
+| D21 | Shuffling | Build-time position balance | Keeps stored progress indices stable |
+| D22 | Controls | Responsive slides with keys | Enables fast keyboard navigation |
+| D23 | Citations | Git permalink with commit SHA | Prevents broken source references |
+| D24 | Tests | Unit tests with `node:test` | Deterministic validation of compiler |
+
+---
+
+## 2. Packaging and scope (D1 to D6)
+
+### D1: Packaging and skill name
+- **Decision:** Dedicated source repository with skill at `skills/quiz/SKILL.md` and name `quiz`.
+- **Reason:** A dedicated repository supports version control, continuous integration, and
+  automated tests. The name `quiz` is concise, memorable, and quick to type.
+- **Rejected alternative A:** Claude Code plugin format (`.claude-plugin/plugin.json`).
+  Rejected because agent skills currently use standard folder layouts with `SKILL.md`.
+- **Rejected alternative B:** Writing directly into `~/.claude/skills/quiz`.
+  Rejected because it lacks git tracking, issue tracking, and automated testing.
+- **Rejected alternative C:** Names `make-quiz` or `exam`.
+  Rejected because `quiz` is shorter and matches user intuition for both quick quizzes and exams.
+
+### D2: Target audience
+- **Decision:** Target self-study and team onboarding. Formal exams are out of scope.
+- **Reason:** Static HTML pages deliver code and data directly to the client browser. Anyone who
+  inspects page source can read the answers.
+- **Rejected alternative:** Formal exams with cheating prevention.
+  Rejected because verifying identity and hiding answers requires an authenticated web server
+  and database, which contradicts the single static file requirement.
+
+### D3: Generation architecture
+- **Decision:** Template plus data. The agent writes `quiz.json`, and `build.mjs` compiles it into
+  `index.html`.
+- **Reason:** Generating complete HTML, CSS, and JavaScript on every model invocation causes UI
+  drift, layout bugs, and accessibility regressions. Separating data from presentation allows
+  schema validation and deterministic compilation.
+- **Rejected alternative:** Model writes complete HTML, CSS, and JavaScript directly.
+  Rejected because models frequently introduce subtle CSS defects, broken scripts, and styling
+  inconsistencies across runs.
+
+### D4: Supported resource types in v1
+- **Decision:** Support current working directory, local paths, web URLs, PDFs, and topic prompts.
+  Do not support EPUB.
+- **Reason:** Code repositories, documentation sites, local files, and PDF guides cover the vast
+  majority of developer learning sources.
+- **Rejected alternative:** Support EPUB files.
+  Rejected because EPUB extraction requires extra parsing dependencies with negligible demand
+  among software engineers.
+- **Rejected alternative:** Unconstrained documentation crawling.
+  Rejected because crawling entire domains causes network timeouts and token exhaustion.
+  Crawling is bounded to 20 linked pages within the initial hostname.
+
+### D5: Resource versus focus
+- **Decision:** Both resource target and topic focus are optional in user prompts.
+- **Reason:** Users expect `/quiz` to analyze the current workspace with sensible defaults. Users
+  can specify a target path, a focus topic (for example `/quiz authentication`), or both.
+- **Rejected alternative:** Mandatory resource parameter.
+  Rejected because requiring users to specify the current path adds unnecessary command ceremony.
+- **Rejected alternative:** Uniform file traversal without importance weighting.
+  Rejected because treating lock files, generated bundles, and vendor folders equally wastes
+  model context. The skill weights core modules and public interfaces.
+
+### D6: Clarifying questions
+- **Decision:** Ask clarifying questions only when input is invalid, missing, or points to the
+  system root directory.
+- **Reason:** Developers expect immediate execution when sane defaults exist.
+- **Rejected alternative:** Ask clarifying questions on every run.
+  Rejected because asking confirmation questions for count, difficulty, or format slows down
+  everyday use.
+- **Rejected alternative:** Never ask clarifying questions.
+  Rejected because running on an empty folder or root directory produces meaningless output.
+
+---
+
+## 3. Question mechanics (D7 to D12)
+
+### D7: Question count and resource limits
+- **Decision:** Default to 20 questions. Allow user prompts to override the count. If a resource
+  is too small, generate fewer questions and inform the user.
+- **Reason:** Twenty questions provide a focused fifteen-minute study session. Forcing 20 questions
+  on small files creates trivial questions that test superficial details.
+- **Rejected alternative:** Strict 20-question minimum.
+  Rejected because small source files cannot produce 20 substantive questions without trivia.
+- **Rejected alternative:** Unlimited question count.
+  Rejected because quizzes over 40 questions cause learner fatigue and degrade model attention.
+
+### D8: Difficulty progression
+- **Decision:** Four equal tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
+  no-trivia rule.
+- **Reason:** Gradual progression builds confidence before introducing complex code tracing and
+  architectural analysis. The no-trivia rule prevents questions about line numbers or arbitrary
+  variable names.
+- **Rejected alternative:** Uniform difficulty across all questions.
+  Rejected because random difficulty spikes disorient learners.
+- **Rejected alternative:** Free-form difficulty labels without strict tier definitions.
+  Rejected because structured tiers allow the final score summary to show mastery by category.
+
+### D9: Choice structure
+- **Decision:** Exactly four choices per question: one correct, one obvious wrong, and two
+  plausible wrong choices. Shuffled by code with balanced answer positions.
+- **Reason:** Four choices eliminate binary guessing. Authentic distractors based on common
+  misconceptions help learners identify knowledge gaps. Shuffling by code prevents predictable
+  answer patterns.
+- **Rejected alternative:** Allow variable numbers of choices (2 to 5).
+  Rejected because variable options complicate slide layouts and keyboard navigation bindings.
+- **Rejected alternative:** Model shuffles choice positions.
+  Rejected because LLMs have known positional biases toward middle positions (B and C).
+- **Rejected alternative:** Include "All of the above" or "None of the above".
+  Rejected because these choices encourage process-of-elimination guessing rather than domain
+  understanding.
+
+### D10: Explanations and citations
+- **Decision:** Provide an explanation for the correct choice, a single-line rationale for each
+  wrong choice, and a source citation with line ranges.
+- **Reason:** Learners need to understand why an option is incorrect. Line citations provide direct
+  evidence and paths for deeper verification.
+- **Rejected alternative:** Explanation for the correct choice only.
+  Rejected because learners who select plausible distractors receive no feedback explaining their
+  specific mistake.
+- **Rejected alternative:** Duplicating explanation text inside the correct choice rationale.
+  Rejected because storing identical text in two places creates maintenance drift.
+
+### D11: Question verification
+- **Decision:** Use an independent blind verification sub-agent without access to the answer key.
+- **Reason:** Question generator models sometimes produce ambiguous phrasing or multiple correct
+  answers. A blind agent solving questions from source text identifies defective items before
+  user delivery.
+- **Rejected alternative:** No verification step.
+  Rejected because unverified model questions frequently contain errors and false statements.
+- **Rejected alternative:** Self-check by the generation agent.
+  Rejected because self-evaluation carries confirmation bias and misses flawed assumptions.
+
+### D12: Technical language
+- **Decision:** Use natural domain terminology matching the source code and user prompt. The skill
+  definition and documentation use ASD-STE100.
+- **Reason:** Technical questions require exact programming language constructs and established
+  framework terms.
+- **Rejected alternative:** Enforce strict ASD-STE100 vocabulary on quiz questions.
+  Rejected because replacing specialized programming terms with simplified words creates
+  unnatural phrasing and confuses developers.
+
+---
+
+## 4. Output and presentation (D13 to D18)
+
+### D13: Output location and deployment
+- **Decision:** Save quizzes to `./quizzes/<slug>/index.html` and print deployment command hints.
+- **Reason:** Subdirectories keep the root workspace tidy. Static folders work directly with local
+  file viewers and cloud hosting tools.
+- **Rejected alternative:** Save to root directory as `./quiz-<slug>.html`.
+  Rejected because multiple quizzes clutter project root directories.
+- **Rejected alternative:** Automatic background deployment via cloud CLI tools.
+  Rejected because deploying code without user consent violates expected local tool boundaries.
+
+### D14: Visual design and brand shell
+- **Decision:** Adopt the Vercel monochrome visual design system, but omit Vercel logos and
+  wordmarks.
+- **Reason:** Minimalist typography, high-contrast borders, and clean spacing produce readable
+  slides. Omitting proprietary trademarks prevents confusion regarding content authorship.
+- **Rejected alternative:** Include official Vercel header wordmark and footer triangle logo.
+  Rejected because arbitrary third-party quizzes are not official Vercel publications.
+
+### D15: Asset delivery
+- **Decision:** Generate fully self-contained HTML files with inlined CSS and embedded font
+  definitions. Store raw fonts in separate skill assets to preserve agent context.
+- **Reason:** Self-contained files work without internet connections, avoid CORS restrictions,
+  and operate when opened directly from disk. Keeping assets outside `template.html` prevents
+  wasting model context tokens.
+- **Rejected alternative:** Load stylesheets and fonts from external CDNs.
+  Rejected because network requests fail during offline usage and introduce external
+  dependencies.
+
+### D16: Theme selection
+- **Decision:** Match operating system preference by default, and provide a manual toggle button.
+- **Reason:** Defaulting to system settings provides an expected baseline. The manual override is
+  required because dark themes are unreadable on many conference room projectors.
+- **Rejected alternative:** Strictly follow operating system with no toggle switcher.
+  Rejected because presentation environments frequently conflict with personal system settings.
+  See section 6 for the conflict record.
+
+### D17: Feedback and score modes
+- **Decision:** Learn mode with instant answer feedback, end slide summary by tier, and a button
+  to retry missed questions.
+- **Reason:** Immediate feedback reinforces comprehension when a choice is made. Tier summaries
+  highlight specific knowledge gaps.
+- **Rejected alternative:** Exam mode hiding feedback until the final slide.
+  Rejected because delayed feedback diminishes learning value for self-study.
+- **Rejected alternative:** Dual-mode switcher between learn and exam modes.
+  Rejected because extra modes add UI complexity without improving core developer onboarding.
+
+### D18: Progress persistence
+- **Decision:** Persist quiz answers in browser `localStorage` keyed by a derived identifier
+  (`${slug}-${hash}`). Provide a restart button.
+- **Reason:** Page reloads or citation lookups do not erase progress. Hashing draft contents
+  prevents collisions between different revisions of a quiz.
+- **Rejected alternative:** No persistence (reset on reload).
+  Rejected because following citation links or refreshing the browser loses all answers.
+- **Rejected alternative:** Key storage solely by slug.
+  Rejected because regenerating a quiz with new questions at an existing slug would load obsolete
+  answer state.
+
+---
+
+## 5. Execution and verification (D19 to D24)
+
+### D19: Build runtime
+- **Decision:** Implement `build.mjs` using Node.js ESM with zero external package dependencies.
+  `SKILL.md` checks for `node` before execution.
+- **Reason:** Node.js built-in modules (`node:fs`, `node:path`, `node:crypto`) provide complete
+  JSON parsing, hashing, and file writing capabilities without `npm install` delay.
+- **Rejected alternative:** Python 3 standard library.
+  Rejected because web frontend tooling in this domain centers on JavaScript runtimes.
+- **Rejected alternative:** Shell script using `cat` and sed.
+  Rejected because shell concatenation lacks JSON schema validation and HTML escaping safeguards.
+
+### D20: Markdown and code formatting
+- **Decision:** Compile Markdown subsets and escape HTML entities inside `build.mjs` during the
+  build step. Use Geist Mono for code blocks.
+- **Reason:** Compiling during build time enables automated testing of escaping logic using
+  `node:test` without browser instances. The browser receives clean, safe HTML.
+- **Rejected alternative:** Client-side Markdown parser in template script.
+  Rejected because client parsing increases payload size and risks browser script execution bugs.
+- **Rejected alternative:** Full external Markdown library (e.g. marked).
+  Rejected because basic questions require only paragraphs, inline code, bold text, and code
+  blocks.
+
+### D21: Choice shuffling mechanics
+- **Decision:** Perform deterministic choice shuffling and position balancing inside `build.mjs`
+  at build time.
+- **Reason:** Stable positions across page reloads keep `localStorage` indices valid.
+  Equal distribution across A, B, C, and D positions eliminates guessing bias.
+- **Rejected alternative:** Dynamic shuffling in client browser on page load.
+  Rejected because dynamic shuffling breaks stored progress and invalidates review links.
+
+### D22: Slide layout and navigation
+- **Decision:** Responsive viewport slides with URL hash routing (`#1`, `#2`) and complete
+  keyboard controls.
+- **Reason:** Keyboard shortcuts (1 to 4, Enter, and Arrow keys) provide fast navigation. Hash
+  routing supports browser history and direct question bookmarking.
+- **Rejected alternative:** Fixed 16:9 aspect ratio container.
+  Rejected because fixed aspect containers letterbox awkwardly on mobile devices and vertical
+  monitors.
+
+### D23: Citation links
+- **Decision:** Build GitHub permalinks using commit SHAs when clean git remotes exist. Fall back
+  to text line ranges when files have uncommitted changes or no remotes.
+- **Reason:** Permalinks tied to specific commit SHAs remain valid as files change. Detecting
+  dirty working trees prevents linking to incorrect line positions.
+- **Rejected alternative:** Plain text line references only.
+  Rejected because clickable links improve developer efficiency when verifying claims.
+- **Rejected alternative:** GitHub links pointing to main or master branch.
+  Rejected because branch pointers change over time, resulting in line number drift.
+
+### D24: Test strategy
+- **Decision:** Unit test `build.mjs` using the native `node:test` runner.
+- **Reason:** Verifying JSON validation, HTML escaping, and choice balancing in milliseconds with
+  zero test dependencies provides fast feedback during development.
+- **Rejected alternative:** End-to-end browser testing with Playwright or Puppeteer.
+  Rejected because heavyweight browser drivers add substantial installation and runtime
+  overhead.
+- **Rejected alternative:** Model evaluation test suites in v1.
+  Rejected because model evals consume substantial tokens and time before compiler stability is
+  proven.
+
+---
+
+## 6. Conflict record: theme toggle
+
+This section records the contradiction between the source design document and our implementation
+choice, following documentation rule 4.
+
+| Source document | External rule | Chosen rule | Reference |
+|---|---|---|---|
+| `vercel.com/design.md` | No visible switcher | Manual toggle button | Section 4 (D16) |
+
+### Detailed discrepancy
+
+**Source rule:**
+`http://vercel.com/design.md` specifies: "Follow prefers-color-scheme. Do not add a visible
+switcher."
+
+**Our implementation:**
+The generated HTML page follows `prefers-color-scheme` by default, but includes a discrete manual
+theme toggle button in the header and binds the key `t` to toggle themes.
+
+**Reason for divergence:**
+Presentation slides are frequently displayed on external conference room projectors or shared
+monitors where dark themes have insufficient contrast. Users require manual contrast control
+regardless of host operating system settings.
+
+---
+
+## 7. Sources
+
+- ASD-STE100 Simplified Technical English: <https://asd-ste100.org/>
+- Vercel Brand Guidelines: <https://vercel.com/design.md>
+- Node.js Test Runner: <https://nodejs.org/api/test.html>
