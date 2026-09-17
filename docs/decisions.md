@@ -33,7 +33,7 @@ This document answers: what did we decide, and what did we reject?
 | D9 | Choice rules | Seven structural rules | Removes guessing shortcuts |
 | D10 | Explanations | Correct plus distractors | Explains why wrong options fail |
 | D11 | Verification | Blind check sub-agent | Detects ambiguous and duplicate answers |
-| D12 | Language | Natural domain terminology | Preserves code conventions |
+| D12 | Language | Source and prompt language | Preserves code and user terms |
 | D13 | Output path | `./quizzes/<slug>/index.html` | Keeps repository root clean |
 | D14 | Brand shell | Style only, no logos | Avoids trademark misrepresentation |
 | D15 | Assets | Self-contained HTML file | Allows offline use with zero network calls |
@@ -104,14 +104,14 @@ This document answers: what did we decide, and what did we reject?
   model context. The skill weights core modules and public interfaces.
 
 ### D6: Clarifying questions
-- **Decision:** Ask clarifying questions only when input is invalid, missing, or points to the
-  system root directory.
+- **Decision:** Ask clarifying questions only when input is invalid, the target path is missing,
+  or the current working directory is empty or the home directory.
 - **Reason:** Developers expect immediate execution when sane defaults exist.
 - **Rejected alternative:** Ask clarifying questions on every run.
   Rejected because asking confirmation questions for count, difficulty, or format slows down
   everyday use.
 - **Rejected alternative:** Never ask clarifying questions.
-  Rejected because running on an empty folder or root directory produces meaningless output.
+  Rejected because running on an empty folder or home directory produces meaningless output.
 
 ---
 
@@ -173,8 +173,8 @@ This document answers: what did we decide, and what did we reject?
   Rejected because self-evaluation carries confirmation bias and misses flawed assumptions.
 
 ### D12: Technical language
-- **Decision:** Use natural domain terminology matching the source code and user prompt. The skill
-  definition and documentation use ASD-STE100.
+- **Decision:** Use natural domain terminology matching the source code and the language of the
+  prompt. The skill definition and documentation use ASD-STE100.
 - **Reason:** Technical questions require exact programming language constructs and established
   framework terms.
 - **Rejected alternative:** Enforce strict ASD-STE100 vocabulary on quiz questions.
@@ -186,9 +186,11 @@ This document answers: what did we decide, and what did we reject?
 ## 4. Output and presentation (D13 to D18)
 
 ### D13: Output location and deployment
-- **Decision:** Save quizzes to `./quizzes/<slug>/index.html` and print deployment command hints.
-- **Reason:** Subdirectories keep the root workspace tidy. Static folders work directly with local
-  file viewers and cloud hosting tools.
+- **Decision:** Save quizzes to `./quizzes/<slug>/index.html`. If the folder exists, append a
+  numeric suffix such as `-2`. Skip `quizzes/` when exploring the current working directory.
+  Print a one-line deployment hint.
+- **Reason:** Subdirectories keep the root workspace clean. Static folders work directly with local
+  file viewers and cloud hosting tools. Preventing overwrites protects previous quiz results.
 - **Rejected alternative:** Save to root directory as `./quiz-<slug>.html`.
   Rejected because multiple quizzes clutter project root directories.
 - **Rejected alternative:** Automatic background deployment via cloud CLI tools.
