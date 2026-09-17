@@ -82,7 +82,7 @@ key map.
 Run the automated test suite:
 
 ```bash
-node --test 'test/*.test.mjs'
+node --test test/build.test.mjs
 ```
 
 ---
