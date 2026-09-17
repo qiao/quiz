@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, it } from 'node:test';
 
 import {
@@ -647,5 +648,31 @@ describe('main', () => {
     const result = makeProject().run(['--help']);
     assert.equal(result.code, 0);
     assert.match(result.stdout, /^Usage:\n {2}node build\.mjs <quiz\.json>/);
+  });
+});
+
+describe('the real skill folder', () => {
+  it('builds a page with no placeholder left and no network request', () => {
+    const cwd = mkdtempSync(join(tmpdir(), 'quiz-real-'));
+    mkdirSync(join(cwd, 'quizzes/js-event-loop'), { recursive: true });
+    writeFileSync(join(cwd, 'quizzes/js-event-loop/quiz.json'), readFileSync(FIXTURE_URL));
+    let stderr = '';
+    const code = main(['quizzes/js-event-loop/quiz.json'], {
+      cwd,
+      env: { SOURCE_DATE_EPOCH: '1767225600' },
+      skillDir: fileURLToPath(new URL('../skills/quiz/', import.meta.url)),
+      stdout: () => {},
+      stderr: (text) => (stderr += text),
+    });
+    assert.equal(code, 0, stderr);
+    const page = readFileSync(join(cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
+
+    assert.doesNotMatch(page, /\{\{[A-Z_]+\}\}/);
+    assert.doesNotMatch(page, /<(?:link|script|img|iframe)[^>]+(?:href|src)=["']?https?:/i);
+    assert.doesNotMatch(page, /url\(\s*["']?(?:https?:)?\/\//i);
+    assert.doesNotMatch(page, /@import/i);
+    assert.match(page, /Copyright 2024 The Geist Project Authors/);
+    assert.match(page, /font-family: 'Geist Mono'/);
+    assert.match(page, /--vbg-background-100: light-dark/);
   });
 });
