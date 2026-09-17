@@ -394,6 +394,12 @@ h2 {
   color: var(--vbg-gray-1000);
 }
 
+/* The theme button shows only an icon. Its accessible name and its tooltip give the action. */
+.theme-toggle {
+  width: 32px;
+  padding: 0;
+}
+
 .list {
   margin: var(--vbg-space-3) 0 0;
   padding-left: var(--vbg-space-5);
@@ -445,6 +451,10 @@ kbd {
 @media (pointer: coarse) {
   .button {
     min-height: 44px;
+  }
+
+  .theme-toggle {
+    width: 44px;
   }
 }
 
@@ -745,7 +755,7 @@ kbd {
   <header class="bar">
     <span class="bar-title" id="bar-title"></span>
     <span class="bar-count" id="bar-count"></span>
-    <button type="button" class="button button-tertiary" id="theme-toggle"></button>
+    <button type="button" class="button button-tertiary theme-toggle" id="theme-toggle"></button>
   </header>
   <div class="progress" aria-hidden="true">
     <div class="progress-fill" id="progress-fill"></div>
@@ -812,16 +822,24 @@ kbd {
     return node;
   }
 
-  // Each icon path with its length in user units, rounded up, for the stroke draw animation.
+  // Each icon path. A status icon also has its length in user units, rounded up, for the stroke
+  // draw animation.
   const ICONS = {
     check: { path: 'M3.5 8.5l3 3 6-7', length: 14 },
     cross: { path: 'M4 4l8 8M12 4l-8 8', length: 23 },
+    sun: {
+      path:
+        'M8 5.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5M8 1.5v1.25M8 13.25v1.25M1.5 8h1.25' +
+        'M13.25 8h1.25M3.4 3.4l.9.9M11.7 11.7l.9.9M3.4 12.6l.9-.9M11.7 4.3l.9-.9',
+    },
+    moon: { path: 'M13.5 10A5.5 5.5 0 0 1 6 2.5a5.5 5.5 0 1 0 7.5 7.5z' },
   };
 
   /**
-   * Makes a small line icon that a status word accompanies. The icon is hidden from readers.
+   * Makes a small line icon. A word or an accessible name always goes with it, so the icon is
+   * hidden from readers.
    *
-   * @param {'check' | 'cross'} name Icon name.
+   * @param {keyof typeof ICONS} name Icon name.
    * @returns {SVGSVGElement} The icon.
    */
   function icon(name) {
@@ -830,7 +848,8 @@ kbd {
     svg.setAttribute('class', 'icon');
     svg.setAttribute('viewBox', '0 0 16 16');
     svg.setAttribute('aria-hidden', 'true');
-    svg.setAttribute('style', `--icon-length: ${ICONS[name].length}`);
+    const { length } = ICONS[name];
+    if (length) svg.setAttribute('style', `--icon-length: ${length}`);
     const path = document.createElementNS(svgNamespace, 'path');
     path.setAttribute('d', ICONS[name].path);
     svg.append(path);
@@ -1383,9 +1402,16 @@ kbd {
     return darkQuery.matches ? 'dark' : 'light';
   }
 
+  /**
+   * Shows the icon of the other theme on the theme button: a sun in the dark theme, and a moon in
+   * the light theme.
+   */
   function updateThemeButton() {
     const other = currentTheme() === 'dark' ? 'light' : 'dark';
-    themeToggle.textContent = `Use ${other} theme`;
+    const label = `Use ${other} theme`;
+    themeToggle.replaceChildren(icon(other === 'light' ? 'sun' : 'moon'));
+    themeToggle.setAttribute('aria-label', label);
+    themeToggle.title = `${label} (T)`;
   }
 
   function toggleTheme() {

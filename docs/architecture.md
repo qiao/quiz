@@ -793,8 +793,11 @@ At page load, the client resolves theme state in this order:
 2. `window.matchMedia('(prefers-color-scheme: dark)')`: if matching, the page selects dark mode.
 3. Fallback: if no setting or media preference matches, the page defaults to light mode.
 
-Pressing `t` toggles `data-theme` between `'light'` and `'dark'`, and saves the new value into
-`localStorage`.
+Pressing `t` or the theme button in the bar toggles `data-theme` between `'light'` and `'dark'`,
+and saves the new value into `localStorage`. The button shows only an icon of the other theme: a
+sun in the dark theme and a moon in the light theme. Its `aria-label` names the action ("Use light
+theme" or "Use dark theme"), and its tooltip adds the key ("Use light theme (T)"). The button is
+32 px square, and 44 px square on a device with a coarse pointer.
 
 ### Motion and focus styles
 

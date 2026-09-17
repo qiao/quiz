@@ -298,7 +298,8 @@ This document answers: what did we decide, and what did we reject?
     status cross and rationale text convey the result clearly without negative reinforcement.
   - `04-text-states-swap.md`: The progress indicator changes alongside the slide, which already
     animates. Adding a three-phase timer introduces JavaScript complexity for redundant feedback.
-  - `09-icon-swap.md`: The manual theme button uses text labels rather than morphing SVG icons.
+  - `09-icon-swap.md`: The theme button changes its icon on the same click that changes the colors
+    of the whole page, so a morph between the icons adds motion and no information.
   - `14-skeleton-reveal.md`: The application holds all question data locally and loads nothing
     asynchronously.
   - `16-tabs-sliding.md`: The slide presentation contains no tabbed navigation interfaces.
