@@ -56,7 +56,8 @@ This document answers: what did we decide, and what did we reject?
 - **Reason:** A dedicated repository supports version control, continuous integration, and
   automated tests. The name `quiz` is concise, memorable, and quick to type.
 - **Rejected alternative A:** Claude Code plugin format (`.claude-plugin/plugin.json`).
-  Rejected because agent skills currently use standard folder layouts with `SKILL.md`.
+  Rejected because developers can add a plugin manifest later without changing the skill folder
+  layout.
 - **Rejected alternative B:** Writing directly into `~/.claude/skills/quiz`.
   Rejected because it lacks git tracking, issue tracking, and automated testing.
 - **Rejected alternative C:** Names `make-quiz` or `exam`.
