@@ -16,27 +16,6 @@ This document answers: what did we decide, and what did we reject?
 | 6 | Conflict record: theme toggle | Why does the design diverge from Vercel rules? |
 | 7 | Sources | Where are the primary references? |
 
-```text
-Draft Phase (Agent):
-+---------------------+
-|      Resource       | ──(explore / read)──> [Agent Generator]
-+---------------------+                              │
-                                                     ▼ writes
-                                            +-----------------+
-                                            |    quiz.json    | (QuizDraft)
-                                            +-----------------+
-Build Phase (build.mjs):                             │
-                                                     ▼ reads & validates
-+---------------------+                     +-----------------+
-|    template.html    |                     |    build.mjs    |
-+---------------------+                     +-----------------+
-           │                                         │ compiles
-           ▼                                         ▼
-+-------------------------------------------------------------+
-|                 quizzes/<slug>/index.html                   | (BuiltQuiz)
-+-------------------------------------------------------------+
-```
-
 ---
 
 ## 1. Decision log
