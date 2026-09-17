@@ -45,29 +45,28 @@ The product serves two primary user roles:
 
 ### Product goals
 
-1. **Effortless invocation:** Run `/quiz` without arguments to explore the current working
-   directory with standard defaults.
-2. **Four progressive tiers:** Organize questions into Fundamentals, Core, Advanced, and Expert
-   tiers to guide learners from basic recall to architectural trade-offs.
-3. **Strict no-trivia standard:** Test comprehension, execution flow, and design reasons. Reject
-   questions about line numbers, variable names, or arbitrary constants.
-4. **Answer verification:** Run an independent blind check sub-agent without the answer key to catch
-   ambiguities and errors before compilation.
-5. **Self-contained output:** Generate a single HTML file with inlined styles and fonts. The file
-   makes zero network calls and works offline.
-6. **Keyboard-first presentation:** Deliver responsive slide layouts with full keyboard navigation
-   (keys 1 to 4, Enter, Arrow keys, and T for theme toggle).
-7. **Progress persistence:** Store answer choices in browser `localStorage` keyed by content hash,
-   protecting progress across reloads while allowing clean restarts.
+1. Run `/quiz` without arguments to explore the current working directory with standard defaults.
+2. Organize questions into Fundamentals, Core, Advanced, and Expert tiers to guide learners
+   from basic recall to architectural trade-offs.
+3. Test comprehension, execution flow, and design reasons. Reject questions about line numbers,
+   variable names, or arbitrary constants.
+4. Run an independent blind check sub-agent without the answer key to catch ambiguities and errors
+   before compilation.
+5. Generate a single HTML file with inlined styles and fonts. The file makes zero network calls and
+   works offline.
+6. Deliver responsive slide layouts with full keyboard navigation (keys 1 to 4, Enter, Arrow keys,
+   and T for theme toggle).
+7. Store answer choices in browser `localStorage` keyed by content hash, protecting progress across
+   reloads while allowing clean restarts.
 
 ### Non-goals
 
-1. **Formal exam cheat prevention:** Static HTML cannot hide source data from browser inspection.
+1. Formal exam cheat prevention: Static HTML cannot hide source data from browser inspection.
    The tool does not prevent source code review.
-2. **User accounts and cloud hosting:** The tool requires no database, login service, or cloud
+2. User accounts and cloud hosting: The tool requires no database, login service, or cloud
    deployment.
-3. **Multiplayer live quizzes:** Real-time synchronized games are out of scope.
-4. **EPUB file extraction:** The tool parses code, plain text, Markdown, PDF, and HTML docs,
+3. Multiplayer live quizzes: Real-time synchronized games are out of scope.
+4. EPUB file extraction: The tool parses code, plain text, Markdown, PDF, and HTML docs,
    but does not parse EPUB files.
 
 ---
@@ -82,20 +81,20 @@ The skill accepts flexible natural language arguments:
 
 ### Supported input forms
 
-1. **Standard invocation:** `/quiz`
+1. Standard invocation: `/quiz`
    Explores the current working directory. Focuses on core modules, public interfaces, and
    architectural patterns while ignoring lock files and vendor folders. Defaults to 20 questions.
-2. **Focus only:** `/quiz authentication flow`
+2. Focus only: `/quiz authentication flow`
    Explores the current working directory, but targets questions to authentication logic and
    session handling.
-3. **Resource only:** `/quiz ./packages/core` or `/quiz https://example.com/docs` or
+3. Resource only: `/quiz ./packages/core` or `/quiz https://example.com/docs` or
    `/quiz manual.pdf`
    Directs question generation to the specified path, documentation site, or document.
-4. **Resource and focus:** `/quiz ./packages/compiler type checking`
+4. Resource and focus: `/quiz ./packages/compiler type checking`
    Directs question generation to a specific directory with a specific topic focus.
-5. **Question count override:** `/quiz 10 questions on state management`
+5. Question count override: `/quiz 10 questions on state management`
    Changes the question count from 20 to the requested number.
-6. **Graceful degradation:** If a resource is small, the skill generates fewer questions and reports
+6. Small source adaptation: If a resource is small, the skill generates fewer questions and reports
    the reduction to the user instead of producing low-value trivia.
 
 ---
@@ -145,7 +144,7 @@ An implementation satisfies this specification when all criteria pass:
 
 ### Output and packaging
 - [ ] Output compiles into `./quizzes/<slug>/index.html`.
-- [ ] Existing folders are not overwritten; the tool appends a numeric suffix such as `-2`.
+- [ ] Existing folders remain unchanged. The tool appends a numeric suffix such as `-2`.
 - [ ] The agent prints the relative file path and a one-line deployment command hint upon
   completion.
 - [ ] The generated HTML file works without internet access and makes no network requests.
