@@ -5,10 +5,10 @@ import { COLOR, MONO } from "../theme";
 import { Caption } from "./Caption";
 
 const CHOICES = [
-  { letter: "A", text: "Both tabs get a new session and keep working" },
-  { letter: "B", text: "The browser merges the two refresh requests" },
-  { letter: "C", text: "The second refresh fails, and that tab logs out" },
-  { letter: "D", text: "The server closes the database connection" },
+  { letter: "A", text: "React moves the item and keeps its state" },
+  { letter: "B", text: "React ignores a key after the first render" },
+  { letter: "C", text: "React unmounts it and mounts a new instance" },
+  { letter: "D", text: "The browser reloads the whole page" },
 ];
 
 /** Frame where the learner picks the correct choice. */
@@ -47,7 +47,7 @@ export const SlideScene: React.FC = () => {
           name="Slide prompt"
           style={{ marginTop: 28, fontSize: 48, fontWeight: 500, lineHeight: 1.25 }}
         >
-          What occurs when two tabs refresh at once?
+          What occurs when a list item key changes?
         </Interactive.Div>
         <div style={{ marginTop: 40, display: "grid", gap: 16 }}>
           {CHOICES.map((choice) => {
