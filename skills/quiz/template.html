@@ -838,7 +838,7 @@ h2 {
         ]),
         element('tbody', {}, rows),
       ]),
-      element('h2', { text: 'Missed questions' }),
+      missed.length ? element('h2', { text: 'Missed questions' }) : null,
       missedList,
       element('div', { class: 'actions' }, [
         missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
