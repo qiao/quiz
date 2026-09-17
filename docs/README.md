@@ -50,7 +50,7 @@ New readers follow this sequence:
 2. Read [`docs/architecture.md`](architecture.md) to understand the compiler pipeline, data models,
    and slide layout.
 3. Read [`docs/decisions.md`](decisions.md) to review architecture choices, rejected options,
-   and the theme switcher conflict record.
+   and the design conflict records.
 
 ---
 
@@ -65,7 +65,7 @@ Four rules keep the documentation set accurate:
    design tokens to official documentation in that document's Sources section.
 4. **Record contradictions explicitly.** When an implementation choice diverges from an external
    specification, record the discrepancy openly. Section 7 of [`decisions.md`](decisions.md)
-   records the theme toggle discrepancy.
+   records the theme toggle and stillness discrepancies.
 
 ---
 
