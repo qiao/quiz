@@ -128,6 +128,10 @@ Format `quiz.json` with this structure:
 }
 ```
 
+Write each question in one pass, and review it one time. The build checks the structure, the tier
+sizes, and the choice lengths. The blind check in step 8 finds ambiguous questions. A repair round
+costs less time than a long review of alternative questions before the draft exists.
+
 Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 
 ## 8. Run blind check verification
