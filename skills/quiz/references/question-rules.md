@@ -1,7 +1,7 @@
 # Question authoring rules
 
 This reference defines the canonical rules for authoring draft quiz questions. The agent reads this
-document during Phase 2 before authoring `quizzes/<slug>/quiz.json`.
+document before it writes `quiz.json`.
 
 ## 1. Progressive tiers
 
