@@ -404,8 +404,8 @@ The deck contains three distinct slide views:
 1. **Title slide (index 0):** Shows quiz title, resource source, question count, tier legend, and a
    "Start Quiz" button.
 2. **Question slide (index 1 to N):** Shows tier badge, question progress ("5 of 20"), question
-   prompt, four interactive choice cards, explanation reveal panel, citation link, and a "Next"
-   button.
+   prompt, four interactive choice cards, explanation reveal panel, citation link, a "Back" button,
+   and a "Next" button.
 3. **End slide (index N + 1):** Shows total score percentage, score breakdown per tier, links to
    missed questions, a "Retry Missed Questions" button, and a "Restart" button.
 
@@ -432,8 +432,9 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
    before advancing. The "Next" button and keyboard forward keys (`Enter`, `Right Arrow`) remain
    disabled until a choice is clicked. Selecting a choice reveals the explanation panel and
    activates advancement controls.
-2. **Backward navigation:** Learners can return to previous questions with `Left Arrow`.
-   Answered questions display the selected choice, distractor rationale, and correct explanation.
+2. **Backward navigation:** Learners can return to previous questions by clicking the "Back"
+   button or pressing `Left Arrow`. Answered questions display the selected choice, distractor
+   rationale, and correct explanation.
 3. **Retry missed questions:** Clicking "Retry Missed Questions" keeps all questions in the deck
    and preserves correct answers in `answers`. It deletes only the keys for incorrect questions
    from `answers`, and navigates to the first missed question slide. When the learner returns
