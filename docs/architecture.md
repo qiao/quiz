@@ -383,12 +383,14 @@ Before emitting HTML, `build.mjs` checks:
 ### Error format and exit codes
 
 `build.mjs` uses standard process exit codes:
-- `0`: The command executed successfully. For `--grade`, parse the JSON output and inspect the
-  `passed` property to check whether all questions passed verification.
+- `0`: The command executed successfully. For `--grade`, all questions passed verification.
 - `1`: Validation failed. The draft JSON or answers JSON contains schema errors. `build.mjs`
   prints structured error diagnostics to standard error.
 - `2`: Usage error. The invocation is missing required file arguments, files do not exist,
-  or unknown command-line options were passed.
+  or unknown command-line options were passed. The usage text prints only for mistakes in
+  arguments, not for missing files.
+- `3`: Verification failed. The `--grade` command found at least one failed question. The grade
+  report outputs to standard output as JSON.
 
 When validation fails, `build.mjs` prints structured error diagnostics to standard error and exits
 with code 1:
