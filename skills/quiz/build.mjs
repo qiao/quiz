@@ -8,6 +8,9 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 /**
  * @typedef {'correct' | 'obvious-wrong' | 'plausible-wrong'} ChoiceKind
@@ -801,4 +804,228 @@ export function renderPage(quiz, parts) {
   );
   page = fillPlaceholder(page, '{{QUIZ_DATA}}', JSON.stringify(quiz).replace(/</g, '\\u003c'));
   return page;
+}
+
+const USAGE = `Usage:
+  node build.mjs <quiz.json>                         Write index.html next to the draft.
+  node build.mjs <quiz.json> --blind                 Write quiz.blind.json for the blind checker.
+  node build.mjs <quiz.json> --grade <answers.json>  Print a grade report as JSON.
+
+Run the command from the project folder. Relative paths start from that folder.
+Exit codes: 0 when the command worked, 1 for a validation error, 2 for a usage error.
+`;
+
+/**
+ * @typedef {object} MainIo
+ * @property {string} cwd Folder that relative paths start from.
+ * @property {Record<string, string | undefined>} env Environment variables.
+ * @property {string} skillDir Folder that holds `template.html` and the assets.
+ * @property {(text: string) => void} stdout Writes to standard output.
+ * @property {(text: string) => void} stderr Writes to standard error.
+ */
+
+/** Error that stops the command with a given exit code and message. */
+class CommandError extends Error {
+  /**
+   * Makes an error for the command line.
+   *
+   * @param {1 | 2} code Exit code.
+   * @param {string} message Text for standard error.
+   */
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+  }
+}
+
+/**
+ * Reads a JSON file for the command line.
+ *
+ * @param {string} path Path as the user wrote it.
+ * @param {string} cwd Folder that a relative path starts from.
+ * @returns {unknown} The parsed value.
+ * @throws {CommandError} With code 2 when the file does not exist, or code 1 when it is not JSON.
+ */
+function readJsonFile(path, cwd) {
+  const fullPath = resolve(cwd, path);
+  if (!existsSync(fullPath)) {
+    throw new CommandError(2, `Error: cannot read ${path}: the file does not exist`);
+  }
+  try {
+    return JSON.parse(readFileSync(fullPath, 'utf8'));
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    const message = `VALIDATION ERROR in ${path}:\n- The file is not valid JSON: ${reason}`;
+    throw new CommandError(1, message);
+  }
+}
+
+/**
+ * Stops the command when a validation step found errors.
+ *
+ * @param {string[]} errors Messages from a validation function.
+ * @param {string} path Path of the file that the messages describe.
+ * @throws {CommandError} With code 1 when the list is not empty.
+ */
+function stopOnErrors(errors, path) {
+  if (errors.length) {
+    const list = errors.map((error) => `- ${error}`).join('\n');
+    throw new CommandError(1, `VALIDATION ERROR in ${path}:\n${list}`);
+  }
+}
+
+/**
+ * Reads the command line arguments.
+ *
+ * @param {string[]} args Arguments after the script name.
+ * @returns {{ help: boolean, draftPath: string, blind: boolean, gradePath: string | null }}
+ *   The parsed arguments.
+ * @throws {CommandError} With code 2 for a usage error.
+ */
+function parseArgs(args) {
+  /** @type {string[]} */
+  const paths = [];
+  let blind = false;
+  /** @type {string | null} */
+  let gradePath = null;
+  for (let index = 0; index < args.length; index += 1) {
+    const arg = args[index];
+    if (arg === '--help' || arg === '-h') return { help: true, draftPath: '', blind, gradePath };
+    if (arg === '--blind') {
+      blind = true;
+    } else if (arg === '--grade') {
+      const next = args[index + 1];
+      if (!next || next.startsWith('--')) {
+        throw new CommandError(2, 'Error: --grade needs the path to answers.json');
+      }
+      gradePath = next;
+      index += 1;
+    } else if (arg.startsWith('-')) {
+      throw new CommandError(2, `Error: unknown option '${arg}'`);
+    } else {
+      paths.push(arg);
+    }
+  }
+  if (paths.length === 0) throw new CommandError(2, 'Error: missing the path to quiz.json');
+  if (paths.length > 1) {
+    throw new CommandError(2, `Error: expected one draft path, found ${paths.length}`);
+  }
+  if (blind && gradePath) throw new CommandError(2, 'Error: use --blind or --grade, not both');
+  return { help: false, draftPath: paths[0], blind, gradePath };
+}
+
+/**
+ * Reads the template and the assets from the skill folder.
+ *
+ * @param {string} skillDir Folder of the skill.
+ * @returns {PageParts} The page parts.
+ * @throws {CommandError} With code 2 when a file is missing, because the skill is not complete.
+ */
+function readPageParts(skillDir) {
+  /** @param {string} name File name in the skill folder. */
+  const read = (name) => {
+    const path = join(skillDir, name);
+    if (!existsSync(path)) {
+      throw new CommandError(2, `Error: cannot read ${path}: the skill folder is not complete`);
+    }
+    return readFileSync(path, 'utf8');
+  };
+  return {
+    template: read('template.html'),
+    tokensCss: read('tokens.css'),
+    fontsCss: read('assets/fonts.css'),
+    license: read('assets/OFL.txt'),
+  };
+}
+
+/**
+ * Gives the build time from `SOURCE_DATE_EPOCH`, or the current time.
+ *
+ * @param {Record<string, string | undefined>} env Environment variables.
+ * @returns {string} Time in ISO 8601 form.
+ */
+function buildTime(env) {
+  const epoch = env.SOURCE_DATE_EPOCH;
+  if (epoch && /^\d+$/.test(epoch)) return new Date(Number(epoch) * 1000).toISOString();
+  return new Date().toISOString();
+}
+
+/**
+ * Runs the command line.
+ *
+ * @param {string[]} args Arguments after the script name.
+ * @param {MainIo} io Folders, environment, and output streams.
+ * @returns {0 | 1 | 2} The exit code.
+ * @example
+ * process.exitCode = main(process.argv.slice(2), { cwd: process.cwd(), ... });
+ */
+export function main(args, io) {
+  try {
+    const { help, draftPath, blind, gradePath } = parseArgs(args);
+    if (help) {
+      io.stdout(USAGE);
+      return 0;
+    }
+    const draft = readJsonFile(draftPath, io.cwd);
+    stopOnErrors(validateDraft(draft), draftPath);
+    const validDraft = /** @type {QuizDraft} */ (draft);
+    const outFolder = dirname(draftPath);
+
+    if (blind) {
+      const outPath = join(outFolder, 'quiz.blind.json');
+      const blindJson = JSON.stringify(blindQuiz(validDraft), null, 2);
+      writeFileSync(resolve(io.cwd, outPath), `${blindJson}\n`);
+      io.stdout(`${outPath}\n`);
+      return 0;
+    }
+
+    if (gradePath) {
+      const file = readJsonFile(gradePath, io.cwd);
+      stopOnErrors(validateAnswers(file, validDraft.questions.length), gradePath);
+      const report = gradeAnswers(validDraft, /** @type {{ answers: SubAgentAnswer[] }} */ (file));
+      io.stdout(`${JSON.stringify(report, null, 2)}\n`);
+      return 0;
+    }
+
+    const quiz = buildQuiz(validDraft, {
+      createdAt: buildTime(io.env),
+      gitFacts: readGitFacts(gitRunnerFor(io.cwd)),
+    });
+    const page = renderPage(quiz, readPageParts(io.skillDir));
+    const outPath = join(outFolder, 'index.html');
+    writeFileSync(resolve(io.cwd, outPath), page);
+    io.stdout(`${outPath}\n`);
+    return 0;
+  } catch (error) {
+    if (error instanceof CommandError) {
+      const usage = error.code === 2 && error.message.startsWith('Error: ') ? `\n${USAGE}` : '';
+      io.stderr(`${error.message}\n${usage}`);
+      return error.code;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Tells if Node.js started this file as the main script.
+ *
+ * Node.js loads a module by its real path, so the check also works when the skill folder is a
+ * symlink.
+ *
+ * @returns {boolean} True when `node build.mjs` runs this file.
+ */
+function isMainScript() {
+  const script = process.argv[1];
+  if (!script || !existsSync(script)) return false;
+  return import.meta.url === pathToFileURL(realpathSync(script)).href;
+}
+
+if (isMainScript()) {
+  process.exitCode = main(process.argv.slice(2), {
+    cwd: process.cwd(),
+    env: process.env,
+    skillDir: dirname(fileURLToPath(import.meta.url)),
+    stdout: (text) => process.stdout.write(text),
+    stderr: (text) => process.stderr.write(text),
+  });
 }

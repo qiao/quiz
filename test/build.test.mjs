@@ -1,6 +1,8 @@
 // @ts-check
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
 
 import {
@@ -9,6 +11,7 @@ import {
   choiceOrders,
   githubWebUrl,
   gradeAnswers,
+  main,
   quizIdOf,
   readGitFacts,
   renderMarkdown,
@@ -523,5 +526,126 @@ describe('renderPage', () => {
       () => renderPage(quiz, { ...parts, template: template.replace('{{TITLE}}', '') }),
       /template\.html must hold \{\{TITLE\}\} exactly once, found 0/,
     );
+  });
+});
+
+/**
+ * Makes a temporary project with the fixture draft at `quizzes/js-event-loop/quiz.json`.
+ *
+ * @returns {{ cwd: string, run: (args: string[], env?: Record<string, string>) => any }}
+ *   The project folder, and a function that runs `main` there and captures the output.
+ */
+function makeProject() {
+  const cwd = mkdtempSync(join(tmpdir(), 'quiz-project-'));
+  mkdirSync(join(cwd, 'quizzes/js-event-loop'), { recursive: true });
+  writeFileSync(join(cwd, 'quizzes/js-event-loop/quiz.json'), readFileSync(FIXTURE_URL));
+  const skillDir = mkdtempSync(join(tmpdir(), 'quiz-skill-'));
+  mkdirSync(join(skillDir, 'assets'));
+  writeFileSync(
+    join(skillDir, 'template.html'),
+    '<title>{{TITLE}}</title><style>/*{{TOKENS_CSS}}*/ /*{{FONTS_CSS}}*/</style>' +
+      '<!--{{LICENSE}}--><script type="application/json">{{QUIZ_DATA}}</script>',
+  );
+  writeFileSync(join(skillDir, 'tokens.css'), ':root{}');
+  writeFileSync(join(skillDir, 'assets/fonts.css'), '');
+  writeFileSync(join(skillDir, 'assets/OFL.txt'), 'License');
+  return {
+    cwd,
+    run(args, env = {}) {
+      let stdout = '';
+      let stderr = '';
+      const code = main(args, {
+        cwd,
+        env,
+        skillDir,
+        stdout: (text) => (stdout += text),
+        stderr: (text) => (stderr += text),
+      });
+      return { code, stdout, stderr };
+    },
+  };
+}
+
+describe('main', () => {
+  const draftPath = 'quizzes/js-event-loop/quiz.json';
+
+  it('writes index.html next to the draft and prints its path', () => {
+    const project = makeProject();
+    const result = project.run([draftPath], { SOURCE_DATE_EPOCH: '1767225600' });
+    assert.deepEqual(result, {
+      code: 0,
+      stdout: 'quizzes/js-event-loop/index.html\n',
+      stderr: '',
+    });
+    const page = readFileSync(join(project.cwd, 'quizzes/js-event-loop/index.html'), 'utf8');
+    assert.ok(page.includes('<title>JavaScript event loop</title>'));
+    assert.ok(page.includes('"createdAt":"2026-01-01T00:00:00.000Z"'));
+  });
+
+  it('writes the blind copy with --blind', () => {
+    const project = makeProject();
+    const result = project.run([draftPath, '--blind']);
+    assert.deepEqual(result, {
+      code: 0,
+      stdout: 'quizzes/js-event-loop/quiz.blind.json\n',
+      stderr: '',
+    });
+    const blind = readFileSync(join(project.cwd, 'quizzes/js-event-loop/quiz.blind.json'), 'utf8');
+    assert.deepEqual(JSON.parse(blind), blindQuiz(loadDraft()));
+  });
+
+  it('prints a grade report with --grade', () => {
+    const project = makeProject();
+    const answersPath = 'quizzes/js-event-loop/answers.json';
+    writeFileSync(join(project.cwd, answersPath), JSON.stringify(correctAnswers(loadDraft())));
+    const result = project.run([draftPath, '--grade', answersPath]);
+    assert.equal(result.code, 0);
+    assert.equal(result.stderr, '');
+    const expected = gradeAnswers(loadDraft(), correctAnswers(loadDraft()));
+    assert.deepEqual(JSON.parse(result.stdout), expected);
+  });
+
+  it('exits with 1 and lists the errors for an invalid draft or answer file', () => {
+    const project = makeProject();
+    const draft = loadDraft();
+    draft.questions[0].choices.pop();
+    writeFileSync(join(project.cwd, draftPath), JSON.stringify(draft));
+    assert.deepEqual(project.run([draftPath, '--blind']), {
+      code: 1,
+      stdout: '',
+      stderr:
+        'VALIDATION ERROR in quizzes/js-event-loop/quiz.json:\n' +
+        '- Question 1: expected exactly 4 choices, found 3\n',
+    });
+
+    const other = makeProject();
+    writeFileSync(join(other.cwd, 'answers.json'), '{ "answers": [ oops ] }');
+    const result = other.run([draftPath, '--grade', 'answers.json']);
+    assert.equal(result.code, 1);
+    const start = 'VALIDATION ERROR in answers.json:\n- The file is not valid JSON: ';
+    assert.ok(result.stderr.startsWith(start), result.stderr);
+  });
+
+  it('exits with 2 for a usage error', () => {
+    const project = makeProject();
+    const cases = [
+      [[], 'Error: missing the path to quiz.json'],
+      [[draftPath, '--fast'], "Error: unknown option '--fast'"],
+      [[draftPath, 'other.json'], 'Error: expected one draft path, found 2'],
+      [[draftPath, '--grade'], 'Error: --grade needs the path to answers.json'],
+      [[draftPath, '--blind', '--grade', 'a.json'], 'Error: use --blind or --grade, not both'],
+      [['missing/quiz.json'], 'Error: cannot read missing/quiz.json: the file does not exist'],
+    ];
+    for (const [args, message] of cases) {
+      const result = project.run(/** @type {string[]} */ (args));
+      assert.equal(result.code, 2, String(args));
+      assert.ok(result.stderr.startsWith(`${message}\n`), result.stderr);
+    }
+  });
+
+  it('prints the usage with --help', () => {
+    const result = makeProject().run(['--help']);
+    assert.equal(result.code, 0);
+    assert.match(result.stdout, /^Usage:\n {2}node build\.mjs <quiz\.json>/);
   });
 });
