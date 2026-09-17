@@ -83,7 +83,8 @@ Completion criterion: Authoring rules loaded and understood before drafting.
 Create an isolated directory under `quizzes/` using a URL-safe slug.
 
 - Derive a short kebab-case slug representing the topic or resource, matching
-  `^[a-z0-9]+(-[a-z0-9]+)*$`.
+  `^[a-z0-9]+(-[a-z0-9]+)*$`. Lowercase the topic or workspace name, replace non-alphanumeric
+  characters with hyphens, and remove duplicate or edge hyphens.
 - Target `quizzes/<slug>/`. If `quizzes/<slug>` exists, append `-2`, `-3`, and so on to select the
   first unused directory.
 - Create the selected directory.
