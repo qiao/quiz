@@ -18,23 +18,38 @@ export const QuizPromo: React.FC = () => {
       <TransitionSeries.Sequence name="Command" durationInFrames={70}>
         <CommandScene />
       </TransitionSeries.Sequence>
-      <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 8 })} />
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 8 })}
+      />
       <TransitionSeries.Sequence name="Explore" durationInFrames={80}>
         <ExploreScene />
       </TransitionSeries.Sequence>
-      <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 8 })} />
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 8 })}
+      />
       <TransitionSeries.Sequence name="Draft" durationInFrames={90}>
         <DraftScene />
       </TransitionSeries.Sequence>
-      <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 8 })} />
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 8 })}
+      />
       <TransitionSeries.Sequence name="Slide" durationInFrames={60}>
         <SlideScene />
       </TransitionSeries.Sequence>
-      <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 8 })} />
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 8 })}
+      />
       <TransitionSeries.Sequence name="Wrong answer" durationInFrames={90}>
         <WrongAnswerScene />
       </TransitionSeries.Sequence>
-      <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 8 })} />
+      <TransitionSeries.Transition
+        presentation={fade()}
+        timing={linearTiming({ durationInFrames: 8 })}
+      />
       <TransitionSeries.Sequence name="Score" durationInFrames={100}>
         <ScoreScene />
       </TransitionSeries.Sequence>

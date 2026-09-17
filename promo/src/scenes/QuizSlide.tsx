@@ -70,7 +70,8 @@ export const QuizSlide: React.FC<QuizSlideProps> = ({
           const isWrongPick = answered && wrong && choice.letter === picked;
           const border = isCorrect ? COLOR.green : isWrongPick ? COLOR.red : COLOR.track;
           let status = "";
-          if (isCorrect) status = choice.letter === picked ? "✓ Your answer (Correct)" : "✓ Correct answer";
+          if (isCorrect)
+            status = choice.letter === picked ? "✓ Your answer (Correct)" : "✓ Correct answer";
           if (isWrongPick) status = "✗ Your answer (Incorrect)";
           return (
             <div

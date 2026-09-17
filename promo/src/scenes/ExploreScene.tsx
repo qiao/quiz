@@ -80,12 +80,8 @@ export const ExploreScene: React.FC = () => {
                 color: file.skipped ? COLOR.faint : COLOR.text,
               }}
             >
-              <span style={{ width: 56, textAlign: "right", color: COLOR.faint }}>
-                {index + 1}
-              </span>
-              <span
-                style={{ flex: 1, textDecoration: file.skipped ? "line-through" : undefined }}
-              >
+              <span style={{ width: 56, textAlign: "right", color: COLOR.faint }}>{index + 1}</span>
+              <span style={{ flex: 1, textDecoration: file.skipped ? "line-through" : undefined }}>
                 {file.path}
               </span>
               {file.skipped ? (

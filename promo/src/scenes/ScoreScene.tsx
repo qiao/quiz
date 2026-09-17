@@ -83,7 +83,14 @@ export const ScoreScene: React.FC = () => {
 
       <div style={{ position: "relative", marginTop: 110, width: 440, height: 440 }}>
         <svg width={440} height={440} viewBox="0 0 100 100">
-          <circle cx={50} cy={50} r={46} fill={COLOR.background} stroke={COLOR.track} strokeWidth={2} />
+          <circle
+            cx={50}
+            cy={50}
+            r={46}
+            fill={COLOR.background}
+            stroke={COLOR.track}
+            strokeWidth={2}
+          />
           <circle
             cx={50}
             cy={50}
