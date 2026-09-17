@@ -185,22 +185,13 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answe
 - Exit code 1: validation error in `quiz.json` or `answers.json`. Repair the file and re-run.
 
 ### Step 8d: Repair failed questions
-Any edit to `quiz.json` changes the quiz identifier hash, which changes the choice shuffle seed
-for every question. Editing one question can change choice letters across the entire quiz.
+An edit to `quiz.json` changes the shuffle seed, so the letters of every question can change.
+Repair in rounds:
 
-When repairing or replacing questions:
-1. **Batch repair round:** Revise all failed questions in `quizzes/<slug>/quiz.json` in one
-   editing pass to resolve ambiguity or incorrect facts.
-2. **Single re-check:** Run `--blind` once to produce an updated `quiz.blind.json`. Send the
-   checker all questions in one prompt, overwrite `quizzes/<slug>/answers.json`, and re-run
-   `--grade`. Do not re-check failed questions individually.
-3. Allow up to two batch repair rounds.
-4. **Replacement:** If a question still fails after two repair rounds, replace it with one new
-   question of the same tier. The replacement question receives up to two batch repair rounds.
-5. **Removal:** If the replacement question also fails after two repair rounds, delete the question
-   from `quizzes/<slug>/quiz.json`. Inform the user of the question removal and the revised total
-   count. Re-run `--blind`, collect answers for all remaining questions, and re-grade.
-   Tier sizes must still differ by at most 1 question across all tiers.
+1. Revise all failed questions in one pass.
+2. Repeat steps 8a to 8c for the whole quiz.
+3. After two failed rounds, replace a question with a new question of the same tier. After two
+   more failed rounds, remove it, and tell the user the new question count.
 
 Completion criterion: All questions in `quizzes/<slug>/quiz.json` pass grading, or unresolvable
 questions are removed within the allowed limits.
