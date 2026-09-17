@@ -161,6 +161,15 @@ describe('validateDraft', () => {
     assert.deepEqual(validateDraft(draft), []);
   });
 
+  it('reports a choice that is not an object and does not throw', () => {
+    const draft = loadDraft();
+    draft.questions[0].choices[1] = null;
+    assert.deepEqual(validateDraft(draft), [
+      'Question 1, Choice 2: the choice must be a JSON object',
+      "Question 1: expected exactly 1 'obvious-wrong' choice, found 0",
+    ]);
+  });
+
   it('rejects two choices with the same text', () => {
     const draft = loadDraft();
     draft.questions[1].choices[3].text = draft.questions[1].choices[2].text;

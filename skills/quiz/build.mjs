@@ -136,9 +136,10 @@ function checkCitation(citation, label, errors) {
  */
 function checkChoiceLengths(choices, label, errors) {
   const valid = choices.every((choice) => isObject(choice) && isFilledString(choice.text));
+  if (!valid) return;
   const typed = /** @type {DraftChoice[]} */ (choices);
   const correct = typed.filter((choice) => choice.kind === 'correct');
-  if (!valid || correct.length !== 1) return;
+  if (correct.length !== 1) return;
 
   const correctLength = correct[0].text.trim().length;
   const wrongLengths = typed
