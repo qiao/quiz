@@ -308,7 +308,8 @@ export interface GradeReport {
 ## 3. Build compiler
 
 The compiler `build.mjs` sits in the skill folder. It runs as a script with zero external
-dependencies. It requires Node.js version 18 or later for built-in crypto and test runner APIs.
+dependencies. It requires Node.js version 20 or later. The CI workflow tests versions 20, 22, and
+24, and Node.js 18 reached its end of life on 2025-04-30.
 When invoked from another project, `SKILL.md` resolves the absolute path to `build.mjs`.
 
 ### Command line interface
@@ -678,8 +679,8 @@ The compiler resolves citation permalinks during compilation:
 The agent verifies that Node.js sits on the system path and meets the version requirement:
 1. Run `node --version`.
 2. Parse the major version number.
-3. If Node.js is missing or below version 18, stop execution and report that the build compiler
-   requires Node.js 18 or later.
+3. If Node.js is missing or below version 20, stop execution and report that the build compiler
+   requires Node.js 20 or later.
 
 ### Path discovery
 

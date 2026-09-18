@@ -15,13 +15,13 @@ Follow these nine steps in sequence. Run all commands from the project root wher
 
 ## 1. Verify Node.js runtime
 
-Check that the local system has Node.js version 18 or later installed.
+Check that the local system has Node.js version 20 or later installed.
 
 - Run `node -v` to inspect the installed version.
-- If Node.js is missing or reports a major version earlier than 18, stop execution and inform the
-  user that `build.mjs` requires Node.js 18 or later.
+- If Node.js is missing or reports a major version earlier than 20, stop execution and inform the
+  user that `build.mjs` requires Node.js 20 or later.
 
-Completion criterion: Node.js 18 or later is confirmed available.
+Completion criterion: Node.js 20 or later is confirmed available.
 
 ## 2. Resolve skill directory
 
