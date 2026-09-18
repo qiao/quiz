@@ -884,7 +884,9 @@ quizzes/
 
 The agent picks an unused folder before writing the draft. If directory `quizzes/<slug>` exists,
 the agent checks for `quizzes/<slug>-2`, incrementing the integer suffix until finding an unused
-directory name. `build.mjs` writes `index.html` directly alongside `quiz.json`.
+directory name. The `slug` field of `quiz.json` holds the directory name with its suffix, so the
+quiz id and the storage key match the folder. `build.mjs` writes `index.html` directly alongside
+`quiz.json`.
 
 ---
 

@@ -95,7 +95,8 @@ Create an isolated directory under `quizzes/` using a URL-safe slug.
   characters with hyphens, and remove duplicate or edge hyphens.
 - Target `quizzes/<slug>/`. If `quizzes/<slug>` exists, append `-2`, `-3`, and so on to select the
   first unused directory.
-- Create the selected directory.
+- Create the selected directory. From here on, `<slug>` means the name of that directory, with
+  its suffix, and the `slug` field of `quiz.json` holds that name.
 
 Completion criterion: An unused directory `quizzes/<slug>/` exists on disk.
 
