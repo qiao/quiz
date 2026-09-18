@@ -5,8 +5,7 @@ import { Caption } from "./Caption";
 const QUESTIONS = [
   { tier: 1, name: "Fundamentals", text: "Where does the app keep your todos?" },
   { tier: 2, name: "Core", text: "What does the app do when you check a todo?" },
-  { tier: 3, name: "Advanced", text: "Why do your todos stay after you reload?" },
-  { tier: 4, name: "Expert", text: "Why can two open tabs show different todos?" },
+  { tier: 3, name: "Advanced", text: "Why can two open tabs show different todos?" },
 ];
 
 /** Frame where the first question row appears. */
@@ -15,7 +14,7 @@ const FIRST_ROW = sec(0.73);
 /** Frames between two question rows. */
 const ROW_GAP = sec(0.33);
 
-/** Scene 3: the skill writes questions in four tiers that get harder. */
+/** Scene 3: the skill writes questions in three tiers that get harder. */
 export const DraftScene: React.FC = () => {
   const frame = useCurrentFrame();
   const count = Math.round(
@@ -39,7 +38,7 @@ export const DraftScene: React.FC = () => {
           color: COLOR.text,
         }}
       >
-        {count} <span style={{ color: COLOR.dim }}>questions · 4 tiers</span>
+        {count} <span style={{ color: COLOR.dim }}>questions · 3 tiers</span>
       </Interactive.Div>
 
       <div style={{ position: "absolute", left: 160, right: 160, top: 270, fontFamily: MONO }}>
@@ -65,7 +64,7 @@ export const DraftScene: React.FC = () => {
               }}
             >
               <span style={{ display: "flex", gap: 8 }}>
-                {[1, 2, 3, 4].map((step) => (
+                {[1, 2, 3].map((step) => (
                   <span
                     key={step}
                     style={{

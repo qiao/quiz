@@ -8,7 +8,7 @@ export const WrongAnswerScene: React.FC = () => {
   return (
     <AbsoluteFill name="Wrong answer scene" style={{ backgroundColor: COLOR.background }}>
       <QuizSlide
-        tier="Tier 4 · Expert"
+        tier="Tier 3 · Advanced"
         position="Question 18 of 20"
         prompt="Why can two open tabs show different todos?"
         choices={[

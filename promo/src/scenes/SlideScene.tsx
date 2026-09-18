@@ -8,7 +8,7 @@ export const SlideScene: React.FC = () => {
   return (
     <AbsoluteFill name="Slide scene" style={{ backgroundColor: COLOR.background }}>
       <QuizSlide
-        tier="Tier 3 · Advanced"
+        tier="Tier 2 · Core"
         position="Question 14 of 20"
         prompt="Why do your todos stay after you reload?"
         choices={[

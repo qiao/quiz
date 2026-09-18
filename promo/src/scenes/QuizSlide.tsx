@@ -13,7 +13,7 @@ const MARK_IN = 0.25;
 type Choice = { letter: string; text: string };
 
 type QuizSlideProps = {
-  /** Tier label, for example "Tier 3 · Advanced". */
+  /** Tier label, for example "Tier 2 · Core". */
   tier: string;
   /** Question position, for example "Question 14 of 20". */
   position: string;
