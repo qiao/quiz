@@ -76,14 +76,14 @@ Inspect the target resource to understand architecture and component interaction
 - If inspecting a large PDF document, read the table of contents before reading specific chapters.
 - If the source material is small and cannot support 20 questions without trivia, reduce the
   question count and inform the user of the reduction.
-- Write a core list of 5 to 10 lines in your reply to the user before you draft: the purpose,
-  the main entry points, the main flow from input to output, the main data types, the options
-  that most users set, and the failures that a user sees most often. Take the subjects from the
-  README, the main documentation page, or the table of contents when the resource has one.
-  Section 2 of the question rules defines the core. Every question comes from this list.
+- Write a core list of 5 to 10 lines before you draft: the purpose, the main entry points, the
+  main flow from input to output, the main data types, the options that most users set, and the
+  failures that a user sees most often. Take the subjects from the README, the main
+  documentation page, or the table of contents when the resource has one. The list goes into the
+  `core` field of the draft in step 7. Section 2 of the question rules defines the core. Every
+  question comes from this list.
 
-Completion criterion: Technical knowledge gathered from the resource, and the core list in the
-reply.
+Completion criterion: Technical knowledge gathered from the resource, and the core list written.
 
 ## 5. Read question rules
 
@@ -118,6 +118,13 @@ Format `quiz.json` with this structure:
   "title": "Descriptive Quiz Title",
   "slug": "<slug>",
   "source": "Summary of resource or topic",
+  "core": [
+    "The purpose and the main output",
+    "The main entry points",
+    "The main flow from input to output",
+    "The main data types",
+    "The failures that a user sees most often"
+  ],
   "questions": [
     {
       "tier": 1,

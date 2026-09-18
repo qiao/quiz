@@ -46,6 +46,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * @property {string} title Title of the quiz.
  * @property {string} slug Folder name of the quiz.
  * @property {string} source Resource that the quiz covers.
+ * @property {string[]} core Core of the resource in 5 to 10 lines. Every question comes from
+ *   these lines.
  * @property {DraftQuestion[]} questions Questions in tier order.
  */
 
@@ -66,7 +68,11 @@ export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
 /** Largest length of the correct choice, as a multiple of the longest wrong choice. */
 const MAX_CORRECT_LENGTH_RATIO = 1.2;
 
-const QUIZ_FIELDS = ['title', 'slug', 'source', 'questions'];
+const QUIZ_FIELDS = ['title', 'slug', 'source', 'core', 'questions'];
+
+/** Smallest and largest number of lines in the core list of a draft. */
+const MIN_CORE_LINES = 5;
+const MAX_CORE_LINES = 10;
 const QUESTION_FIELDS = [
   'tier',
   'prompt',
@@ -318,6 +324,20 @@ export function validateDraft(draft) {
 
   checkUnknownFields(draft, QUIZ_FIELDS, 'Quiz', errors);
   checkFilledStrings(draft, ['title', 'source'], 'Quiz', errors);
+  const core = draft.core;
+  let coreProblem = '';
+  if (!Array.isArray(core)) coreProblem = typeof core;
+  else if (core.length < MIN_CORE_LINES || core.length > MAX_CORE_LINES) {
+    coreProblem = `${core.length} lines`;
+  } else if (core.some((line) => typeof line !== 'string' || line.trim() === '')) {
+    coreProblem = 'a line that is not text';
+  }
+  if (coreProblem) {
+    errors.push(
+      `Quiz: 'core' must be an array of ${MIN_CORE_LINES} to ${MAX_CORE_LINES} lines that are ` +
+        `not empty, found ${coreProblem}`,
+    );
+  }
   if (typeof draft.slug !== 'string' || !SLUG_PATTERN.test(draft.slug)) {
     errors.push(`Quiz: 'slug' must match ${SLUG_PATTERN.source}, found '${draft.slug}'`);
   }

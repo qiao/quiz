@@ -107,30 +107,30 @@ The architecture separates the authoring draft from the compiled page data.
 | title: string       |               | id: string          |
 | slug: string        |  build.mjs    | title: string       |
 | source: string      | ------------> | slug: string        |
-| questions: [...]    |   compiles    | source: string      |
-+---------------------+               | createdAt: string   |
-           │                          | questions: [...]    |
-           ▼                          +---------------------+
-+---------------------+                          │
-|    DraftQuestion    |                          ▼
-|---------------------|               +---------------------+
-| tier: 1 | 2 | 3 | 4 |               |    BuiltQuestion    |
-| prompt: string      |               |---------------------|
-| answer: string      |               | id: number          |
-| obviousWrong: {...} |               | tier: 1 | 2 | 3 | 4 |
-| plausibleWrong: [2] |               | tierName: string    |
-| explanation: string |               | promptHtml: string  |
-| citation: {...}     |               | explanationHtml:... |
-+---------------------+               | citation: {...}     |
-           │                          | choices: [4 items]  |
-           ▼                          +---------------------+
-+---------------------+                          │
-|     WrongChoice     |                          ▼
-|---------------------|               +---------------------+
-| text: string        |               |     BuiltChoice     |
-| rationale: string   |               |---------------------|
-+---------------------+               | id: "a"|"b"|"c"|"d" |
-                                      | textHtml: string    |
+| core: string[]      |   compiles    | source: string      |
+| questions: [...]    |               | createdAt: string   |
++---------------------+               | questions: [...]    |
+           │                          +---------------------+
+           ▼                                     │
++---------------------+                          ▼
+|    DraftQuestion    |               +---------------------+
+|---------------------|               |    BuiltQuestion    |
+| tier: 1 | 2 | 3 | 4 |               |---------------------|
+| prompt: string      |               | id: number          |
+| answer: string      |               | tier: 1 | 2 | 3 | 4 |
+| obviousWrong: {...} |               | tierName: string    |
+| plausibleWrong: [2] |               | promptHtml: string  |
+| explanation: string |               | explanationHtml:... |
+| citation: {...}     |               | citation: {...}     |
++---------------------+               | choices: [4 items]  |
+           │                          +---------------------+
+           ▼                                     │
++---------------------+                          ▼
+|     WrongChoice     |               +---------------------+
+|---------------------|               |     BuiltChoice     |
+| text: string        |               |---------------------|
+| rationale: string   |               | id: "a"|"b"|"c"|"d" |
++---------------------+               | textHtml: string    |
                                       | kind: ChoiceKind    |
                                       | rationaleHtml?: ... |
                                       +---------------------+
@@ -183,6 +183,8 @@ export interface QuizDraft {
   slug: string;
   /** Resource name or path */
   source: string;
+  /** Core of the resource in 5 to 10 lines. Every question comes from these lines. */
+  core: string[];
   /** Ordered draft questions */
   questions: DraftQuestion[];
 }
@@ -378,26 +380,28 @@ Before emitting HTML, `build.mjs` checks:
    because the slug names the quiz folder and starts the quiz id in the storage key. The build
    writes next to the draft path that the command line gives, so this rule does not limit where the
    build writes.
-2. `questions` array must contain at least one question.
-3. Every question must have `tier` in `[1, 2, 3, 4]`.
-4. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
-5. The sizes of the four tiers differ by at most 1 question. The D8 split (`Math.floor(N / 4)`
+2. `core` must be an array of 5 to 10 strings that are not empty. The lines name the core of
+   the resource, and every question comes from them (D29).
+3. `questions` array must contain at least one question.
+4. Every question must have `tier` in `[1, 2, 3, 4]`.
+5. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
+6. The sizes of the four tiers differ by at most 1 question. The D8 split (`Math.floor(N / 4)`
    questions for each tier, with the remainder in the earlier tiers) passes this rule. A quiz that
    lost questions after the replacement limit passes only if its tier sizes still meet this rule.
-6. The prompt, each choice text, the explanation, and the citation target must not be empty.
-7. Every question has exactly four choices: `answer` is a string, `obviousWrong` is an object
+7. The prompt, each choice text, the explanation, and the citation target must not be empty.
+8. Every question has exactly four choices: `answer` is a string, `obviousWrong` is an object
    with `text` and `rationale`, and `plausibleWrong` is an array of exactly two such objects. Each
    field holds one role, so a draft cannot hold a wrong count of a kind, and `build.mjs` derives
    the `ChoiceKind` of each choice from its field.
-8. No two of the four choice texts may be identical after trimming spaces.
-9. If `lineStart` and `lineEnd` are present in a citation, both must be positive integers of 1 or
+9. No two of the four choice texts may be identical after trimming spaces.
+10. If `lineStart` and `lineEnd` are present in a citation, both must be positive integers of 1 or
    more, and `lineEnd` must not be less than `lineStart`. When `page` is present, it must be a
    positive integer of 1 or more.
-10. Unknown fields in draft objects trigger validation errors to detect property typos. The old
+11. Unknown fields in draft objects trigger validation errors to detect property typos. The old
     `choices` list with `kind` fields fails this rule.
-11. The correct choice must not exceed 1.2 times the character count of the longest wrong
+12. The correct choice must not exceed 1.2 times the character count of the longest wrong
     choice (after trimming spaces), so that choice length does not reveal the answer.
-12. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
+13. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
     questions. A learner who always picks the longest choice then does no better than a random
     guess. The error lists each question with the length of its correct choice and of its longest
     wrong choice, smallest gap first. The agent then picks the smallest edits and fixes them in
@@ -922,7 +926,8 @@ node --test 'test/*.test.mjs'
 The automated test suite organizes tests into fourteen groups:
 
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
-   non-objects, missing or empty fields, slugs that are not kebab-case, invalid or descending tiers,
+   non-objects, missing or empty fields, slugs that are not kebab-case, a core list that is
+   missing, too short, too long, or not text, invalid or descending tiers,
    tier size disparities greater than 1, a wrong count of plausible wrong choices, wrong choices
    that are not objects, missing rationales, the old `choices` list, duplicate choice text across
    the four fields, bad citation lines or pages, a correct choice

@@ -58,7 +58,9 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 Test the part of the resource that every user meets. A niche question tests a detail that a
 regular user can ignore.
 
-Before you write, list the core of the resource in 5 to 10 lines:
+Before you write the questions, list the core of the resource in 5 to 10 lines in the `core`
+field of the draft. The build rejects a draft with fewer than 5 or more than 10 lines. The lines
+cover:
 
 - The purpose and the main output.
 - The main entry points: the commands, the public functions, or the first pages of a document.

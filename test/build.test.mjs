@@ -93,6 +93,22 @@ describe('validateDraft', () => {
     ]);
   });
 
+  it('rejects a core list that is missing, too short, too long, or not text', () => {
+    const message = "Quiz: 'core' must be an array of 5 to 10 lines that are not empty, found ";
+    const missing = loadDraft();
+    delete missing.core;
+    assert.deepEqual(validateDraft(missing), [`${message}undefined`]);
+    const short = loadDraft();
+    short.core = short.core.slice(0, 4);
+    assert.deepEqual(validateDraft(short), [`${message}4 lines`]);
+    const long = loadDraft();
+    long.core = Array.from({ length: 11 }, (_, index) => `Line ${index + 1}`);
+    assert.deepEqual(validateDraft(long), [`${message}11 lines`]);
+    const blank = loadDraft();
+    blank.core[2] = ' ';
+    assert.deepEqual(validateDraft(blank), [`${message}a line that is not text`]);
+  });
+
   it('rejects a draft with no questions', () => {
     const draft = loadDraft();
     draft.questions = [];

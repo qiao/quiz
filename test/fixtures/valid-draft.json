@@ -2,6 +2,13 @@
   "title": "JavaScript event loop",
   "slug": "js-event-loop",
   "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop",
+  "core": [
+    "The call stack holds the frames of the functions that run now",
+    "The task queue holds callbacks that wait for the stack to empty",
+    "The event loop moves one task to the stack when the stack is empty",
+    "Microtasks run after the current task and before the next task",
+    "A long task blocks rendering and input until it ends"
+  ],
   "questions": [
     {
       "tier": 1,

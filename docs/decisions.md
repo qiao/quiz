@@ -227,17 +227,20 @@ This document answers: what did we decide, and what did we reject?
   shorter, but a swap would show the rationale as a choice on the slide, and no check can find it.
 
 ### D29: Core focus
-- **Decision:** Before the draft, the agent gives a core list of 5 to 10 lines in its reply: the
-  purpose, the main entry points, the main flow, the main data types, the common options, and
-  the common failures. Every question comes from this list, and each tier goes deeper into the
-  same core. The regular-user test rejects a question: a person who uses the resource every week
-  must need the fact to use the resource correctly. The documentation of the resource anchors
-  the test: a subject that the README, the main documentation page, or the table of contents
-  names is core, and a subject that only the code shows is core only when it is the main flow.
+- **Decision:** Before the questions, the agent writes a core list of 5 to 10 lines in the
+  `core` field of the draft: the purpose, the main entry points, the main flow, the main data
+  types, the common options, and the common failures. The build rejects a draft with fewer than
+  5 or more than 10 lines. Every question comes from this list, and each tier goes deeper into
+  the same core. The regular-user test rejects a question: a person who uses the resource every
+  week must need the fact to use the resource correctly. The documentation of the resource
+  anchors the test: a subject that the README, the main documentation page, or the table of
+  contents names is core, and a subject that only the code shows is core only when it is the
+  main flow.
 - **Reason:** Quizzes asked about exit codes, license clauses, rare fallbacks, and internal
   helpers. A learner who studies a resource needs the part that every user meets. The tier
   targets alone sent the agent to the edges, because "edge cases" and "hidden assumptions" read
-  as an invitation to niche details.
+  as an invitation to niche details. A sentence that asked for the list in the reply did not
+  hold in two headless runs. A field that the build checks holds in every run.
 - **Rejected alternative:** A list of forbidden subjects only. Rejected because a list cannot name
   every niche subject, and a core list gives the agent the subjects to use.
 - **Rejected alternative:** A niche check in the blind sub-agent. Rejected because the checker
