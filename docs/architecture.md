@@ -520,9 +520,15 @@ The title and end slides provide a "Restart" button that clears `quiz:<quizId>:s
 
 The deck contains three distinct slide views:
 
-1. **Title slide (index 0):** Shows quiz title, resource source, question count, tier breakdown,
-   a progress hint, a key list (displayed only on devices with a pointer that can hover), a
-   "Start the quiz" button (or "Continue the quiz" when resuming), and an optional "Restart" button.
+1. **Title slide (index 0):** Shows five blocks in this order: the quiz title, a lede with the
+   question count and the tier count ("20 questions in 4 tiers"), a tier strip, the buttons, and
+   the notes. The tier strip is an ordered list with one segment per tier. Each segment has a
+   2 px rule on top, the tier name, and the question count of that tier. The segments have the
+   same width and sit in one row, or in two rows of two on a screen up to 600 px wide. The
+   buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an optional "Restart"
+   button. The notes are a small description list with two rows: "Source" gives the resource
+   source, and "Keys" lists the key bindings as a wrapped row (displayed only on devices with a
+   pointer that can hover).
 2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
    block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,

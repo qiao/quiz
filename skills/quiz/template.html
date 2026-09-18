@@ -409,24 +409,73 @@ h2 {
   margin-top: var(--vbg-space-1);
 }
 
-.hint {
-  margin: var(--vbg-space-6) 0 0;
-  color: var(--vbg-gray-900);
-  font-size: var(--vbg-type-label);
+/*
+ * The tier strip on the cover: one segment per tier, in tier order. The segments have the same
+ * width, so the strip reads as four steps, and the count under each name gives the size.
+ */
+.tiers {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--vbg-space-3);
+  margin: var(--vbg-space-8) 0 0;
+  padding: 0;
+  list-style: none;
 }
 
-.keys {
+.tier {
+  padding-top: var(--vbg-space-3);
+  box-shadow: inset 0 2px 0 var(--vbg-gray-1000);
+  font-size: var(--vbg-type-label);
+  line-height: 1.4;
+}
+
+.tier-name {
+  display: block;
+  font-weight: 500;
+}
+
+.tier-count {
+  display: block;
+  color: var(--vbg-gray-900);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The notes at the foot of the cover: the source of the questions and the keys. */
+.notes {
   display: grid;
   grid-template-columns: max-content 1fr;
   gap: var(--vbg-space-2) var(--vbg-space-4);
-  margin: var(--vbg-space-3) 0 0;
+  margin: var(--vbg-space-10) 0 0;
   color: var(--vbg-gray-900);
   font-size: var(--vbg-type-label);
 }
 
-.keys dt,
-.keys dd {
+.notes > div {
+  display: contents;
+}
+
+.notes dt,
+.notes dd {
   margin: 0;
+}
+
+.notes dt {
+  font-weight: 500;
+}
+
+.notes dd {
+  overflow-wrap: anywhere;
+}
+
+/* The keys note lists one binding per item. The items sit in a row and wrap between items. */
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vbg-space-1) var(--vbg-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 kbd {
@@ -440,9 +489,9 @@ kbd {
   font-size: var(--vbg-type-label);
 }
 
-/* A device with no keyboard and no hover, for example a phone, does not show the key list. */
+/* A device with no keyboard and no hover, for example a phone, does not show the keys note. */
 @media (hover: none) and (pointer: coarse) {
-  .keys {
+  .notes > .notes-keys {
     display: none;
   }
 }
@@ -754,6 +803,12 @@ kbd {
   .slide {
     justify-content: flex-start;
     padding: var(--vbg-space-6) var(--vbg-space-4) var(--vbg-space-10);
+  }
+
+  /* A narrow screen shows the tier strip as two rows of two, so a tier name does not break. */
+  .tiers {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-flow: row;
   }
 
   /* The buttons share the row equally. A grid ignores the padding that a flex basis counts. */
@@ -1077,15 +1132,27 @@ kbd {
   }
 
   function renderTitleSlide() {
-    const tierCounts = [1, 2, 3, 4]
-      .map((tier) => ({
-        tier,
-        name: quiz.questions.find((question) => question.tier === tier)?.tierName,
-        count: quiz.questions.filter((question) => question.tier === tier).length,
-      }))
-      .filter((entry) => entry.count > 0);
+    const tiers = [1, 2, 3, 4]
+      .map((tier) => quiz.questions.filter((question) => question.tier === tier))
+      .filter((questions) => questions.length > 0);
     const answeredCount = Object.keys(state.answers).length;
     const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
+    // The strip shows each tier as one segment. The unit of the count is in the lede, so the
+    // segment shows only the number, and the hidden text gives the unit to a screen reader.
+    const tierStrip = element(
+      'ol',
+      { class: 'tiers', 'aria-label': 'Tiers' },
+      tiers.map((questions) =>
+        element('li', { class: 'tier' }, [
+          element('span', { class: 'tier-name', text: questions[0].tierName }),
+          element('span', { class: 'tier-count' }, [
+            String(questions.length),
+            element('span', { class: 'visually-hidden', text: ' questions' }),
+          ]),
+        ]),
+      ),
+    );
 
     const startLabel = answeredCount ? 'Continue the quiz' : 'Start the quiz';
     const actions = element('div', { class: 'actions' }, [
@@ -1094,43 +1161,39 @@ kbd {
     ]);
 
     const keyRows = [
-      { keys: ['1 to 4', 'A to D'], action: 'Choose an answer' },
-      { keys: ['Enter', 'Right Arrow'], action: 'Go on' },
-      { keys: ['Left Arrow'], action: 'Go back' },
-      { keys: ['T'], action: 'Change the theme' },
+      { keys: ['1 to 4', 'A to D'], action: 'choose an answer' },
+      { keys: ['Enter', 'Right Arrow'], action: 'go on' },
+      { keys: ['Left Arrow'], action: 'go back' },
+      { keys: ['T'], action: 'change the theme' },
     ];
-    const keyList = element(
-      'dl',
-      { class: 'keys', 'aria-label': 'Keys' },
-      keyRows.flatMap((row) => [
-        element(
-          'dt',
-          {},
-          row.keys.flatMap((key, index) => [index ? ' or ' : null, element('kbd', { text: key })]),
-        ),
-        element('dd', { text: row.action }),
-      ]),
+    const keys = element(
+      'ul',
+      { class: 'keys' },
+      keyRows.map((row) => {
+        const caps = row.keys.flatMap((key, index) => [
+          index ? ' or ' : null,
+          element('kbd', { text: key }),
+        ]);
+        return element('li', {}, [...caps, ` ${row.action}`]);
+      }),
     );
+    const notes = element('dl', { class: 'notes' }, [
+      element('div', {}, [element('dt', { text: 'Source' }), element('dd', { text: quiz.source })]),
+      element('div', { class: 'notes-keys' }, [
+        element('dt', { text: 'Keys' }),
+        element('dd', {}, [keys]),
+      ]),
+    ]);
 
     showSlide([
       element('h1', { text: quiz.title }),
-      element('p', { class: 'lede', text: `Source: ${quiz.source}` }),
-      element('h2', {
-        text: `${plural(questionCount, 'question')} in ${plural(tierCounts.length, 'tier')}`,
-      }),
-      element(
-        'ol',
-        { class: 'list' },
-        tierCounts.map((entry) =>
-          element('li', { text: `${entry.name}: ${plural(entry.count, 'question')}` }),
-        ),
-      ),
       element('p', {
-        class: 'hint',
-        text: 'Answer a question to see the explanation. Your progress stays in this browser.',
+        class: 'lede',
+        text: `${plural(questionCount, 'question')} in ${plural(tiers.length, 'tier')}`,
       }),
-      keyList,
+      tierStrip,
       actions,
+      notes,
     ]);
   }
 
