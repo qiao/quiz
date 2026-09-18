@@ -8,7 +8,7 @@ description: >-
 
 # Quiz
 
-Generate responsive HTML slide decks containing four difficulty tiers of multiple-choice questions
+Generate responsive HTML slide decks with three difficulty tiers of multiple-choice questions
 from code repositories, documentation sites, local files, or technical topics.
 
 Follow these nine steps in sequence. Run all commands from the project root where `quizzes/` lives.
@@ -44,14 +44,14 @@ scope and the steps to build the quiz before performing further work.
     Do not ask confirmation questions for count, difficulty, or layout if valid defaults exist.
 - **Message the user:** Send a message to the user before starting step 2. State:
   1. The scope of the quiz: the target resource or topic, the focus, the question count (spread
-     across the four tiers: Fundamentals, Core, Advanced, and Expert), and the language.
+     across the three tiers: Fundamentals, Core, and Advanced), and the language.
   2. The steps that you will perform in sequence to build the quiz:
      - Verify the local Node.js runtime (version 20 or later).
      - Resolve the skill directory path.
      - Explore source material and write the core list.
      - Read the question authoring rules.
      - Select an unused output directory under `quizzes/<slug>/`.
-     - Author draft questions in `quiz.json` across the four tiers.
+     - Author draft questions in `quiz.json` across the three tiers.
      - Run blind sub-agent verification and grade the answers.
      - Build the HTML slide page and offer to open it in a browser.
   Do not wait for user approval to proceed unless a clarifying question was required. State the
