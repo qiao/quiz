@@ -199,7 +199,7 @@ Repair in rounds:
 Completion criterion: All questions in `quizzes/<slug>/quiz.json` pass grading, or unresolvable
 questions are removed within the allowed limits.
 
-## 9. Report
+## 9. Report and offer to open the page
 
 The passed grade in step 8c already wrote `quizzes/<slug>/index.html`. Deliver the result to the
 user:
@@ -211,5 +211,14 @@ user:
   `npx vercel quizzes/<slug>` or `npx netlify deploy --dir=quizzes/<slug>`).
 - If the quiz covers a free-standing topic, state in the report that the quiz uses web sources.
 
-Completion criterion: `quizzes/<slug>/index.html` exists on disk and the user receives the file
-path, open command, and deployment hint.
+Then offer to open the page. Do not wait for the user to ask:
+- Ask one question: open the quiz in the browser now? When the host has a tool for questions to
+  the user, use that tool, with "Open it now" as the first option and "Not now" as the second.
+  Otherwise, ask in the final message.
+- When the user accepts, run the browser command for the operating system.
+- When the session cannot wait for an answer, for example a headless run, print the command and
+  stop.
+
+Completion criterion: `quizzes/<slug>/index.html` exists on disk, the user receives the file path,
+open command, and deployment hint, and the user has answered the offer to open the page, or the
+session cannot ask.

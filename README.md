@@ -47,8 +47,8 @@ Run `/quiz` within any project directory:
 - **Target a document:** `/quiz manual.pdf`
 - **Set question count:** `/quiz 10 questions on state management`
 
-The skill writes the compiled presentation to `./quizzes/<slug>/index.html` and prints a command to
-open the slides in your browser.
+The skill writes the compiled presentation to `./quizzes/<slug>/index.html`, prints a command to
+open the slides in your browser, and offers to open them for you.
 
 ---
 

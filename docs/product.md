@@ -157,7 +157,7 @@ An implementation satisfies this specification when all criteria pass:
 - [ ] Output compiles into `./quizzes/<slug>/index.html`.
 - [ ] Existing folders remain unchanged. The tool appends a numeric suffix such as `-2`.
 - [ ] The agent prints the relative file path and a one-line deployment command hint upon
-  completion.
+  completion, then offers to open the page in the browser.
 - [ ] The generated HTML file works without internet access and makes no network requests.
 - [ ] The output displays no proprietary trademarks or vendor logos.
 

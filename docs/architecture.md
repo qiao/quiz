@@ -90,7 +90,9 @@ The skill transforms resources into self-contained HTML slides through five sequ
    example after a template change.
 5. **Report:** The agent outputs the file path, an operating system open command (`open` on
    macOS, `xdg-open` on Linux, `start` on Windows), and a static hosting deployment hint (for
-   example, `npx vercel quizzes/<slug>`).
+   example, `npx vercel quizzes/<slug>`). The agent then offers to open the page in the browser,
+   and runs the open command only when the user accepts. A session that cannot wait for an
+   answer prints the command and stops.
 
 ---
 
@@ -760,7 +762,8 @@ rules. The agent reads this file during Phase 2. The file specifies:
 8. Execute blind verification: generate `quiz.blind.json` with `--blind`, give its path to the
    sub-agent with instructions forbidding every other path in `quizzes/`, collect answers, and
    evaluate them with `build.mjs --grade`.
-9. Report the local file path of the slide deck that the passed grade wrote.
+9. Report the local file path of the slide deck that the passed grade wrote, and offer to open
+   the page in the browser.
 
 ---
 

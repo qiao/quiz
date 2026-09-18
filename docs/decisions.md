@@ -228,7 +228,8 @@ This document answers: what did we decide, and what did we reject?
 ### D13: Output location and deployment
 - **Decision:** Save quizzes to `./quizzes/<slug>/index.html`. If the folder exists, append a
   numeric suffix such as `-2`. Skip `quizzes/` when exploring the current working directory.
-  Print a one-line deployment hint.
+  Print a one-line deployment hint, then offer to open the page in the browser. Open the page
+  only when the user accepts.
 - **Reason:** Subdirectories keep the root workspace clean. Static folders work directly with local
   file viewers and cloud hosting tools. Preventing overwrites protects previous quiz results.
 - **Rejected alternative:** Save to root directory as `./quiz-<slug>.html`.
