@@ -1,7 +1,7 @@
 # AGENTS.md
 
-Guidance for agents working in this repository. Read it before you change anything. The
-conventions here override general defaults.
+Guidance for agents in this repository. Read it before you change anything. Conventions here
+override general defaults.
 
 Read `docs/README.md` first. It maps the design documents and holds the four rules that keep them
 accurate. A change that contradicts a design document updates that document in the same commit.
@@ -9,7 +9,7 @@ accurate. A change that contradicts a design document updates that document in t
 ## What this is
 
 `quiz` is an agent skill that generates multiple-choice quizzes as responsive HTML slide pages.
-Quizzes can be generated from codebases, documentation, files, or user topics.
+The skill generates quizzes from codebases, documentation, files, or user topics.
 
 The repository holds two primary components:
 1. The design specification in markdown documents under `docs/`.
@@ -38,7 +38,7 @@ specifies that behavior.
 - Section 3 of `docs/README.md` defines the four documentation rules. Follow them strictly.
 - When updating a fact, update every document that references it.
 
-**Commit fine-grained.** One logical change per commit. Any commit can be reverted cleanly without
+**Commit fine-grained.** Make one logical change per commit. Each commit must revert cleanly without
 affecting unrelated work. Use commit subjects in the format `area: change`.
 
 **Use kebab-case for file names.** Every script, stylesheet, test, and documentation file uses
@@ -69,16 +69,16 @@ Breaking any of these invariants breaks the system design:
 
 1. **The build script validates all JSON before output generation.** Invalid draft schemas halt the
    build immediately.
-2. **All Markdown is compiled and HTML-escaped at build time.** The template script performs no
-   runtime parsing.
+2. **The build script compiles and HTML-escapes all Markdown at build time.** The template script
+   performs no runtime parsing.
 3. **The output is a single self-contained HTML file.** Pages work without internet access and make
    no network calls.
 4. **Questions follow four progressive tiers with no trivia.** Questions evaluate system
-   comprehension rather than memorization.
-5. **Every question has exactly four choices with balanced positions.** Answer positions are
-   shuffled deterministically by code.
+   comprehension.
+5. **Every question has exactly four choices with balanced positions.** The build script shuffles
+   answer positions deterministically.
 6. **No proprietary trademarks or logos appear on generated slides.** Slides use monochrome
-   typographic styling, with color used only for state, action, or data.
+   typographic styling. The slides use color only for state, action, or data.
 7. **The agent writes only the draft.** The build script `build.mjs` derives every other field.
 8. **The agent never reads `template.html` or font assets.** Reading templates wastes context
    tokens.
