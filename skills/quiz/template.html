@@ -508,16 +508,26 @@ kbd {
   stroke: var(--vbg-gray-400);
 }
 
+/* A score band sets one color for its marks: 70% or more is green, 40% or more is amber, and
+   less is red. The count and the summary line give the same result without color. */
+.band-high {
+  --band-color: var(--vbg-green-900);
+}
+
+.band-middle {
+  --band-color: var(--vbg-amber-900);
+}
+
+.band-low {
+  --band-color: var(--vbg-red-900);
+}
+
 /* The fill starts at 12 o'clock through the rotate attribute in the markup, which needs no
    origin box, so every SVG engine turns it the same way. */
 .ring-fill {
-  stroke: var(--vbg-gray-1000);
+  stroke: var(--band-color, var(--vbg-gray-1000));
   stroke-dasharray: 100;
   stroke-linecap: round;
-}
-
-.ring.is-perfect .ring-fill {
-  stroke: var(--vbg-green-900);
 }
 
 .ring.is-empty .ring-fill {
@@ -537,7 +547,7 @@ kbd {
 
 .score-percent {
   margin-top: var(--vbg-space-1);
-  color: var(--vbg-gray-900);
+  color: var(--band-color, var(--vbg-gray-900));
   font-size: var(--vbg-type-compact);
   font-weight: 400;
   letter-spacing: 0;
@@ -1217,6 +1227,18 @@ kbd {
   }
 
   /**
+   * Names the band of a score. The band sets the color of the score marks and the summary line.
+   *
+   * @param {number} percent Score from 0 to 100.
+   * @returns {'high' | 'middle' | 'low'} The band.
+   */
+  function scoreBand(percent) {
+    if (percent >= 70) return 'high';
+    if (percent >= 40) return 'middle';
+    return 'low';
+  }
+
+  /**
    * Gives one warm line for the score band.
    *
    * @param {number} percent Score from 0 to 100.
@@ -1224,9 +1246,12 @@ kbd {
    */
   function scoreLine(percent) {
     if (percent === 100) return 'Every answer is correct.';
-    if (percent >= 70) return 'A good result. The missed questions show what to read next.';
-    if (percent >= 40) return 'Good progress. Read the explanation of each missed question.';
-    return 'A first pass. Every explanation is one slide away.';
+    const lines = {
+      high: 'A good result. The missed questions show what to read next.',
+      middle: 'Good progress. Read the explanation of each missed question.',
+      low: 'A first pass. Every explanation is one slide away.',
+    };
+    return lines[scoreBand(percent)];
   }
 
   /**
@@ -1286,9 +1311,8 @@ kbd {
     // The fill circle has a path length of 100, so the fill is a dash of 100 and the offset
     // hides the percent that the score did not earn.
     const fillOffset = 100 - (correctCount / questionCount) * 100;
-    const ringState = percent === 100 ? ' is-perfect' : correctCount ? '' : ' is-empty';
     const ring = element('span', {
-      class: `ring${ringState}`,
+      class: correctCount ? 'ring' : 'ring is-empty',
       html:
         '<svg viewBox="0 0 144 144" aria-hidden="true">' +
         '<circle class="ring-track" cx="72" cy="72" r="66"></circle>' +
@@ -1296,7 +1320,8 @@ kbd {
         `transform="rotate(-90 72 72)" ` +
         `style="stroke-dashoffset: ${live ? 100 : fillOffset}"></circle></svg>`,
     });
-    const heading = element('h1', { class: 'score', 'aria-label': label }, [
+    const headingClass = `score band-${scoreBand(percent)}`;
+    const heading = element('h1', { class: headingClass, 'aria-label': label }, [
       ring,
       element('span', { class: 'score-text' }, [
         element('span', { class: 'score-count' }, [countNode, `/${questionCount}`]),

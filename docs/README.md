@@ -65,7 +65,7 @@ Four rules keep the documentation set accurate:
    design tokens to official documentation in that document's Sources section.
 4. **Record contradictions explicitly.** When an implementation choice diverges from an external
    specification, record the discrepancy openly. Section 7 of [`decisions.md`](decisions.md)
-   records the theme toggle and stillness discrepancies.
+   records the theme toggle, stillness, and score color discrepancies.
 
 ---
 

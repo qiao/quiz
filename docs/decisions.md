@@ -6,13 +6,13 @@ This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |
 |---|---|---|
-| 1 | Decision log | What did we decide for D1 to D26? |
+| 1 | Decision log | What did we decide for D1 to D27? |
 | 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
 | 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
-| 4 | Output and presentation (D13 to D18, D26) | How do we build and render slides? |
+| 4 | Output and presentation (D13 to D18, D26, D27) | How do we build and render slides? |
 | 5 | Execution and verification (D19 to D24) | How do we run and test the build? |
 | 6 | Agent hosts (D25) | Which agent environments do we support? |
-| 7 | Conflict records: theme and stillness | Why does the design diverge from Vercel rules? |
+| 7 | Conflict records: theme, motion, color | Why does the design diverge from Vercel rules? |
 | 8 | Sources | Where are the primary references? |
 
 ---
@@ -47,6 +47,7 @@ This document answers: what did we decide, and what did we reject?
 | D24 | Tests | Unit tests with `node:test` | Deterministic validation of compiler |
 | D25 | Hosts | Claude Code first, generic steps | Runs on Claude Code and agy hosts |
 | D26 | Motion | Free recipes, own confetti | Brings joy and feedback without input blocking |
+| D27 | Score color | Green, amber, or red by score band | Shows the result level at a glance |
 
 ---
 
@@ -205,7 +206,7 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 4. Output and presentation (D13 to D18, D26)
+## 4. Output and presentation (D13 to D18, D26, D27)
 
 ### D13: Output location and deployment
 - **Decision:** Save quizzes to `./quizzes/<slug>/index.html`. If the folder exists, append a
@@ -308,6 +309,23 @@ This document answers: what did we decide, and what did we reject?
     The custom CSS confetti uses 60 colored elements and standard DOM cleanup without external
     assets.
 
+### D27: Score band colors
+- **Decision:** Color the score on the end slide by score band. A score of 70% or more is green
+  (`--vbg-green-900`), 40% to 69% is amber (`--vbg-amber-900`), and less than 40% is red
+  (`--vbg-red-900`). The band colors the ring fill and the percent. The bands use the thresholds
+  of the score band summary line.
+- **Reason:** The user requested color-coding on the score page, so a learner sees the result
+  level at a glance. The count, the percent, and the summary line give the same result as text, so
+  color is never the only cue. Each color has a contrast of at least 5.2 to 1 on the page
+  background in both themes.
+- **Rejected alternative:** Green and amber, with no color below 40%.
+  Rejected because the user selected three bands. Red already marks a missed answer on the
+  question slides.
+- **Rejected alternative:** An ink ring that turns green only at 100%, with a pass or miss color
+  for each tier.
+  Rejected because it shows no level between a perfect score and a score with one miss.
+- **Conflict:** `vercel.com/design.md` limits color to significant meaning. See section 7.
+
 ---
 
 ## 5. Execution and verification (D19 to D24)
@@ -388,7 +406,7 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 7. Conflict records: theme toggle and stillness
+## 7. Conflict records: theme toggle, stillness, and score color
 
 This section records contradictions between the source design document and our implementation
 choices, following documentation rule 4.
@@ -397,6 +415,7 @@ choices, following documentation rule 4.
 |---|---|---|---|
 | `vercel.com/design.md` | No visible switcher | Manual toggle button | Section 4 (D16) |
 | `vercel.com/design.md` | Default to stillness | Transitions and confetti | Section 4 (D26) |
+| `vercel.com/design.md` | Color only with meaning | Score band colors | Section 4 (D27) |
 
 ### Theme toggle
 
@@ -437,6 +456,24 @@ The user requested slide transitions and celebratory motion on the score page to
 completing a quiz. Micro-interactions for slide advancement, icon drawing, feedback elevation, and
 the score reveal provide visual feedback on learner progress without blocking input or delaying
 interaction.
+
+### Score color
+
+**Source rule:**
+`http://vercel.com/design.md` section `Color, surfaces, and boundaries` specifies: "Design in
+monochrome. Use color only when it adds significant meaning to state, action, or data, and pair it
+with a non-color cue. Do not turn a recommendation, savings figure, cost component, or longer bar
+green merely because it is favorable or important."
+
+**Our implementation:**
+The end slide colors the score ring fill and the percent by score band: green, amber, or red. The
+count and the score band summary line give the same result as text. The count, the table text,
+and the buttons stay monochrome.
+
+**Reason for divergence:**
+The user requested color-coding on the score page. The band is a state of the result, which the
+rule permits. A green score is also a favorable figure, which the rule warns against, so this
+record states the conflict openly.
 
 ---
 

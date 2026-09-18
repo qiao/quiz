@@ -581,8 +581,10 @@ Transitions provide visual feedback during navigation and answers without blocki
    (`--duration-very-slow`) with `--ease-smooth-out`. Keyboard shortcuts and focus work immediately
    without waiting for the transition to finish.
 5. **End slide score ring and count-up:** The end slide presents the score in a thin ring (144 px,
-   3 px stroke). The track uses `--vbg-gray-400`. The fill uses ink (`--vbg-gray-1000`) with a
-   rounded cap, turned to start at 12 o'clock. At 100%, the fill turns green (`--vbg-green-900`). At
+   3 px stroke). The track uses `--vbg-gray-400`. The fill has a rounded cap and starts at 12
+   o'clock. The fill and the percent use the color of the score band: green (`--vbg-green-900`)
+   for 70% or more, amber (`--vbg-amber-900`) for 40% or more, and red (`--vbg-red-900`) below
+   40%. The thresholds are the same as for the score band line (item 6). The count stays ink. At
    zero, only the track shows. The heading wraps the ring, count, and percent, and keeps the full
    text in its `aria-label` for screen readers. On a real finish from the last question, the fill
    moves with the 800 ms count-up from empty to final value, while the count and percent count up
@@ -741,8 +743,9 @@ rules. The agent reads this file during Phase 2. The file specifies:
 ### Design tokens
 
 `skills/quiz/tokens.css` defines tokens sourced from `vercel-brand.css`. The interface designs in
-monochrome in accordance with `design.md`. Color indicates only validation results and focus
-states. Every color cue accompanies a non-color cue, such as an icon or status word. Each color
+monochrome in accordance with `design.md`. Color indicates only validation results, score bands,
+and focus states. Every color cue accompanies a non-color cue, such as an icon, a status word, or
+a count. Each color
 token uses CSS `light-dark(<light>, <dark>)`:
 
 - **Surfaces (from `vercel-brand.css`):**
@@ -759,6 +762,9 @@ token uses CSS `light-dark(<light>, <dark>)`:
     blue-900 (`oklch(71.7% 0.1648 250.794)`).
   - Success (`--vbg-green-900`): light uses `oklch(51.75% 0.1453 147.65)`, and dark uses
     `oklch(73.1% 0.2158 148.29)`.
+  - Warning (`--vbg-amber-900`): light uses `oklch(52.79% 0.1496 54.65)`, and dark uses
+    `oklch(77.21% 0.1991 64.28)`. The end slide uses it for the middle score band. Its contrast on
+    the canvas is 5.60 to 1 in the light theme and 9.41 to 1 in the dark theme.
   - Error (`--vbg-red-900`): light uses `oklch(54.99% 0.232 25.29)`, and dark uses
     `oklch(69.96% 0.2136 22.03)`. Red-900 replaces red-700 because red-700 had a contrast of
     4.04 to 1 in the light theme, failing the WCAG AA minimum of 4.5 to 1.
