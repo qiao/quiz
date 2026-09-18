@@ -8,13 +8,13 @@
 [workflow]: https://github.com/qiao/quiz/actions/workflows/test.yml
 [demo]: docs/media/quiz-promo.gif
 
-`quiz` is an agent skill that auto-generates multiple-choice quizzes as responsive HTML slide
-pages from codebases, documentation sites, files, or technical topics. Developers run the skill
-primarily to test their own knowledge, and can share the generated slides with others.
+`quiz` is an agent skill that generates multiple-choice quizzes as responsive HTML slide pages
+from codebases, documentation sites, files, or technical topics. Developers run the skill to test
+their knowledge. They can also share the slides with others.
 
 The skill runs in coding agents that support skills, such as Claude Code, Codex, and OpenCode. It
-structures questions into four progressive difficulty tiers, verifies questions with an independent
-blind sub-agent, and compiles a single self-contained HTML file that runs offline.
+organizes questions into four difficulty tiers and verifies them with an independent blind
+sub-agent. Then it compiles one self-contained HTML file that runs offline.
 
 ---
 
@@ -32,7 +32,7 @@ npx skills add qiao/quiz
 
 ## Usage
 
-Run `/quiz` within any project directory:
+Run `/quiz` in any project folder:
 
 ```text
 /quiz
@@ -40,23 +40,22 @@ Run `/quiz` within any project directory:
 
 ### Common prompt forms
 
-- **Explore workspace:** `/quiz`
-- **Focus on a subsystem:** `/quiz authentication flow`
-- **Target a path:** `/quiz ./packages/core`
-- **Target documentation:** `/quiz https://example.com/docs`
-- **Target a document:** `/quiz manual.pdf`
-- **Set question count:** `/quiz 10 questions on state management`
+- Explore workspace: `/quiz`
+- Focus on a subsystem: `/quiz authentication flow`
+- Target a path: `/quiz ./packages/core`
+- Target documentation: `/quiz https://example.com/docs`
+- Target a document: `/quiz manual.pdf`
+- Set question count: `/quiz 10 questions on state management`
 
-The skill writes the compiled presentation to `./quizzes/<slug>/index.html`, prints a command to
-open the slides in your browser, and offers to open them for you.
+The skill writes the presentation to `./quizzes/<slug>/index.html`. It prints a command to open the
+slides in your browser, and offers to open them for you.
 
 ---
 
 ## Slide controls
 
-Slides support keyboard navigation (keys 1 to 4, Enter, Arrow keys, and T for theme toggle).
-Section 7 of [`docs/architecture.md`](docs/architecture.md#7-slide-interface) defines the full
-key map.
+Slides support keyboard keys: 1 to 4, Enter, arrow keys, and T to toggle the theme. Section 7 of
+[`docs/architecture.md`](docs/architecture.md#7-slide-interface) defines the full key map.
 
 ---
 
