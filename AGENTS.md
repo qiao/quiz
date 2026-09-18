@@ -73,8 +73,8 @@ Breaking any of these invariants breaks the system design:
    performs no runtime parsing.
 3. **The output is a single self-contained HTML file.** Pages work without internet access and make
    no network calls.
-4. **Questions follow four progressive tiers with no trivia.** Questions evaluate system
-   comprehension.
+4. **Questions follow three progressive tiers with no trivia.** Half of the questions test the
+   fundamentals. Questions evaluate system comprehension.
 5. **Every question has exactly four choices with balanced positions.** The build script shuffles
    answer positions deterministically.
 6. **No proprietary trademarks or logos appear on generated slides.** Slides use monochrome
