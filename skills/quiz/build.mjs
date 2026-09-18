@@ -15,7 +15,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 /**
  * @typedef {'correct' | 'obvious-wrong' | 'plausible-wrong'} ChoiceKind
  *
- * @typedef {1 | 2 | 3 | 4} Tier
+ * @typedef {1 | 2 | 3} Tier
  *
  * @typedef {object} DraftCitation
  * @property {string} target File path from the repository root, chapter, or URL.
@@ -60,7 +60,22 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** Names of the tiers, in tier order. */
-export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
+export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced'];
+
+/**
+ * Gives the number of questions for each tier.
+ *
+ * Half of the questions test the fundamentals. Each of the two higher tiers takes half of what
+ * is left, and a remainder goes to the earlier tier. A quiz of 20 questions is 10, 5, and 5.
+ *
+ * @param {number} count Number of questions in the quiz.
+ * @returns {number[]} Size of tier 1, tier 2, and tier 3, in tier order.
+ */
+export function tierTargets(count) {
+  const first = Math.ceil(count / 2);
+  const second = Math.ceil((count - first) / 2);
+  return [first, second, count - first - second];
+}
 
 /** Letters that name the choice positions on a slide. */
 export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
@@ -346,7 +361,7 @@ export function validateDraft(draft) {
     return errors;
   }
 
-  const tierSizes = [0, 0, 0, 0];
+  const tierSizes = [0, 0, 0];
   /** @type {LongAnswer[]} */
   const longAnswers = [];
   let previousTier = 0;
@@ -359,7 +374,7 @@ export function validateDraft(draft) {
     checkUnknownFields(question, QUESTION_FIELDS, label, errors);
 
     const { tier } = question;
-    if (tier === 1 || tier === 2 || tier === 3 || tier === 4) {
+    if (tier === 1 || tier === 2 || tier === 3) {
       tierSizes[tier - 1] += 1;
       if (tier < previousTier) {
         errors.push(
@@ -368,7 +383,7 @@ export function validateDraft(draft) {
       }
       previousTier = Math.max(previousTier, tier);
     } else {
-      const tiers = oneOf([1, 2, 3, 4], String);
+      const tiers = oneOf([1, 2, 3], String);
       errors.push(`${label}: 'tier' must be ${tiers}, found ${JSON.stringify(tier)}`);
     }
 
@@ -380,9 +395,11 @@ export function validateDraft(draft) {
     checkCitation(question.citation, label, errors);
   });
 
-  if (Math.max(...tierSizes) - Math.min(...tierSizes) > 1) {
+  const targets = tierTargets(draft.questions.length);
+  if (targets.some((target, index) => target !== tierSizes[index])) {
     errors.push(
-      `Quiz: tier sizes must differ by at most 1 question, found ${tierSizes.join(', ')}`,
+      `Quiz: tier sizes must be ${targets.join(', ')} for ${draft.questions.length} questions, ` +
+        `found ${tierSizes.join(', ')}`,
     );
   }
   checkLongestCorrectCount(longAnswers, draft.questions.length, errors);

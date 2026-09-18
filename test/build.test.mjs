@@ -19,6 +19,7 @@ import {
   renderMarkdown,
   renderPage,
   resolveCitation,
+  tierTargets,
   validateAnswers,
   validateDraft,
 } from '../skills/quiz/build.mjs';
@@ -117,27 +118,27 @@ describe('validateDraft', () => {
     ]);
   });
 
-  it('rejects a tier that is not 1 to 4', () => {
+  it('rejects a tier that is not 1 to 3', () => {
     const draft = loadDraft();
     draft.questions[7].tier = 5;
-    assert.ok(validateDraft(draft).includes("Question 8: 'tier' must be 1, 2, 3, or 4, found 5"));
+    assert.ok(validateDraft(draft).includes("Question 8: 'tier' must be 1, 2, or 3, found 5"));
   });
 
   it('rejects a tier that goes down', () => {
     const draft = loadDraft();
-    [draft.questions[1], draft.questions[2]] = [draft.questions[2], draft.questions[1]];
+    [draft.questions[3], draft.questions[4]] = [draft.questions[4], draft.questions[3]];
     assert.deepEqual(validateDraft(draft), [
-      'Question 3: tier 1 comes after tier 2, but the tier must not go down',
+      'Question 5: tier 1 comes after tier 2, but the tier must not go down',
     ]);
   });
 
-  it('accepts tier sizes that differ by 1, and rejects a bigger difference', () => {
+  it('accepts the tier shape of a smaller quiz, and rejects a wrong shape', () => {
     const draft = loadDraft();
     draft.questions.splice(7, 1);
     assert.deepEqual(validateDraft(draft), []);
     draft.questions.splice(6, 1);
     assert.deepEqual(validateDraft(draft), [
-      'Quiz: tier sizes must differ by at most 1 question, found 2, 2, 2, 0',
+      'Quiz: tier sizes must be 3, 2, 1 for 6 questions, found 4, 2, 0',
     ]);
   });
 
@@ -296,13 +297,37 @@ describe('renderMarkdown', () => {
 function makeDraft(count, salt = '') {
   const draft = loadDraft();
   const template = draft.questions[0];
+  const tiers = tierTargets(count).flatMap((size, index) => Array(size).fill(index + 1));
   draft.questions = Array.from({ length: count }, (_, index) => ({
     ...structuredClone(template),
-    tier: Math.floor((index * 4) / count) + 1,
+    tier: tiers[index],
     prompt: `Question ${index + 1} ${salt}`,
   }));
   return draft;
 }
+
+describe('tierTargets', () => {
+  it('gives 10, 5, and 5 questions for the default quiz of 20', () => {
+    assert.deepEqual(tierTargets(20), [10, 5, 5]);
+  });
+
+  it('keeps half of the questions in tier 1, and gives a remainder to the earlier tier', () => {
+    assert.deepEqual(tierTargets(12), [6, 3, 3]);
+    assert.deepEqual(tierTargets(10), [5, 3, 2]);
+    assert.deepEqual(tierTargets(9), [5, 2, 2]);
+    assert.deepEqual(tierTargets(6), [3, 2, 1]);
+  });
+
+  it('gives a total that matches the question count, for every count up to 100', () => {
+    for (let count = 1; count <= 100; count += 1) {
+      const targets = tierTargets(count);
+      assert.equal(targets.length, 3, `count ${count}`);
+      assert.equal(targets[0] + targets[1] + targets[2], count, `count ${count}`);
+      assert.ok(targets.every((size) => size >= 0), `count ${count}`);
+      assert.ok(targets[0] >= targets[1] && targets[1] >= targets[2], `count ${count}`);
+    }
+  });
+});
 
 describe('quizIdOf', () => {
   it('joins the slug and 8 hex characters of the content hash', () => {
@@ -471,7 +496,7 @@ describe('gradeAnswers', () => {
     assert.equal(report.passedCount, 5);
     assert.deepEqual(
       report.failures.map(({ questionId, tier }) => [questionId, tier]),
-      [[5, 3], [7, 4], [8, 4]],
+      [[5, 2], [7, 3], [8, 3]],
     );
     const obviousText = draft.questions[4].obviousWrong.text;
     assert.ok(
@@ -611,7 +636,7 @@ describe('buildQuiz', () => {
     quiz.questions.forEach((question, index) => {
       const source = draft.questions[index];
       assert.equal(question.id, index + 1);
-      const tierNames = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
+      const tierNames = ['Fundamentals', 'Core', 'Advanced'];
       assert.equal(question.tierName, tierNames[source.tier - 1]);
       assert.equal(question.promptHtml, renderMarkdown(source.prompt));
       assert.equal(question.explanationHtml, renderMarkdown(source.explanation));

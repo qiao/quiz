@@ -53,7 +53,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 2,
+      "tier": 1,
       "prompt": "When does the event loop run the microtasks?",
       "answer": "After the current task ends, before the next task starts",
       "obviousWrong": {
@@ -74,7 +74,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 2,
+      "tier": 1,
       "prompt": "Which statement about `await` in an `async` function is true?",
       "answer": "It pauses the function and resumes it in a microtask",
       "obviousWrong": {
@@ -95,7 +95,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 3,
+      "tier": 2,
       "prompt": "What does this code print?\n\n```js\nsetTimeout(() => console.log('A'), 0);\nPromise.resolve().then(() => console.log('B'));\nconsole.log('C');\n```",
       "answer": "`C`, then `B`, then `A`",
       "obviousWrong": {
@@ -116,7 +116,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 3,
+      "tier": 2,
       "prompt": "A microtask queues a new microtask each time it runs. What occurs?",
       "answer": "The page stops rendering and stops handling events",
       "obviousWrong": {
@@ -137,7 +137,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 4,
+      "tier": 3,
       "prompt": "Why can a long loop of `await` calls on promises that are already resolved still freeze the page?",
       "answer": "Each resume is a microtask, so no task or render can run between them",
       "obviousWrong": {
@@ -158,7 +158,7 @@
       "citation": { "target": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }
     },
     {
-      "tier": 4,
+      "tier": 3,
       "prompt": "You must process 1 million items without a frozen page. Which design is correct?",
       "answer": "Process a batch, then schedule the next batch as a new task",
       "obviousWrong": {
