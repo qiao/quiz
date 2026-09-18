@@ -115,11 +115,11 @@ Format `quiz.json` with this structure:
     {
       "tier": 1,
       "prompt": "Question prompt in Markdown.",
-      "choices": [
-        { "text": "Correct choice", "kind": "correct" },
-        { "text": "Obvious wrong", "kind": "obvious-wrong", "rationale": "Why wrong." },
-        { "text": "Plausible wrong 1", "kind": "plausible-wrong", "rationale": "Why wrong." },
-        { "text": "Plausible wrong 2", "kind": "plausible-wrong", "rationale": "Why wrong." }
+      "answer": "Correct choice",
+      "obviousWrong": { "text": "Obvious wrong", "rationale": "Why wrong." },
+      "plausibleWrong": [
+        { "text": "Plausible wrong 1", "rationale": "Why wrong." },
+        { "text": "Plausible wrong 2", "rationale": "Why wrong." }
       ],
       "explanation": "Why the correct choice is accurate.",
       "citation": { "target": "path/to/file.ts", "lineStart": 10, "lineEnd": 25 }

@@ -23,17 +23,24 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * @property {number} [lineEnd] Last line of the cited range.
  * @property {number} [page] Page number for a PDF.
  *
- * @typedef {object} DraftChoice
+ * @typedef {object} WrongChoice
  * @property {string} text Choice text in Markdown.
- * @property {ChoiceKind} kind Role of the choice.
- * @property {string} [rationale] Reason that a wrong choice is wrong.
+ * @property {string} rationale Reason that the choice is wrong, in Markdown.
  *
  * @typedef {object} DraftQuestion
  * @property {Tier} tier Difficulty tier.
  * @property {string} prompt Question text in Markdown.
- * @property {DraftChoice[]} choices Exactly 4 choices.
+ * @property {string} answer Text of the correct choice in Markdown.
+ * @property {WrongChoice} obviousWrong Wrong choice that basic domain knowledge rules out.
+ * @property {WrongChoice[]} plausibleWrong Exactly 2 wrong choices that model real mistakes.
  * @property {string} explanation Reason that the correct choice is correct.
  * @property {DraftCitation} citation Source of the answer.
+ *
+ * @typedef {object} Choice
+ * @property {string} field Draft field of the choice, for example `plausibleWrong[1]`.
+ * @property {ChoiceKind} kind Role of the choice.
+ * @property {string} text Choice text in Markdown.
+ * @property {string} [rationale] Reason that a wrong choice is wrong.
  *
  * @typedef {object} QuizDraft
  * @property {string} title Title of the quiz.
@@ -56,17 +63,40 @@ export const TIER_NAMES = ['Fundamentals', 'Core', 'Advanced', 'Expert'];
 /** Letters that name the choice positions on a slide. */
 export const CHOICE_LETTERS = /** @type {const} */ (['a', 'b', 'c', 'd']);
 
-/** Number of choices of each kind that a question must have. */
-const KIND_COUNTS = { correct: 1, 'obvious-wrong': 1, 'plausible-wrong': 2 };
-const CHOICE_KINDS = Object.keys(KIND_COUNTS);
-
 /** Largest length of the correct choice, as a multiple of the longest wrong choice. */
 const MAX_CORRECT_LENGTH_RATIO = 1.2;
 
 const QUIZ_FIELDS = ['title', 'slug', 'source', 'questions'];
-const QUESTION_FIELDS = ['tier', 'prompt', 'choices', 'explanation', 'citation'];
-const CHOICE_FIELDS = ['text', 'kind', 'rationale'];
+const QUESTION_FIELDS = [
+  'tier',
+  'prompt',
+  'answer',
+  'obviousWrong',
+  'plausibleWrong',
+  'explanation',
+  'citation',
+];
+const WRONG_CHOICE_FIELDS = ['text', 'rationale'];
 const CITATION_FIELDS = ['target', 'lineStart', 'lineEnd', 'page'];
+
+/**
+ * Lists the 4 choices of a valid question: the answer, the obvious wrong choice, and the 2
+ * plausible wrong choices, in that order.
+ *
+ * @param {DraftQuestion} question Valid question.
+ * @returns {Choice[]} The choices, each with its draft field and its kind.
+ */
+function choicesOf(question) {
+  return [
+    { field: 'answer', kind: 'correct', text: question.answer },
+    { field: 'obviousWrong', kind: 'obvious-wrong', ...question.obviousWrong },
+    ...question.plausibleWrong.map((choice, index) => ({
+      field: `plausibleWrong[${index}]`,
+      kind: /** @type {ChoiceKind} */ ('plausible-wrong'),
+      ...choice,
+    })),
+  ];
+}
 
 /**
  * Tells if a value is a plain object.
@@ -167,19 +197,14 @@ function checkCitation(citation, label, errors) {
  *
  * A learner who picks the longest choice must not find the answer.
  *
- * @param {DraftChoice[]} choices The 4 choices, each with text, and exactly one correct choice.
+ * @param {string[]} texts The 4 choice texts, the correct choice first.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
  * @returns {boolean} True when the correct choice is longer than every wrong choice.
  */
-function checkChoiceLengths(choices, label, errors) {
-  let correctLength = 0;
-  let longestWrong = 0;
-  for (const choice of choices) {
-    const length = choice.text.trim().length;
-    if (choice.kind === 'correct') correctLength = length;
-    else longestWrong = Math.max(longestWrong, length);
-  }
+function checkChoiceLengths(texts, label, errors) {
+  const [correctLength, ...wrongLengths] = texts.map((text) => text.trim().length);
+  const longestWrong = Math.max(...wrongLengths);
   if (correctLength > longestWrong * MAX_CORRECT_LENGTH_RATIO) {
     errors.push(
       `${label}: the correct choice has ${correctLength} characters, and the longest wrong ` +
@@ -214,84 +239,52 @@ function checkLongestCorrectCount(questionNumbers, questionCount, errors) {
 }
 
 /**
- * Checks the choices of one question.
+ * Checks the answer and the 3 wrong choices of one question.
  *
- * @param {unknown} choices Choices to check.
+ * @param {Record<string, unknown>} question Question to check.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
  * @returns {boolean} True when the correct choice is longer than every wrong choice.
  */
-function checkChoices(choices, label, errors) {
-  if (!Array.isArray(choices) || choices.length !== 4) {
-    const found = Array.isArray(choices) ? choices.length : 'no array';
-    errors.push(`${label}: expected exactly 4 choices, found ${found}`);
-    return false;
-  }
-  /** @type {Map<string, number>} */
-  const seenTexts = new Map();
-  let allTextsFilled = true;
+function checkChoices(question, label, errors) {
+  checkFilledStrings(question, ['answer'], label, errors);
+  /** @type {[string, unknown][]} */
+  const texts = [['answer', question.answer]];
 
-  choices.forEach((choice, index) => {
-    const number = index + 1;
+  /** @type {[string, unknown][]} */
+  const wrongChoices = [['obviousWrong', question.obviousWrong]];
+  const { plausibleWrong } = question;
+  if (Array.isArray(plausibleWrong) && plausibleWrong.length === 2) {
+    plausibleWrong.forEach((choice, index) => {
+      wrongChoices.push([`plausibleWrong[${index}]`, choice]);
+    });
+  } else {
+    const found = Array.isArray(plausibleWrong)
+      ? `${plausibleWrong.length} ${plausibleWrong.length === 1 ? 'item' : 'items'}`
+      : 'no array';
+    errors.push(`${label}: 'plausibleWrong' must be an array of 2 choices, found ${found}`);
+  }
+  for (const [field, choice] of wrongChoices) {
     if (!isObject(choice)) {
-      errors.push(`${label}, Choice ${number}: the choice must be a JSON object`);
-      allTextsFilled = false;
-      return;
+      errors.push(`${label}: '${field}' must be an object with 'text' and 'rationale'`);
+      continue;
     }
-    const kind = String(choice.kind);
-    const validKind = CHOICE_KINDS.includes(kind);
-    const choiceLabel = validKind
-      ? `${label}, Choice ${number} ('${kind}')`
-      : `${label}, Choice ${number}`;
-
-    checkUnknownFields(choice, CHOICE_FIELDS, choiceLabel, errors);
-    if (!validKind) {
-      errors.push(`${choiceLabel}: 'kind' must be ${oneOf(CHOICE_KINDS)}, found '${kind}'`);
-    }
-    checkFilledStrings(choice, ['text'], choiceLabel, errors);
-    if (isFilledString(choice.text)) {
-      const key = String(choice.text).trim();
-      const first = seenTexts.get(key);
-      if (first) errors.push(`${label}: choices ${first} and ${number} have the same text`);
-      else seenTexts.set(key, number);
-    } else {
-      allTextsFilled = false;
-    }
-
-    if (kind === 'correct') {
-      if ('rationale' in choice) {
-        errors.push(
-          `${choiceLabel}: remove 'rationale', because 'explanation' covers the correct choice`,
-        );
-      }
-    } else if (validKind) {
-      if (choice.rationale === undefined) {
-        errors.push(`${choiceLabel}: missing required 'rationale'`);
-      } else if (!isFilledString(choice.rationale)) {
-        errors.push(`${choiceLabel}: 'rationale' must be a string that is not empty`);
-      }
-    }
-  });
-
-  /** @type {Record<string, number>} */
-  const found = {};
-  for (const kind of CHOICE_KINDS) {
-    found[kind] = choices.filter((choice) => isObject(choice) && choice.kind === kind).length;
-  }
-  let correctIsLongest = false;
-  if (allTextsFilled && found.correct === 1) {
-    correctIsLongest = checkChoiceLengths(/** @type {DraftChoice[]} */ (choices), label, errors);
+    checkUnknownFields(choice, WRONG_CHOICE_FIELDS, label, errors, `${field}.`);
+    checkFilledStrings(choice, WRONG_CHOICE_FIELDS, label, errors, `${field}.`);
+    texts.push([`${field}.text`, choice.text]);
   }
 
-  for (const [kind, expected] of Object.entries(KIND_COUNTS)) {
-    if (found[kind] !== expected) {
-      const noun = expected === 1 ? 'choice' : 'choices';
-      errors.push(
-        `${label}: expected exactly ${expected} '${kind}' ${noun}, found ${found[kind]}`,
-      );
-    }
+  // The text checks need all 4 texts.
+  if (texts.length !== 4 || !texts.every(([, text]) => isFilledString(text))) return false;
+  /** @type {Map<string, string>} */
+  const seen = new Map();
+  for (const [field, text] of texts) {
+    const key = String(text).trim();
+    const first = seen.get(key);
+    if (first) errors.push(`${label}: '${first}' and '${field}' have the same text`);
+    else seen.set(key, field);
   }
-  return correctIsLongest;
+  return checkChoiceLengths(texts.map(([, text]) => String(text)), label, errors);
 }
 
 /**
@@ -346,7 +339,7 @@ export function validateDraft(draft) {
     }
 
     checkFilledStrings(question, ['prompt', 'explanation'], label, errors);
-    if (checkChoices(question.choices, label, errors)) longestCorrect.push(index + 1);
+    if (checkChoices(question, label, errors)) longestCorrect.push(index + 1);
     checkCitation(question.citation, label, errors);
   });
 
@@ -500,8 +493,7 @@ function shuffleInPlace(items, random) {
  *
  * @typedef {object} PlacedChoice
  * @property {ChoiceLetter} letter Letter of the position on the page.
- * @property {number} draftIndex Index of the choice in the draft.
- * @property {DraftChoice} choice Choice from the draft.
+ * @property {Choice} choice Choice from the draft, with its field and its kind.
  */
 
 /**
@@ -514,7 +506,7 @@ function shuffleInPlace(items, random) {
  * @param {QuizDraft} draft Valid draft.
  * @returns {PlacedChoice[][]} For each question, its choices in page order.
  * @example
- * placeChoices(draft)[0][0]; // { letter: 'a', draftIndex: 2, choice: { ... } }
+ * placeChoices(draft)[0][0]; // { letter: 'a', choice: { field: 'plausibleWrong[1]', ... } }
  */
 export function placeChoices(draft) {
   const random = createRandom(quizIdOf(draft));
@@ -522,15 +514,12 @@ export function placeChoices(draft) {
   shuffleInPlace(correctSlots, random);
 
   return draft.questions.map((question, questionIndex) => {
-    const correctIndex = question.choices.findIndex((choice) => choice.kind === 'correct');
-    const order = [0, 1, 2, 3].filter((index) => index !== correctIndex);
+    const choices = choicesOf(question);
+    // Index 0 is the answer, so only the wrong choices shuffle.
+    const order = [1, 2, 3];
     shuffleInPlace(order, random);
-    order.splice(correctSlots[questionIndex], 0, correctIndex);
-    return order.map((draftIndex, slot) => ({
-      letter: CHOICE_LETTERS[slot],
-      draftIndex,
-      choice: question.choices[draftIndex],
-    }));
+    order.splice(correctSlots[questionIndex], 0, 0);
+    return order.map((index, slot) => ({ letter: CHOICE_LETTERS[slot], choice: choices[index] }));
   });
 }
 
@@ -673,9 +662,8 @@ export function gradeAnswers(draft, file) {
       if (chosen !== correct) {
         const note = answer.reason ? ` The checker said: ${answer.reason}` : '';
         fail(
-          `The checker chose ${answer.choice}, which is draft choice ${chosen.draftIndex + 1} ` +
-            `('${chosen.choice.kind}'): "${chosen.choice.text}". ` +
-            `The correct choice is ${correct.letter}.${note}`,
+          `The checker chose ${answer.choice}, which is '${chosen.choice.field}': ` +
+            `"${chosen.choice.text}". The correct choice is ${correct.letter}.${note}`,
         );
       }
     }

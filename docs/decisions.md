@@ -6,9 +6,9 @@ This document answers: what did we decide, and what did we reject?
 
 | Section | Title | Answers |
 |---|---|---|
-| 1 | Decision log | What did we decide for D1 to D27? |
+| 1 | Decision log | What did we decide for D1 to D28? |
 | 2 | Packaging and scope (D1 to D6) | How do we package and scope the skill? |
-| 3 | Question mechanics (D7 to D12) | How do we generate tiers and choices? |
+| 3 | Question mechanics (D7 to D12, D28) | How do we generate tiers and choices? |
 | 4 | Output and presentation (D13 to D18, D26, D27) | How do we build and render slides? |
 | 5 | Execution and verification (D19 to D24) | How do we run and test the build? |
 | 6 | Agent hosts (D25) | Which agent environments do we support? |
@@ -48,6 +48,7 @@ This document answers: what did we decide, and what did we reject?
 | D25 | Hosts | Claude Code first, generic steps | Runs on Claude Code and agy hosts |
 | D26 | Motion | Free recipes, own confetti | Brings joy and feedback without input blocking |
 | D27 | Score color | Green, amber, or red by score band | Shows the result level at a glance |
+| D28 | Draft fields | Named roles, no kind field | Shorter draft, fewer rules |
 
 ---
 
@@ -132,7 +133,7 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 3. Question mechanics (D7 to D12)
+## 3. Question mechanics (D7 to D12, D28)
 
 ### D7: Question count and resource limits
 - **Decision:** Default to 20 questions. Allow user prompts to override the count. If a resource
@@ -203,6 +204,22 @@ This document answers: what did we decide, and what did we reject?
 - **Rejected alternative:** Enforce strict ASD-STE100 vocabulary on quiz questions.
   Rejected because replacing specialized programming terms with simplified words creates
   unnatural phrasing and confuses developers.
+
+### D28: Draft choice fields
+- **Decision:** The draft names each choice by its role. `answer` holds the text of the correct
+  choice, `obviousWrong` holds one wrong choice, and `plausibleWrong` holds an array of two wrong
+  choices. Each wrong choice has `text` and `rationale`. `build.mjs` derives the kind of each
+  choice from its field, so the built page data keeps `kind`.
+- **Reason:** The agent writes the draft as output tokens, and output is the largest time cost of
+  a run. A list of choices repeated a `kind` field 80 times in a quiz of 20 questions. The named
+  fields made four real drafts from 10.1% to 11.7% shorter. They also replace five validation
+  rules with one shape rule, because a draft cannot hold a wrong count of a kind or a rationale on
+  the correct choice.
+- **Rejected alternative:** A list of four choices, each with a `kind` field.
+  Rejected because the kind repeats in every choice and needs count checks.
+- **Rejected alternative:** Tuples such as `[text, rationale]` in one `wrong` array.
+  Rejected because the text and the rationale have no names. The tuples made the drafts about 15%
+  shorter, but a swap would show the rationale as a choice on the slide, and no check can find it.
 
 ---
 

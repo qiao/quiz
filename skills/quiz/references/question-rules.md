@@ -65,11 +65,11 @@ Every question must evaluate mental models and system comprehension. Trivia is s
 
 ## 3. Choice composition
 
-Every question must contain exactly four choices:
+Every question has exactly four choices, and each field of the draft holds one role:
 
-- Exactly one choice with `kind: "correct"`.
-- Exactly one choice with `kind: "obvious-wrong"`.
-- Exactly two choices with `kind: "plausible-wrong"`.
+- `answer`: the text of the one correct choice.
+- `obviousWrong`: one wrong choice, with `text` and `rationale`.
+- `plausibleWrong`: an array of exactly two wrong choices, each with `text` and `rationale`.
 - Never use "All of the above", "None of the above", or combination choices such as "Both A and B".
 - Choice text must be unique within each question. No two choices may have identical text.
 - Do not add choice letter prefixes (`A.`, `B.`, etc.). The compiler balances and assigns letters.
@@ -81,17 +81,17 @@ Every question must contain exactly four choices:
   also rejects a quiz where the correct choice is the longest choice in more than a quarter of the
   questions. Let the build measure, and fix the questions that its errors name.
 
-### Correct choice
+### Correct choice (`answer`)
 - State the accurate technical answer directly.
 - Ground the answer in the source material.
-- Omit the `rationale` field. The correct choice must not define a `rationale`.
+- Write only the text. The `explanation` of the question covers why the answer is correct.
 
-### Obvious wrong choice
+### Obvious wrong choice (`obviousWrong`)
 - State an incorrect option that a developer with basic domain understanding identifies as false.
 - Keep the distractor within the domain topic. Do not write comical or absurd choices.
 - Provide a non-empty `rationale` string explaining why this choice is incorrect.
 
-### Plausible wrong choices
+### Plausible wrong choices (`plausibleWrong`)
 - State incorrect options based on common developer misconceptions or partial truths.
 - Model real engineering mistakes: inverted logic, missing edge cases, or confused terms.
 - Provide a non-empty `rationale` string for each plausible distractor explaining why it fails.

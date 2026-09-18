@@ -60,10 +60,9 @@ function loadDraft() {
  */
 function setLongestCorrect(draft, longest) {
   draft.questions.forEach((/** @type {any} */ question, /** @type {number} */ index) => {
-    const wrong = question.choices.filter((/** @type {any} */ choice) => choice.kind !== 'correct');
-    const length = Math.max(...wrong.map((/** @type {any} */ choice) => choice.text.length));
-    const correct = question.choices.find((/** @type {any} */ choice) => choice.kind === 'correct');
-    correct.text = 'x'.repeat(longest.includes(index + 1) ? length + 1 : length - 1);
+    const wrong = [question.obviousWrong, ...question.plausibleWrong];
+    const length = Math.max(...wrong.map((choice) => choice.text.length));
+    question.answer = 'x'.repeat(longest.includes(index + 1) ? length + 1 : length - 1);
   });
 }
 
@@ -130,68 +129,57 @@ describe('validateDraft', () => {
     const draft = loadDraft();
     draft.questions[0].prompt = '';
     draft.questions[0].explanation = '';
-    draft.questions[0].choices[0].text = '';
+    draft.questions[0].answer = '';
     draft.questions[0].citation.target = '';
     assert.deepEqual(validateDraft(draft), [
       "Question 1: 'prompt' must be a string that is not empty",
       "Question 1: 'explanation' must be a string that is not empty",
-      "Question 1, Choice 1 ('correct'): 'text' must be a string that is not empty",
+      "Question 1: 'answer' must be a string that is not empty",
       "Question 1: 'citation.target' must be a string that is not empty",
     ]);
   });
 
-  it('rejects a question with 3 choices', () => {
+  it('rejects a question with 1 plausible wrong choice', () => {
     const draft = loadDraft();
-    draft.questions[0].choices.pop();
+    draft.questions[0].plausibleWrong.pop();
     assert.deepEqual(validateDraft(draft), [
-      'Question 1: expected exactly 4 choices, found 3',
+      "Question 1: 'plausibleWrong' must be an array of 2 choices, found 1 item",
     ]);
   });
 
-  it('rejects wrong counts of each choice kind', () => {
+  it('rejects the old choices list with kinds', () => {
     const draft = loadDraft();
-    const choice = draft.questions[0].choices[0];
-    choice.kind = 'obvious-wrong';
-    choice.rationale = 'Now it is wrong.';
+    const question = draft.questions[0];
+    question.choices = [{ text: question.answer, kind: 'correct' }];
+    delete question.answer;
     assert.deepEqual(validateDraft(draft), [
-      "Question 1: expected exactly 1 'correct' choice, found 0",
-      "Question 1: expected exactly 1 'obvious-wrong' choice, found 2",
+      "Question 1: unknown field 'choices'",
+      "Question 1: 'answer' must be a string that is not empty",
     ]);
   });
 
-  it('rejects an unknown choice kind', () => {
+  it('rejects a missing rationale and an unknown field on a wrong choice', () => {
     const draft = loadDraft();
-    draft.questions[0].choices[3].kind = 'maybe';
+    delete draft.questions[6].obviousWrong.rationale;
+    draft.questions[6].plausibleWrong[1].kind = 'plausible-wrong';
     assert.deepEqual(validateDraft(draft), [
-      "Question 1, Choice 4: 'kind' must be 'correct', 'obvious-wrong', or 'plausible-wrong', " +
-        "found 'maybe'",
-      "Question 1: expected exactly 2 'plausible-wrong' choices, found 1",
-    ]);
-  });
-
-  it('rejects a rationale on the correct choice and a missing rationale on a wrong choice', () => {
-    const draft = loadDraft();
-    draft.questions[6].choices[0].rationale = 'Repeats the explanation.';
-    delete draft.questions[6].choices[1].rationale;
-    assert.deepEqual(validateDraft(draft), [
-      "Question 7, Choice 1 ('correct'): remove 'rationale', because 'explanation' covers " +
-        'the correct choice',
-      "Question 7, Choice 2 ('obvious-wrong'): missing required 'rationale'",
+      "Question 7: 'obviousWrong.rationale' must be a string that is not empty",
+      "Question 7: unknown field 'plausibleWrong[1].kind'",
     ]);
   });
 
   it('rejects a correct choice that is more than 20% longer than every wrong choice', () => {
     const draft = loadDraft();
-    const choices = draft.questions[1].choices;
-    choices[0].text = 'In the task queue, until the call stack is empty';
-    choices[1].text = 'In the browser address bar';
-    choices[2].text = 'In the microtask queue';
-    choices[3].text = 'On the call stack, below';
+    const question = draft.questions[1];
+    question.answer = 'In the task queue, until the call stack is empty';
+    question.obviousWrong.text = 'In the browser address bar';
+    question.plausibleWrong[0].text = 'In the microtask queue';
+    question.plausibleWrong[1].text = 'On the call stack, below';
     assert.deepEqual(validateDraft(draft), [
       'Question 2: the correct choice has 48 characters, and the longest wrong choice has 26. ' +
         'Make the lengths closer, so that the length does not show the answer',
     ]);
-    choices[1].text = 'In the browser address bar, next to the URL';
+    question.obviousWrong.text = 'In the browser address bar, next to the URL';
     assert.deepEqual(validateDraft(draft), []);
   });
 
@@ -206,19 +194,25 @@ describe('validateDraft', () => {
     ]);
   });
 
-  it('reports a choice that is not an object and does not throw', () => {
+  it('reports a wrong choice that is not an object and does not throw', () => {
     const draft = loadDraft();
-    draft.questions[0].choices[1] = null;
+    draft.questions[0].obviousWrong = null;
+    draft.questions[0].plausibleWrong[0] = 'Only text';
     assert.deepEqual(validateDraft(draft), [
-      'Question 1, Choice 2: the choice must be a JSON object',
-      "Question 1: expected exactly 1 'obvious-wrong' choice, found 0",
+      "Question 1: 'obviousWrong' must be an object with 'text' and 'rationale'",
+      "Question 1: 'plausibleWrong[0]' must be an object with 'text' and 'rationale'",
     ]);
   });
 
   it('rejects two choices with the same text', () => {
     const draft = loadDraft();
-    draft.questions[1].choices[3].text = draft.questions[1].choices[2].text;
-    assert.deepEqual(validateDraft(draft), ['Question 2: choices 3 and 4 have the same text']);
+    const question = draft.questions[1];
+    question.plausibleWrong[1].text = question.plausibleWrong[0].text;
+    question.obviousWrong.text = ` ${question.answer}`;
+    assert.deepEqual(validateDraft(draft), [
+      "Question 2: 'answer' and 'obviousWrong.text' have the same text",
+      "Question 2: 'plausibleWrong[0].text' and 'plausibleWrong[1].text' have the same text",
+    ]);
   });
 
   it('rejects bad line numbers and unknown citation fields', () => {
@@ -304,14 +298,19 @@ describe('quizIdOf', () => {
   });
 });
 
+/** Draft fields of the 4 choices, with the answer at index 0. */
+const CHOICE_FIELDS = ['answer', 'obviousWrong', 'plausibleWrong[0]', 'plausibleWrong[1]'];
+
 /**
- * Gives the draft index of each choice in page order, for each question.
+ * Gives the index in `CHOICE_FIELDS` of each choice in page order, for each question.
  *
  * @param {any} draft Valid draft.
- * @returns {number[][]} The draft indices.
+ * @returns {number[][]} The indices, where 0 is the answer.
  */
 function orders(draft) {
-  return placeChoices(draft).map((placed) => placed.map((item) => item.draftIndex));
+  return placeChoices(draft).map((placed) =>
+    placed.map((item) => CHOICE_FIELDS.indexOf(item.choice.field)),
+  );
 }
 
 describe('placeChoices', () => {
@@ -323,9 +322,12 @@ describe('placeChoices', () => {
     const draft = makeDraft(40);
     placeChoices(draft).forEach((placed, index) => {
       assert.deepEqual(placed.map((item) => item.letter), ['a', 'b', 'c', 'd']);
-      assert.deepEqual(placed.map((item) => item.draftIndex).sort(), [0, 1, 2, 3]);
+      assert.deepEqual(placed.map((item) => item.choice.field).sort(), [...CHOICE_FIELDS].sort());
+      const question = draft.questions[index];
+      const texts = [question.answer, question.obviousWrong.text];
+      texts.push(...question.plausibleWrong.map((/** @type {any} */ choice) => choice.text));
       for (const item of placed) {
-        assert.equal(item.choice, draft.questions[index].choices[item.draftIndex]);
+        assert.equal(item.choice.text, texts[CHOICE_FIELDS.indexOf(item.choice.field)]);
       }
     });
   });
@@ -371,7 +373,8 @@ function correctAnswers(draft) {
 describe('blindQuiz', () => {
   it('removes every field that shows the answer', () => {
     const text = JSON.stringify(blindQuiz(loadDraft()));
-    for (const field of ['"kind"', '"rationale"', '"explanation"']) {
+    const fields = ['"kind"', '"rationale"', '"explanation"', '"answer"', 'Wrong"'];
+    for (const field of fields) {
       assert.ok(!text.includes(field), `${field} is in the blind copy`);
     }
   });
@@ -438,7 +441,8 @@ describe('gradeAnswers', () => {
   it('reports a wrong choice, an ambiguous question, and a missing answer', () => {
     const draft = loadDraft();
     const file = correctAnswers(draft);
-    const obviousLetter = placeChoices(draft)[4].find((item) => item.draftIndex === 1)?.letter;
+    const placed = placeChoices(draft)[4];
+    const obviousLetter = placed.find((item) => item.choice.field === 'obviousWrong')?.letter;
     file.answers[4].choice = obviousLetter;
     file.answers[6] = { questionId: 7, choice: 'ambiguous', reason: 'Two choices are true.' };
     file.answers.pop();
@@ -450,9 +454,10 @@ describe('gradeAnswers', () => {
       report.failures.map(({ questionId, tier }) => [questionId, tier]),
       [[5, 3], [7, 4], [8, 4]],
     );
+    const obviousText = draft.questions[4].obviousWrong.text;
     assert.ok(
       report.failures[0].reason.includes(
-        `chose ${obviousLetter}, which is draft choice 2 ('obvious-wrong')`,
+        `chose ${obviousLetter}, which is 'obviousWrong': "${obviousText}"`,
       ),
       report.failures[0].reason,
     );
@@ -790,14 +795,14 @@ describe('main', () => {
   it('exits with 1 and lists the errors for an invalid draft or answer file', () => {
     const project = makeProject();
     const draft = loadDraft();
-    draft.questions[0].choices.pop();
+    draft.questions[0].plausibleWrong.pop();
     writeFileSync(join(project.cwd, draftPath), JSON.stringify(draft));
     assert.deepEqual(project.run([draftPath, '--blind']), {
       code: 1,
       stdout: '',
       stderr:
         'VALIDATION ERROR in quizzes/js-event-loop/quiz.json:\n' +
-        '- Question 1: expected exactly 4 choices, found 3\n',
+        "- Question 1: 'plausibleWrong' must be an array of 2 choices, found 1 item\n",
     });
 
     const other = makeProject();

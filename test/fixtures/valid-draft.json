@@ -6,21 +6,18 @@
     {
       "tier": 1,
       "prompt": "What does the JavaScript **call stack** hold?",
-      "choices": [
-        { "text": "The frames of the functions that are running now", "kind": "correct" },
-        {
-          "text": "The CSS rules that the browser applies to the page",
-          "kind": "obvious-wrong",
-          "rationale": "CSS rules live in the CSSOM, not in the call stack."
-        },
+      "answer": "The frames of the functions that are running now",
+      "obviousWrong": {
+        "text": "The CSS rules that the browser applies to the page",
+        "rationale": "CSS rules live in the CSSOM, not in the call stack."
+      },
+      "plausibleWrong": [
         {
           "text": "The callbacks that wait for the next event loop turn",
-          "kind": "plausible-wrong",
           "rationale": "Waiting callbacks live in a task queue until the stack is empty."
         },
         {
           "text": "The objects that the garbage collector can free",
-          "kind": "plausible-wrong",
           "rationale": "Objects live in the heap. The stack holds frames."
         }
       ],
@@ -30,21 +27,18 @@
     {
       "tier": 1,
       "prompt": "Where does a callback from `setTimeout` wait before it runs?",
-      "choices": [
-        { "text": "In the task queue", "kind": "correct" },
-        {
-          "text": "In the browser address bar",
-          "kind": "obvious-wrong",
-          "rationale": "The address bar shows the URL. It does not hold callbacks."
-        },
+      "answer": "In the task queue",
+      "obviousWrong": {
+        "text": "In the browser address bar",
+        "rationale": "The address bar shows the URL. It does not hold callbacks."
+      },
+      "plausibleWrong": [
         {
           "text": "In the microtask queue",
-          "kind": "plausible-wrong",
           "rationale": "Promise reactions use the microtask queue. Timers use the task queue."
         },
         {
           "text": "On the call stack, below the current frame",
-          "kind": "plausible-wrong",
           "rationale": "A timer callback is not on the stack until the event loop picks it."
         }
       ],
@@ -54,21 +48,18 @@
     {
       "tier": 2,
       "prompt": "When does the event loop run the microtasks?",
-      "choices": [
-        { "text": "After the current task ends, before the next task starts", "kind": "correct" },
-        {
-          "text": "Only when the user reloads the page",
-          "kind": "obvious-wrong",
-          "rationale": "A reload starts a new page. Microtasks run on each turn."
-        },
+      "answer": "After the current task ends, before the next task starts",
+      "obviousWrong": {
+        "text": "Only when the user reloads the page",
+        "rationale": "A reload starts a new page. Microtasks run on each turn."
+      },
+      "plausibleWrong": [
         {
           "text": "After all tasks in the task queue are done",
-          "kind": "plausible-wrong",
           "rationale": "Microtasks do not wait for the task queue to empty."
         },
         {
           "text": "At the same time as the current task, on a second thread",
-          "kind": "plausible-wrong",
           "rationale": "The event loop runs on one thread. Microtasks do not run in parallel."
         }
       ],
@@ -78,24 +69,18 @@
     {
       "tier": 2,
       "prompt": "Which statement about `await` in an `async` function is true?",
-      "choices": [
-        {
-          "text": "It pauses the function and resumes it in a microtask",
-          "kind": "correct"
-        },
-        {
-          "text": "It deletes the function from memory",
-          "kind": "obvious-wrong",
-          "rationale": "The function keeps its state while it waits."
-        },
+      "answer": "It pauses the function and resumes it in a microtask",
+      "obviousWrong": {
+        "text": "It deletes the function from memory",
+        "rationale": "The function keeps its state while it waits."
+      },
+      "plausibleWrong": [
         {
           "text": "It blocks the thread until the promise settles",
-          "kind": "plausible-wrong",
           "rationale": "Other code can run while the function waits."
         },
         {
           "text": "It resumes the function in a new task from the task queue",
-          "kind": "plausible-wrong",
           "rationale": "The continuation is a microtask, not a task."
         }
       ],
@@ -105,21 +90,18 @@
     {
       "tier": 3,
       "prompt": "What does this code print?\n\n```js\nsetTimeout(() => console.log('A'), 0);\nPromise.resolve().then(() => console.log('B'));\nconsole.log('C');\n```",
-      "choices": [
-        { "text": "`C`, then `B`, then `A`", "kind": "correct" },
-        {
-          "text": "Nothing, because the code has a syntax error",
-          "kind": "obvious-wrong",
-          "rationale": "The code is valid JavaScript."
-        },
+      "answer": "`C`, then `B`, then `A`",
+      "obviousWrong": {
+        "text": "Nothing, because the code has a syntax error",
+        "rationale": "The code is valid JavaScript."
+      },
+      "plausibleWrong": [
         {
           "text": "`C`, then `A`, then `B`",
-          "kind": "plausible-wrong",
           "rationale": "The promise reaction is a microtask, so it runs before the timer task."
         },
         {
           "text": "`A`, then `B`, then `C`",
-          "kind": "plausible-wrong",
           "rationale": "A delay of 0 still queues a task. The synchronous log runs first."
         }
       ],
@@ -129,21 +111,18 @@
     {
       "tier": 3,
       "prompt": "A microtask queues a new microtask each time it runs. What occurs?",
-      "choices": [
-        { "text": "The page stops rendering and stops handling events", "kind": "correct" },
-        {
-          "text": "The browser closes the tab to protect the user",
-          "kind": "obvious-wrong",
-          "rationale": "The browser does not close the tab for this."
-        },
+      "answer": "The page stops rendering and stops handling events",
+      "obviousWrong": {
+        "text": "The browser closes the tab to protect the user",
+        "rationale": "The browser does not close the tab for this."
+      },
+      "plausibleWrong": [
         {
           "text": "The event loop runs one task between each microtask",
-          "kind": "plausible-wrong",
           "rationale": "The loop empties the microtask queue before it runs a task."
         },
         {
           "text": "The engine moves the extra microtasks to the task queue",
-          "kind": "plausible-wrong",
           "rationale": "The engine does not move microtasks between queues."
         }
       ],
@@ -153,24 +132,18 @@
     {
       "tier": 4,
       "prompt": "Why can a long loop of `await` calls on promises that are already resolved still freeze the page?",
-      "choices": [
-        {
-          "text": "Each resume is a microtask, so no task or render can run between them",
-          "kind": "correct"
-        },
-        {
-          "text": "Because `await` sends a network request each time",
-          "kind": "obvious-wrong",
-          "rationale": "`await` does not make network requests."
-        },
+      "answer": "Each resume is a microtask, so no task or render can run between them",
+      "obviousWrong": {
+        "text": "Because `await` sends a network request each time",
+        "rationale": "`await` does not make network requests."
+      },
+      "plausibleWrong": [
         {
           "text": "Because each `await` creates a new thread that competes for the CPU",
-          "kind": "plausible-wrong",
           "rationale": "JavaScript on the page runs on one thread."
         },
         {
           "text": "Because resolved promises go to the task queue in a random order",
-          "kind": "plausible-wrong",
           "rationale": "Reactions use the microtask queue in a fixed order."
         }
       ],
@@ -180,24 +153,18 @@
     {
       "tier": 4,
       "prompt": "You must process 1 million items without a frozen page. Which design is correct?",
-      "choices": [
-        {
-          "text": "Process a batch, then schedule the next batch as a new task",
-          "kind": "correct"
-        },
-        {
-          "text": "Delete the items that the page does not show",
-          "kind": "obvious-wrong",
-          "rationale": "Deleting data does not do the work that the task requires."
-        },
+      "answer": "Process a batch, then schedule the next batch as a new task",
+      "obviousWrong": {
+        "text": "Delete the items that the page does not show",
+        "rationale": "Deleting data does not do the work that the task requires."
+      },
+      "plausibleWrong": [
         {
           "text": "Process each item in its own `Promise.resolve().then()` callback",
-          "kind": "plausible-wrong",
           "rationale": "All the callbacks are microtasks, so rendering still waits for all of them."
         },
         {
           "text": "Wrap the loop in an `async` function with no `await`",
-          "kind": "plausible-wrong",
           "rationale": "An `async` function with no `await` runs to the end in one go."
         }
       ],

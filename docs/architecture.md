@@ -69,19 +69,19 @@ The skill transforms resources into self-contained HTML slides through five sequ
    questions into `quizzes/<slug>/quiz.json` conforming to the `QuizDraft` schema. It creates
    four equal tiers: Fundamentals, Core, Advanced, and Expert. Each question has one correct
    choice, one obvious wrong choice, and two plausible wrong choices.
-3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind`
-   to generate `quizzes/<slug>/quiz.blind.json`. Code removes `kind`, `rationale`, and
-   `explanation`, and shuffles choices. The agent starts an independent sub-agent with read
-   access to the resource, giving it the path of `quiz.blind.json` and instructing it never to
-   read any other path in `quizzes/`. The sub-agent returns its answers in its final message as
-   JSON matching `SubAgentAnswerFile`. The agent writes that JSON to `quizzes/<slug>/answers.json`
-   and runs
-   `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json`. Code
-   maps shuffled letters back to draft choices and reports failed questions. The agent repairs
-   failed questions. After any edit, the agent re-runs `--blind` and re-verifies all questions.
-   After two failed repair rounds, the agent replaces the question with a new question of the same
-   tier. If the replacement question also fails after two repair rounds, the agent removes the
-   question, reports the removal to the user, and proceeds.
+3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind` to
+   generate `quizzes/<slug>/quiz.blind.json`. Code keeps only the prompt, the citation, and the four
+   choice texts of each question, so no field shows the answer, and shuffles choices. The agent
+   starts an independent sub-agent with read access to the resource, giving it the path of
+   `quiz.blind.json` and instructing it never to read any other path in `quizzes/`. The sub-agent
+   returns its answers in its final message as JSON matching `SubAgentAnswerFile`. The agent writes
+   that JSON to `quizzes/<slug>/answers.json` and runs `node <skill-dir>/build.mjs
+   quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json`. Code maps shuffled letters back to
+   draft choices and reports failed questions. The agent repairs failed questions. After any edit,
+   the agent re-runs `--blind` and re-verifies all questions. After two failed repair rounds, the
+   agent replaces the question with a new question of the same tier. If the replacement question
+   also fails after two repair rounds, the agent removes the question, reports the removal to the
+   user, and proceeds.
 4. **Build:** When every question passes, the same `--grade` command builds the page, so the
    agent runs no separate build command. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
@@ -114,20 +114,20 @@ The architecture separates the authoring draft from the compiled page data.
 |---------------------|               +---------------------+
 | tier: 1 | 2 | 3 | 4 |               |    BuiltQuestion    |
 | prompt: string      |               |---------------------|
-| explanation: string |               | id: number          |
-| citation: {...}     |               | tier: 1 | 2 | 3 | 4 |
-| choices: [4 items]  |               | tierName: string    |
-+---------------------+               | promptHtml: string  |
-           │                          | explanationHtml:... |
-           ▼                          | citation: {...}     |
-+---------------------+               | choices: [4 items]  |
-|     DraftChoice     |               +---------------------+
-|---------------------|                          │
-| text: string        |                          ▼
-| kind: ChoiceKind    |               +---------------------+
-| rationale?: string  |               |     BuiltChoice     |
-+---------------------+               |---------------------|
-                                      | id: "a"|"b"|"c"|"d" |
+| answer: string      |               | id: number          |
+| obviousWrong: {...} |               | tier: 1 | 2 | 3 | 4 |
+| plausibleWrong: [2] |               | tierName: string    |
+| explanation: string |               | promptHtml: string  |
+| citation: {...}     |               | explanationHtml:... |
++---------------------+               | citation: {...}     |
+           │                          | choices: [4 items]  |
+           ▼                          +---------------------+
++---------------------+                          │
+|     WrongChoice     |                          ▼
+|---------------------|               +---------------------+
+| text: string        |               |     BuiltChoice     |
+| rationale: string   |               |---------------------|
++---------------------+               | id: "a"|"b"|"c"|"d" |
                                       | textHtml: string    |
                                       | kind: ChoiceKind    |
                                       | rationaleHtml?: ... |
@@ -150,13 +150,11 @@ export interface DraftCitation {
   page?: number;
 }
 
-export interface DraftChoice {
+export interface WrongChoice {
   /** Option text in plain text or Markdown */
   text: string;
-  /** Kind classification */
-  kind: ChoiceKind;
-  /** Rationale explaining error (present only on wrong choices) */
-  rationale?: string;
+  /** Reason that the choice is wrong, in Markdown */
+  rationale: string;
 }
 
 export interface DraftQuestion {
@@ -164,8 +162,12 @@ export interface DraftQuestion {
   tier: 1 | 2 | 3 | 4;
   /** Markdown question prompt */
   prompt: string;
-  /** Exactly four choices */
-  choices: DraftChoice[];
+  /** Text of the one correct choice, in Markdown */
+  answer: string;
+  /** Wrong choice that basic domain knowledge rules out */
+  obviousWrong: WrongChoice;
+  /** Exactly two wrong choices that model real mistakes */
+  plausibleWrong: [WrongChoice, WrongChoice];
   /** Detailed explanation for why the correct choice is right */
   explanation: string;
   /** Document citation */
@@ -329,10 +331,10 @@ Validation runs first for all three commands. If the draft or answers file fails
 the command reports errors to standard error and exits with code 1 before performing subsequent
 actions.
 
-When passed `--blind`, `build.mjs` validates the draft, removes `kind`, `rationale`, and
-`explanation` fields from all choices and questions, shuffles choices with the seeded generator,
-and produces `quizzes/<slug>/quiz.blind.json` (`BlindQuiz`) in the draft directory. This prevents
-answer leakage to the verification sub-agent.
+When passed `--blind`, `build.mjs` validates the draft, keeps only the prompt, the citation, and
+the four choice texts of each question, shuffles choices with the seeded generator, and produces
+`quizzes/<slug>/quiz.blind.json` (`BlindQuiz`) in the draft directory. This prevents answer
+leakage to the verification sub-agent.
 
 When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent answers
 (`SubAgentAnswerFile`) against the draft key. A relative path resolves from the current working
@@ -381,19 +383,19 @@ Before emitting HTML, `build.mjs` checks:
    questions for each tier, with the remainder in the earlier tiers) passes this rule. A quiz that
    lost questions after the replacement limit passes only if its tier sizes still meet this rule.
 6. The prompt, each choice text, the explanation, and the citation target must not be empty.
-7. Every question must contain exactly four choices, and no two choices may have identical text.
-8. Exactly one choice per question must have `kind: 'correct'`.
-9. Exactly one choice per question must have `kind: 'obvious-wrong'`.
-10. Exactly two choices per question must have `kind: 'plausible-wrong'`.
-11. The correct choice must not define `rationale`.
-12. All three wrong choices must define non-empty `rationale` strings.
-13. If `lineStart` and `lineEnd` are present in a citation, both must be positive integers of 1 or
-    more, and `lineEnd` must not be less than `lineStart`. When `page` is present, it must be a
-    positive integer of 1 or more.
-14. Unknown fields in draft objects trigger validation errors to detect property typos.
-15. The correct choice must not exceed 1.2 times the character count of the longest wrong
+7. Every question has exactly four choices: `answer` is a string, `obviousWrong` is an object
+   with `text` and `rationale`, and `plausibleWrong` is an array of exactly two such objects. Each
+   field holds one role, so a draft cannot hold a wrong count of a kind, and `build.mjs` derives
+   the `ChoiceKind` of each choice from its field.
+8. No two of the four choice texts may be identical after trimming spaces.
+9. If `lineStart` and `lineEnd` are present in a citation, both must be positive integers of 1 or
+   more, and `lineEnd` must not be less than `lineStart`. When `page` is present, it must be a
+   positive integer of 1 or more.
+10. Unknown fields in draft objects trigger validation errors to detect property typos. The old
+    `choices` list with `kind` fields fails this rule.
+11. The correct choice must not exceed 1.2 times the character count of the longest wrong
     choice (after trimming spaces), so that choice length does not reveal the answer.
-16. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
+12. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
     questions. A learner who always picks the longest choice then does no better than a random
     guess. The error lists the question numbers, so that the agent fixes them in one pass.
 
@@ -415,8 +417,8 @@ with code 1:
 
 ```text
 VALIDATION ERROR in quizzes/auth/quiz.json:
-- Question 3: expected exactly one 'correct' choice, found 0
-- Question 7, Choice 2 ('obvious-wrong'): missing required 'rationale'
+- Question 3: 'plausibleWrong' must be an array of 2 choices, found 1 item
+- Question 7: 'obviousWrong.rationale' must be a string that is not empty
 ```
 
 ---
@@ -898,8 +900,9 @@ The automated test suite organizes tests into fourteen groups:
 
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
    non-objects, missing or empty fields, slugs that are not kebab-case, invalid or descending tiers,
-   tier size disparities greater than 1, choice count violations, choice kind distribution errors,
-   misplaced rationales, duplicate choice text, bad citation lines or pages, a correct choice
+   tier size disparities greater than 1, a wrong count of plausible wrong choices, wrong choices
+   that are not objects, missing rationales, the old `choices` list, duplicate choice text across
+   the four fields, bad citation lines or pages, a correct choice
    over 1.2 times the longest wrong choice, and a correct choice that is the longest choice in
    more than a quarter of the questions.
 2. **`renderMarkdown`:** Verifies Markdown compilation. Tests verify HTML entity escaping, inline
@@ -910,8 +913,9 @@ The automated test suite organizes tests into fourteen groups:
 4. **`placeChoices`:** Verifies deterministic choice placement. Tests confirm reproducible
    placement, one use of each letter, distractor order shuffling, and answer slot balance within
    1 question across counts from 1 to 40.
-5. **`blindQuiz`:** Verifies blind check generation. Tests verify removal of `kind`, `rationale`,
-   and `explanation` fields while preserving the displayed choice order.
+5. **`blindQuiz`:** Verifies blind check generation. Tests verify that no `kind`, `rationale`,
+   `explanation`, `answer`, or wrong choice field remains, and that the choices keep the displayed
+   order.
 6. **`validateAnswers`:** Verifies sub-agent answer payloads. Tests accept valid answer objects and
    reject invalid choice letters, duplicate answers, out-of-bounds IDs, missing reasons for
    ambiguous choices, and unknown fields.
