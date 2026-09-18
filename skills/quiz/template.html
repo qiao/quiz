@@ -468,11 +468,14 @@ h2 {
   overflow-wrap: anywhere;
 }
 
-/* The keys note lists one binding per item. The items sit in a row and wrap between items. */
+/*
+ * The keys note lists one binding per item. The items sit in columns of at least 240 px, so the
+ * items line up when the list wraps.
+ */
 .keys {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vbg-space-1) var(--vbg-space-4);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--vbg-space-1) var(--vbg-space-6);
   margin: 0;
   padding: 0;
   list-style: none;

@@ -527,10 +527,10 @@ The deck contains three distinct slide views:
    same width and sit in one row, or in two rows of two on a screen up to 600 px wide. The
    buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an optional "Restart"
    button. The notes are a small description list with two rows: "Source" gives the resource
-   source, and "Keys" lists the key bindings as a wrapped row (displayed only on devices with a
-   pointer that can hover). On the title slide, the bar shows no title, because the heading
-   carries it. On the title and end slides, the bar shows the answered count only when at least
-   one question has an answer.
+   source, and "Keys" lists the key bindings in columns of at least 240 px (displayed only on
+   devices with a pointer that can hover). On the title slide, the bar shows no title, because
+   the heading carries it. On the title and end slides, the bar shows the answered count only
+   when at least one question has an answer.
 2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
    block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,
