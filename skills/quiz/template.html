@@ -25,6 +25,10 @@
   box-sizing: border-box;
 }
 
+/*
+ * The cursor is an arrow on every surface, as in a slide deck, so it does not change to a text
+ * cursor over each label. A control shows a hand, and a disabled button shows not-allowed.
+ */
 html,
 body {
   margin: 0;
@@ -33,6 +37,7 @@ body {
   font-family: var(--vbg-font-sans);
   font-size: var(--vbg-type-body);
   line-height: 1.5;
+  cursor: default;
   -webkit-text-size-adjust: 100%;
 }
 

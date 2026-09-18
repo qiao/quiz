@@ -860,6 +860,9 @@ Transitions follow `prefers-reduced-motion` settings:
      the score band line, and a 2.4-second confetti drop for a 100% score.
 - **Focus rings:** All interactive controls display a visible focus indicator using
   `:focus-visible` with a 2-pixel solid outline and a 2-pixel offset.
+- **Cursor:** The page sets `cursor: default` on the body, so the cursor is an arrow on every
+  text and surface, as in a slide deck. Buttons, links, and open choices show a hand. A disabled
+  button shows `not-allowed`. An answered choice shows the arrow. Text selection still works.
 
 ### Accessibility structure
 
