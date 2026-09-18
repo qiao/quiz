@@ -545,10 +545,11 @@ The deck contains three distinct slide views:
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
    text for screen readers. Shows a score band summary line, score breakdown per tier (each row
-   has an 8 px dot in the band color of that tier, hidden from screen readers), action
-   buttons ("Try the missed questions again" and "Restart") placed before the missed question list,
-   and links to missed questions. Reaching the end slide from the last question animates the ring
-   fill and count-up over 800 ms, and drops confetti after the ring closes for a 100% score.
+   has an 8 px dot in the band color of that tier, hidden from screen readers), and action
+   buttons ("Try the missed questions again" and "Restart"). The slide lists no missed
+   questions. The retry button and the "Back" button on the question slides reach them. Reaching
+   the end slide from the last question animates the ring fill and count-up over 800 ms, and
+   drops confetti after the ring closes for a 100% score.
 
 ### Keyboard bindings
 
@@ -580,8 +581,8 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
 3. **Retry missed questions:** Clicking "Retry Missed Questions" keeps all questions in the deck
    and preserves correct answers in `answers`. It deletes only the keys for incorrect questions
    from `answers`, and navigates to the first missed question slide. When the learner returns
-   to the end slide, the view recalculates and displays the updated score, updated tier breakdown,
-   and any remaining missed questions.
+   to the end slide, the view recalculates and displays the updated score and the updated tier
+   breakdown.
 
 ### Slide transitions and feedback
 

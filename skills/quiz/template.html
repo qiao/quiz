@@ -405,15 +405,6 @@ h2 {
   padding: 0;
 }
 
-.list {
-  margin: var(--vbg-space-3) 0 0;
-  padding-left: var(--vbg-space-5);
-}
-
-.list li + li {
-  margin-top: var(--vbg-space-1);
-}
-
 /*
  * The tier strip on the cover: one segment per tier, in tier order. The segments have the same
  * width, so the strip reads as four steps, and the count under each name gives the size.
@@ -1440,19 +1431,6 @@ kbd {
         ]);
       });
 
-    const missedList = element(
-      'ul',
-      { class: 'list' },
-      missed.map((question) => {
-        const blocks = Array.from(element('div', { html: question.promptHtml }).children);
-        const text = blocks.map((block) => block.textContent.replace(/\s+/g, ' ').trim());
-        const long = text.join(' ');
-        const short = long.length > 90 ? `${long.slice(0, 89).replace(/\s+\S*$/, '')}…` : long;
-        const linkText = `Question ${question.id}: ${short}`;
-        return element('li', {}, [element('a', { href: `#${question.id}`, text: linkText })]);
-      }),
-    );
-
     showSlide([
       heading,
       element('p', { class: `lede ${live ? 'is-rising' : ''}`.trim(), text: scoreLine(percent) }),
@@ -1469,8 +1447,6 @@ kbd {
         missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
         button('Restart', 'secondary', restart),
       ]),
-      missed.length ? element('h2', { text: 'Missed questions' }) : null,
-      missed.length ? missedList : null,
     ]);
     if (live) {
       const fill = /** @type {SVGElement} */ (ring.querySelector('.ring-fill'));
