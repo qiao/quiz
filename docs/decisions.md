@@ -28,7 +28,7 @@ This document answers: what did we decide, and what did we reject?
 | D5 | Focus | Optional resource and focus | Supports zero-config and targeted runs |
 | D6 | Clarification | Ask only when input is invalid | Reduces interactive CLI friction |
 | D7 | Count | Default 20, reduce if small | Prevents trivial filler questions |
-| D8 | Difficulty | Four progressive tiers | Builds mastery from recall to analysis |
+| D8 | Difficulty | Three progressive tiers | Builds mastery from recall to analysis |
 | D9 | Choice rules | Seven structural rules | Removes guessing shortcuts |
 | D10 | Explanations | Correct plus distractors | Explains why wrong options fail |
 | D11 | Verification | Blind check sub-agent | Detects ambiguous and duplicate answers |
@@ -147,17 +147,23 @@ This document answers: what did we decide, and what did we reject?
   Rejected because user prompts must have control over quiz length.
 
 ### D8: Difficulty progression
-- **Decision:** Four balanced tiers: Fundamentals, Core, Advanced, and Expert. Enforce a strict
-  no-trivia rule. If a question fails blind verification after two repair rounds, the agent
+- **Decision:** Three tiers: Fundamentals, Core, and Advanced. Half of the questions go to
+  Fundamentals, and each higher tier takes half of what is left, so a quiz of 20 questions is 10,
+  5, and 5. Advanced covers both the edges of the main flow and the main design choices. Enforce a
+  strict no-trivia rule. If a question fails blind verification after two repair rounds, the agent
   authors one replacement question of the same tier. If that replacement also fails after two
   repair rounds, the agent removes the question, updates the question count, and notifies the
-  user. Tier sizes must differ by at most 1 question across all four tiers.
+  user.
 - **Reason:** Gradual progression builds confidence before introducing complex code tracing and
-  architectural analysis. The no-trivia rule prevents questions about line numbers or arbitrary
-  variable names. One replacement attempt limits execution loops. Allowing tier sizes to differ by
-  at most 1 handles unresolvable questions without failing the build.
+  architectural analysis. Half of the questions test the part of the resource that every user
+  meets, so a learner who knows only the basics still finishes most of the quiz. The no-trivia
+  rule prevents questions about line numbers or arbitrary variable names. One replacement attempt
+  limits execution loops.
 - **Rejected alternative:** Uniform difficulty across all questions.
   Rejected because random difficulty spikes disorient learners.
+- **Rejected alternative:** Four equal tiers, with Expert as a separate top tier. Rejected because
+  a quarter of the questions on design reasons crowded out the basics, and many resources state
+  too few design reasons to fill that tier.
 - **Rejected alternative:** Free-form difficulty labels without strict tier definitions.
   Rejected because structured tiers allow the final score summary to show mastery by category.
 

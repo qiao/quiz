@@ -2,7 +2,7 @@
 
 [![test][badge]][workflow]
 
-![The quiz skill reads a repo, writes questions in four tiers, and builds a quiz page][demo]
+![The quiz skill reads a repo, writes questions in three tiers, and builds a quiz page][demo]
 
 [badge]: https://github.com/qiao/quiz/actions/workflows/test.yml/badge.svg
 [workflow]: https://github.com/qiao/quiz/actions/workflows/test.yml
@@ -13,7 +13,7 @@ from codebases, documentation sites, files, or technical topics. Developers run 
 their knowledge. They can also share the slides with others.
 
 The skill runs in coding agents that support skills, such as Claude Code, Codex, and OpenCode. It
-organizes questions into four difficulty tiers and verifies them with an independent blind
+organizes questions into three difficulty tiers and verifies them with an independent blind
 sub-agent. Then it compiles one self-contained HTML file that runs offline.
 
 ---

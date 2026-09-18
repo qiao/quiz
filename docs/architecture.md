@@ -67,7 +67,7 @@ The skill transforms resources into self-contained HTML slides through five sequ
 2. **Draft:** The agent selects an unused folder `quizzes/<slug>` before authoring. If
    `quizzes/<slug>` exists, the agent increments the suffix to `<slug>-2`. The agent authors
    questions into `quizzes/<slug>/quiz.json` conforming to the `QuizDraft` schema. It creates
-   four equal tiers: Fundamentals, Core, Advanced, and Expert. Each question has one correct
+   three tiers: Fundamentals, Core, and Advanced. Each question has one correct
    choice, one obvious wrong choice, and two plausible wrong choices.
 3. **Blind Check:** The agent runs `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind` to
    generate `quizzes/<slug>/quiz.blind.json`. Code keeps only the prompt, the citation, and the four
@@ -115,9 +115,9 @@ The architecture separates the authoring draft from the compiled page data.
 +---------------------+                          ▼
 |    DraftQuestion    |               +---------------------+
 |---------------------|               |    BuiltQuestion    |
-| tier: 1 | 2 | 3 | 4 |               |---------------------|
+| tier: 1 | 2 | 3     |               |---------------------|
 | prompt: string      |               | id: number          |
-| answer: string      |               | tier: 1 | 2 | 3 | 4 |
+| answer: string      |               | tier: 1 | 2 | 3     |
 | obviousWrong: {...} |               | tierName: string    |
 | plausibleWrong: [2] |               | promptHtml: string  |
 | explanation: string |               | explanationHtml:... |
@@ -160,8 +160,8 @@ export interface WrongChoice {
 }
 
 export interface DraftQuestion {
-  /** Difficulty tier from 1 to 4 */
-  tier: 1 | 2 | 3 | 4;
+  /** Difficulty tier from 1 to 3 */
+  tier: 1 | 2 | 3;
   /** Markdown question prompt */
   prompt: string;
   /** Text of the one correct choice, in Markdown */
@@ -217,9 +217,9 @@ export interface BuiltQuestion {
   /** One-based sequence number */
   id: number;
   /** Difficulty tier */
-  tier: 1 | 2 | 3 | 4;
+  tier: 1 | 2 | 3;
   /** Tier display name */
-  tierName: 'Fundamentals' | 'Core' | 'Advanced' | 'Expert';
+  tierName: 'Fundamentals' | 'Core' | 'Advanced';
   /** Rendered safe HTML prompt */
   promptHtml: string;
   /** Exactly four choices with balanced positions */
@@ -255,8 +255,8 @@ export interface BlindChoice {
 export interface BlindQuestion {
   /** One-based sequence number matching draft position */
   id: number;
-  /** Difficulty tier from 1 to 4 */
-  tier: 1 | 2 | 3 | 4;
+  /** Difficulty tier from 1 to 3 */
+  tier: 1 | 2 | 3;
   /** Markdown question prompt */
   prompt: string;
   /** Exactly four choices shuffled deterministically */
@@ -293,8 +293,8 @@ export interface SubAgentAnswerFile {
 export interface GradeFailure {
   /** One-based question sequence number */
   questionId: number;
-  /** Difficulty tier from 1 to 4 */
-  tier: 1 | 2 | 3 | 4;
+  /** Difficulty tier from 1 to 3 */
+  tier: 1 | 2 | 3;
   /** Diagnosis explaining why verification failed */
   reason: string;
 }
@@ -383,11 +383,13 @@ Before emitting HTML, `build.mjs` checks:
 2. `core` must be an array of 5 to 10 strings that are not empty. The lines name the core of
    the resource, and every question comes from them (D29).
 3. `questions` array must contain at least one question.
-4. Every question must have `tier` in `[1, 2, 3, 4]`.
+4. Every question must have `tier` in `[1, 2, 3]`.
 5. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
-6. The sizes of the four tiers differ by at most 1 question. The D8 split (`Math.floor(N / 4)`
-   questions for each tier, with the remainder in the earlier tiers) passes this rule. A quiz that
-   lost questions after the replacement limit passes only if its tier sizes still meet this rule.
+6. The sizes of the three tiers match the D8 split for the question count. `tierTargets(N)`
+   gives `Math.ceil(N / 2)` questions to tier 1, half of the rest to tier 2, and the remainder to
+   tier 3, so 20 questions give 10, 5, and 5. The error names the correct sizes. A quiz that lost
+   questions after the replacement limit passes only when its tier sizes match the split for the
+   new count.
 7. The prompt, each choice text, the explanation, and the citation target must not be empty.
 8. Every question has exactly four choices: `answer` is a string, `obviousWrong` is an object
    with `text` and `rationale`, and `plausibleWrong` is an array of exactly two such objects. Each
@@ -750,7 +752,7 @@ The agent asks a clarifying question before authoring when:
 
 `skills/quiz/references/question-rules.md` holds the single canonical source of question authoring
 rules. The agent reads this file during Phase 2. The file specifies:
-- Progressive tiers from Fundamentals to Expert (D8).
+- Progressive tiers from Fundamentals to Advanced (D8).
 - Core focus: a core list before the draft, and the regular-user test for each question (D29).
 - The prohibition on trivia such as arbitrary numbers or variable names.
 - Choice composition: 1 correct, 1 obvious wrong, and 2 plausible wrong (D9).
@@ -929,7 +931,8 @@ The automated test suite organizes tests into fourteen groups:
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
    non-objects, missing or empty fields, slugs that are not kebab-case, a core list that is
    missing, too short, too long, or not text, invalid or descending tiers,
-   tier size disparities greater than 1, a wrong count of plausible wrong choices, wrong choices
+   tier sizes that do not match the D8 split, a wrong count of plausible wrong choices, wrong
+   choices
    that are not objects, missing rationales, the old `choices` list, duplicate choice text across
    the four fields, bad citation lines or pages, a correct choice
    over 1.2 times the longest wrong choice, and a correct choice that is the longest choice in
@@ -937,38 +940,41 @@ The automated test suite organizes tests into fourteen groups:
 2. **`renderMarkdown`:** Verifies Markdown compilation. Tests verify HTML entity escaping, inline
    code, bold, italics, fenced code blocks with language tags, unclosed fences, paragraphs, and
    lists.
-3. **`quizIdOf`:** Verifies quiz identifier derivation. Tests verify slug prefix format, 8-character
+3. **`tierTargets`:** Verifies the tier split. Tests confirm 10, 5, and 5 questions for the
+   default quiz of 20, the shape for other counts, and a total that matches the question count
+   for every count up to 100.
+4. **`quizIdOf`:** Verifies quiz identifier derivation. Tests verify slug prefix format, 8-character
    hex content hashes, and hash changes when question content changes.
-4. **`placeChoices`:** Verifies deterministic choice placement. Tests confirm reproducible
+5. **`placeChoices`:** Verifies deterministic choice placement. Tests confirm reproducible
    placement, one use of each letter, distractor order shuffling, and answer slot balance within
    1 question across counts from 1 to 40.
-5. **`blindQuiz`:** Verifies blind check generation. Tests verify that no `kind`, `rationale`,
+6. **`blindQuiz`:** Verifies blind check generation. Tests verify that no `kind`, `rationale`,
    `explanation`, `answer`, or wrong choice field remains, and that the choices keep the displayed
    order.
-6. **`validateAnswers`:** Verifies sub-agent answer payloads. Tests accept valid answer objects and
+7. **`validateAnswers`:** Verifies sub-agent answer payloads. Tests accept valid answer objects and
    reject invalid choice letters, duplicate answers, out-of-bounds IDs, missing reasons for
    ambiguous choices, and unknown fields.
-7. **`gradeAnswers`:** Verifies answer grading. Tests confirm full passes for correct answer keys,
+8. **`gradeAnswers`:** Verifies answer grading. Tests confirm full passes for correct answer keys,
    and verify structured failure reporting for wrong choices, ambiguous selections, and missing
    answers.
-8. **`githubWebUrl`:** Verifies remote URL parsing. Tests convert the SSH, SSH URL, and HTTPS
+9. **`githubWebUrl`:** Verifies remote URL parsing. Tests convert the SSH, SSH URL, and HTTPS
    forms of a GitHub remote into web URLs and reject non-GitHub hosts.
-9. **`readGitFacts`:** Verifies the git checks with a fake git runner. Tests confirm no git command
+10. **`readGitFacts`:** Verifies the git checks with a fake git runner. Tests confirm no git command
    when no citation is a file, 5 git commands for any number of cited files, and a stop after the
    remote when the host is not GitHub.
-10. **`resolveCitation`:** Verifies citation links. Tests link direct URLs, produce permalinks with
+11. **`resolveCitation`:** Verifies citation links. Tests link direct URLs, produce permalinks with
     git commit hashes and line or page anchors for clean tracked files, and omit links for
     changed, renamed, untracked, or unpushed files, and outside a GitHub repository.
-11. **`buildQuiz`:** Verifies presentation data assembly. Tests derive IDs, tier names, formatted
+12. **`buildQuiz`:** Verifies presentation data assembly. Tests derive IDs, tier names, formatted
     HTML, and mapped choice letters from valid drafts.
-12. **`renderPage`:** Verifies template assembly. Tests confirm placeholder replacement in one
+13. **`renderPage`:** Verifies template assembly. Tests confirm placeholder replacement in one
     pass, license embedding, script tag escaping with `\u003c`, and an error when the template
     does not hold each placeholder exactly once.
-13. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, permalinks in a
+14. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, permalinks in a
     real git repository, `--blind` output, `--grade` outputs with exit code 0 and a written page
     or exit code 3 and no page, validation failure exit code 1, usage exit code 2 with
     argument-specific usage printing, and `--help`.
-14. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
+15. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
     remaining template placeholders and zero external network requests in links, scripts, and CSS.
 
 ---

@@ -23,7 +23,7 @@ questions to test their own mental models. They need questions that evaluate sys
 execution flow, and design trade-offs rather than trivia. They also need a self-contained format
 that opens locally for personal self-testing, with the option to share slides with others.
 
-The `quiz` skill addresses these needs. A developer runs `/quiz` to generate four tiers of
+The `quiz` skill addresses these needs. A developer runs `/quiz` to generate three tiers of
 multiple-choice questions from local code, documentation, files, or technical topics. An
 independent blind sub-agent verifies the questions without an answer key. The compiler builds a
 single self-contained HTML slide page. The page works offline in any modern browser for immediate
@@ -50,8 +50,9 @@ using keyboard controls or touch taps.
 ### Product goals
 
 1. Run `/quiz` without arguments to explore the current working directory with standard defaults.
-2. Organize questions into Fundamentals, Core, Advanced, and Expert tiers to guide learners
-   from basic recall to architectural trade-offs.
+2. Organize questions into Fundamentals, Core, and Advanced tiers to guide learners from basic
+   recall to architectural trade-offs. Half of the questions test the fundamentals, so a quiz of
+   20 questions is 10, 5, and 5.
 3. Test comprehension, execution flow, behavior under hostile input, and design reasons of the
    core of the resource, the part that every user meets. Reject questions about niche details,
    line numbers, variable names, or arbitrary constants.
@@ -145,7 +146,8 @@ An implementation satisfies this specification when all criteria pass:
 - [ ] The skill asks clarifying questions when the current working directory is empty or the home
   directory.
 - [ ] An independent sub-agent verifies draft questions without seeing the answer key.
-- [ ] Questions adhere to the four difficulty tiers with no trivial recall questions.
+- [ ] Questions adhere to the three difficulty tiers with no trivial recall questions, and the
+  tier sizes match the split for the question count.
 - [ ] Every question tests the core of the resource. A regular user of the resource needs the fact.
 - [ ] When the user prompt specifies a question count, the skill honors the requested count.
 - [ ] Questions use the natural domain terminology and the language of the prompt.
