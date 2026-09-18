@@ -52,8 +52,8 @@ using keyboard controls or touch taps.
 1. Run `/quiz` without arguments to explore the current working directory with standard defaults.
 2. Organize questions into Fundamentals, Core, Advanced, and Expert tiers to guide learners
    from basic recall to architectural trade-offs.
-3. Test comprehension, execution flow, and design reasons. Reject questions about line numbers,
-   variable names, or arbitrary constants.
+3. Test comprehension, execution flow, behavior under hostile input, and design reasons. Reject
+   questions about line numbers, variable names, or arbitrary constants.
 4. Run an independent blind check sub-agent without the answer key to catch ambiguities and errors
    before compilation.
 5. Generate a single HTML file with inlined styles and fonts. The file makes zero network calls and

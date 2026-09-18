@@ -28,9 +28,14 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 
 ### Tier 3: Advanced
 - Thinking type: Apply.
-- Target: edge cases, error conditions, boundary behavior, and combining rules.
+- Target: edge cases, error conditions, boundary behavior, hostile input, and combining rules.
 - Code example: What error occurs when a file is missing, or how does the cache behave on invalid
   keys?
+- Threat example: What happens when a caller sends a path with `../` or a field with HTML in it?
+  Which check stops it, and what breaks without that check?
+- When the resource has a trust boundary (user input, files or data from outside, network input,
+  or a third party), write at least one Tier 3 question about hostile input at that boundary. Base
+  the answer on a check or a limit that the source shows.
 - Book or docs example: How does a principle apply to a new scenario, or what exception does the
   text specify for a general rule?
 
