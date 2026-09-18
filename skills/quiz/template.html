@@ -491,9 +491,16 @@ kbd {
   font-size: var(--vbg-type-label);
 }
 
-/* A device with no keyboard and no hover, for example a phone, does not show the keys note. */
+/* A key hint at the end of a button. The hint takes the text color of the button. */
+.button-key {
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, currentColor 40%, transparent);
+  color: inherit;
+}
+
+/* A device with no keyboard and no hover, for example a phone, does not show the key hints. */
 @media (hover: none) and (pointer: coarse) {
-  .notes > .notes-keys {
+  .notes > .notes-keys,
+  .button-key {
     display: none;
   }
 }
@@ -1150,9 +1157,14 @@ kbd {
       ),
     );
 
+    // The start button ends with the key that starts the quiz. The hint is hidden from readers,
+    // so the name of the button stays its label.
     const startLabel = answeredCount ? 'Continue the quiz' : 'Start the quiz';
+    const startButton = button(startLabel, 'primary', next);
+    const keyHint = { class: 'button-key', 'aria-hidden': 'true', text: 'Enter' };
+    startButton.append(element('kbd', keyHint));
     const actions = element('div', { class: 'actions' }, [
-      button(startLabel, 'primary', next),
+      startButton,
       answeredCount ? button('Restart', 'secondary', restart) : null,
     ]);
 
