@@ -139,6 +139,10 @@ Spread questions across the target resource:
 ## 7. Technical language
 
 - Use exact programming terms and domain language from the source repository.
+- Describe an internal component by its role, for example "the function that assigns the answer
+  letters". Its name can follow the role in backticks, but the question must make sense to a
+  reader who does not know the name. A public name can stand alone: a command flag, an exported
+  API, a configuration key, or a file name.
 - Author questions in the language of the user prompt, or the conversation language.
 - Format code identifiers in backticks (`code`).
 - Format multiline code examples in fenced code blocks with language identifiers.
