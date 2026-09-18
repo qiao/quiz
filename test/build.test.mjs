@@ -86,7 +86,7 @@ describe('validateDraft', () => {
     ]);
   });
 
-  it('rejects a slug that can leave the quizzes folder', () => {
+  it('rejects a slug that is not a kebab-case name', () => {
     const draft = loadDraft();
     draft.slug = '../../etc';
     assert.deepEqual(validateDraft(draft), [

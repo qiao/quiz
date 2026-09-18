@@ -362,8 +362,10 @@ During Phase 3, the primary agent uses code to verify quiz quality:
 ### Validation rules
 
 Before emitting HTML, `build.mjs` checks:
-1. `title` and `source` must be non-empty strings. `slug` must match `^[a-z0-9]+(-[a-z0-9]+)*$`
-   to prevent directory traversal outside `quizzes/`.
+1. `title` and `source` must be non-empty strings. `slug` must match `^[a-z0-9]+(-[a-z0-9]+)*$`,
+   because the slug names the quiz folder and starts the quiz id in the storage key. The build
+   writes next to the draft path that the command line gives, so this rule does not limit where the
+   build writes.
 2. `questions` array must contain at least one question.
 3. Every question must have `tier` in `[1, 2, 3, 4]`.
 4. Question tiers must be non-decreasing: `tier` never decreases from one question to the next.
@@ -883,7 +885,7 @@ node --test 'test/*.test.mjs'
 The automated test suite organizes tests into thirteen groups:
 
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
-   non-objects, missing or empty fields, directory-escaping slugs, invalid or descending tiers,
+   non-objects, missing or empty fields, slugs that are not kebab-case, invalid or descending tiers,
    tier size disparities greater than 1, choice count violations, choice kind distribution errors,
    misplaced rationales, duplicate choice text, bad citation lines or pages, a correct choice
    over 1.2 times the longest wrong choice, and a correct choice that is the longest choice in

@@ -42,7 +42,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * @property {DraftQuestion[]} questions Questions in tier order.
  */
 
-/** Pattern that a slug must match, so that it cannot leave the `quizzes/` folder. */
+/**
+ * Pattern that a slug must match. The slug names the quiz folder and starts the quiz id in the
+ * storage key, so it holds only lower-case letters, digits, and single hyphens. The build writes
+ * next to the draft path that the command line gives, so this pattern does not limit where the
+ * build writes.
+ */
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /** Names of the tiers, in tier order. */
