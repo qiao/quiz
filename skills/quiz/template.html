@@ -1324,9 +1324,9 @@ kbd {
   function scoreLine(percent) {
     if (percent === 100) return 'Every answer is correct.';
     const lines = {
-      high: 'A good result. The missed questions show what to read next.',
+      high: 'A good result. Read the missed questions to learn more.',
       middle: 'Good progress. Read the explanation of each missed question.',
-      low: 'A first pass. Every explanation is one slide away.',
+      low: 'A first try. Read the explanation of each question.',
     };
     return lines[scoreBand(percent)];
   }

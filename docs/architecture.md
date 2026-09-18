@@ -620,9 +620,9 @@ Transitions provide visual feedback during navigation and answers without blocki
 6. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
    view using the 500 ms rise animation. The line matches the score percentage:
    - 100%: "Every answer is correct."
-   - 70% or more: "A good result. The missed questions show what to read next."
+   - 70% or more: "A good result. Read the missed questions to learn more."
    - 40% or more: "Good progress. Read the explanation of each missed question."
-   - Below 40%: "A first pass. Every explanation is one slide away."
+   - Below 40%: "A first try. Read the explanation of each question."
 7. **Perfect score celebration:** When the score reaches 100% on completion, confetti starts after
    800 ms once the ring closes. Sixty confetti pieces drop from the top edge. Each piece measures
    8 by 14 pixels and uses page colors: primary ink (`--vbg-gray-1000`), success green
