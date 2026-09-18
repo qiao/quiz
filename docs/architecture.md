@@ -761,9 +761,9 @@ rules. The agent reads this file during Phase 2. The file specifies:
 ### Step sequence
 
 `SKILL.md` directs the agent through nine execution steps:
-1. Verify Node.js runtime version.
-2. Resolve absolute skill directory path.
-3. Parse prompt parameters and ask clarifying questions if the scope is ambiguous.
+1. Inform the user of quiz scope and planned build steps.
+2. Verify Node.js runtime version.
+3. Resolve absolute skill directory path.
 4. Scan and read source material.
 5. Read `references/question-rules.md`.
 6. Select an unused directory `quizzes/<slug>/`.

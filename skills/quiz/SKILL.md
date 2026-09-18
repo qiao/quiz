@@ -13,7 +13,53 @@ from code repositories, documentation sites, local files, or technical topics.
 
 Follow these nine steps in sequence. Run all commands from the project root where `quizzes/` lives.
 
-## 1. Verify Node.js runtime
+## 1. Inform user of scope and build steps
+
+Determine the scope of the quiz from the user prompt, and send a message to the user stating the
+scope and the steps to build the quiz before performing further work.
+
+- **Determine scope:** Extract target resource, topic focus, question count, and language:
+  - **Target and focus:** The prompt can provide a resource path, a focus topic, or both. If
+    omitted, the target defaults to the current working directory.
+  - **Focus versus topic:** If prompt words do not name a path or URL (for example,
+    `/quiz authentication flow` or `/quiz TCP congestion control`):
+    1. Search the current working directory for matching files or code symbols.
+    2. If the working directory contains matching material, treat the words as a focus within the
+       workspace.
+    3. If the working directory has no matching material, treat the words as a free-standing topic.
+       Gather facts using web search and model knowledge, cite URL sources, and state that the
+       quiz uses web sources.
+  - **Question count:** Parse explicit count requests (such as "10 questions"). If omitted, the
+    count defaults to 20 questions.
+  - **Language:** Author questions in the language of the prompt. For a bare `/quiz` invocation,
+    author questions in the conversation language.
+  - **Clarifying questions:** Ask a clarifying question only if:
+    1. The target path does not exist.
+    2. The prompt has no resource and no focus words (a bare `/quiz` or only a count), and the
+       current working directory is empty.
+    3. The prompt has no resource and no focus words (a bare `/quiz` or only a count), and the
+       current working directory is the user home directory (`~`).
+    4. The prompt specifies a free-standing topic, and the current working directory is the user
+       home directory (`~`), to confirm where to save the quiz output directory.
+    Do not ask confirmation questions for count, difficulty, or layout if valid defaults exist.
+- **Message the user:** Send a message to the user before starting step 2. State:
+  1. The scope of the quiz: the target resource or topic, the focus, the question count (spread
+     across the four tiers: Fundamentals, Core, Advanced, and Expert), and the language.
+  2. The steps that you will perform in sequence to build the quiz:
+     - Verify the local Node.js runtime (version 20 or later).
+     - Resolve the skill directory path.
+     - Explore source material and write the core list.
+     - Read the question authoring rules.
+     - Select an unused output directory under `quizzes/<slug>/`.
+     - Author draft questions in `quiz.json` across the four tiers.
+     - Run blind sub-agent verification and grade the answers.
+     - Build the HTML slide page and offer to open it in a browser.
+  Do not wait for user approval to proceed unless a clarifying question was required. State the
+  scope and planned steps, then immediately proceed to step 2.
+
+Completion criterion: The user is informed of the quiz scope and planned build steps.
+
+## 2. Verify Node.js runtime
 
 Check that the local system has Node.js version 20 or later installed.
 
@@ -23,7 +69,7 @@ Check that the local system has Node.js version 20 or later installed.
 
 Completion criterion: Node.js 20 or later is confirmed available.
 
-## 2. Resolve skill directory
+## 3. Resolve skill directory
 
 Find the absolute path to this skill directory, denoted `<skill-dir>`.
 
@@ -33,37 +79,6 @@ Find the absolute path to this skill directory, denoted `<skill-dir>`.
 - Use this absolute path to run `build.mjs` or read references in later steps.
 
 Completion criterion: `<skill-dir>` absolute path is known.
-
-## 3. Parse prompt parameters and clarify
-
-Extract resource target, topic focus, question count, and language from the user prompt.
-
-- **Target and focus:** The prompt can provide a resource path, a focus topic, or both. If omitted,
-  the target defaults to the current working directory.
-- **Focus versus topic:** If prompt words do not name a path or URL (for example,
-  `/quiz authentication flow` or `/quiz TCP congestion control`):
-  1. Search the current working directory for matching files or code symbols.
-  2. If the working directory contains matching material, treat the words as a focus within the
-     workspace.
-  3. If the working directory has no matching material, treat the words as a free-standing topic.
-     Gather facts using web search and model knowledge, cite URL sources, and state in the final
-     report that the quiz uses web sources.
-- **Question count:** Parse explicit count requests (such as "10 questions"). If omitted, the count
-  defaults to 20 questions.
-- **Language:** Author questions in the language of the prompt. For a bare `/quiz` invocation,
-  author questions in the conversation language.
-- **Clarifying questions:** Ask a clarifying question only if:
-  1. The target path does not exist.
-  2. The prompt has no resource and no focus words (a bare `/quiz` or only a count), and the
-     current working directory is empty.
-  3. The prompt has no resource and no focus words (a bare `/quiz` or only a count), and the
-     current working directory is the user home directory (`~`).
-  4. The prompt specifies a free-standing topic, and the current working directory is the user home
-     directory (`~`), to confirm where to save the quiz output directory.
-  Do not ask confirmation questions for count, difficulty, or layout if valid defaults exist.
-
-Completion criterion: Target resource, focus topic, count, and language are determined, or user
-clarification is received.
 
 ## 4. Explore source material
 
