@@ -52,8 +52,9 @@ using keyboard controls or touch taps.
 1. Run `/quiz` without arguments to explore the current working directory with standard defaults.
 2. Organize questions into Fundamentals, Core, Advanced, and Expert tiers to guide learners
    from basic recall to architectural trade-offs.
-3. Test comprehension, execution flow, behavior under hostile input, and design reasons. Reject
-   questions about line numbers, variable names, or arbitrary constants.
+3. Test comprehension, execution flow, behavior under hostile input, and design reasons of the
+   core of the resource, the part that every user meets. Reject questions about niche details,
+   line numbers, variable names, or arbitrary constants.
 4. Run an independent blind check sub-agent without the answer key to catch ambiguities and errors
    before compilation.
 5. Generate a single HTML file with inlined styles and fonts. The file makes zero network calls and
@@ -145,6 +146,7 @@ An implementation satisfies this specification when all criteria pass:
   directory.
 - [ ] An independent sub-agent verifies draft questions without seeing the answer key.
 - [ ] Questions adhere to the four difficulty tiers with no trivial recall questions.
+- [ ] Every question tests the core of the resource. A regular user of the resource needs the fact.
 - [ ] When the user prompt specifies a question count, the skill honors the requested count.
 - [ ] Questions use the natural domain terminology and the language of the prompt.
 - [ ] Every question contains exactly four choices, with balanced positions across A, B, C, and D.

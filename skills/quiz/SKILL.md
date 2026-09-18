@@ -76,13 +76,17 @@ Inspect the target resource to understand architecture and component interaction
 - If inspecting a large PDF document, read the table of contents before reading specific chapters.
 - If the source material is small and cannot support 20 questions without trivia, reduce the
   question count and inform the user of the reduction.
+- Write a core list of 5 to 10 lines before you draft: the purpose, the main entry points, the
+  main flow from input to output, the main data types, the options that most users set, and the
+  failures that a user sees most often. Section 2 of the question rules defines the core. Every
+  question comes from this list.
 
-Completion criterion: Technical knowledge gathered from the resource.
+Completion criterion: Technical knowledge gathered from the resource, and the core list written.
 
 ## 5. Read question rules
 
 Read `<skill-dir>/references/question-rules.md`. It is the one source of every authoring rule:
-tiers, trivia, choices, clarity, coverage, explanations, citations, and language.
+tiers, the core, trivia, choices, clarity, coverage, explanations, citations, and language.
 
 Completion criterion: Authoring rules loaded before drafting.
 
@@ -129,13 +133,19 @@ Format `quiz.json` with this structure:
 }
 ```
 
-Write every text in the draft so that a reader understands it on the first read. Section 7 of
+Write every question from the core list of step 4. Section 2 of the rules defines the core and the
+regular-user test: a person who uses the resource every week needs the fact to use the resource
+correctly. A question about an exit code, a license clause, a rare fallback, or an internal helper
+fails the test.
+
+Write every text in the draft so that a reader understands it on the first read. Section 8 of
 the rules gives the sentence rules of ASD-STE100 Simplified Technical English: short sentences,
 one idea per sentence, the active voice, simple tenses, and the technical names of the source.
 
-Write each question in one pass, and review it one time. The build checks the structure, the tier
-sizes, and the choice lengths. The blind check in step 8 finds ambiguous questions. A repair round
-costs less time than a long review of alternative questions before the draft exists.
+Write each question in one pass, and review it one time with the regular-user test. Replace a
+question that fails the test. The build checks the structure, the tier sizes, and the choice
+lengths. The blind check in step 8 finds ambiguous questions. A repair round costs less time than
+a long review of alternative questions before the draft exists.
 
 Completion criterion: `quizzes/<slug>/quiz.json` is written to disk.
 

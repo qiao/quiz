@@ -49,6 +49,7 @@ This document answers: what did we decide, and what did we reject?
 | D26 | Motion | Free recipes, own confetti | Brings joy and feedback without input blocking |
 | D27 | Score color | Green, amber, or red by score band | Shows the result level at a glance |
 | D28 | Draft fields | Named roles, no kind field | Shorter draft, fewer rules |
+| D29 | Core focus | Core list and regular-user test | Rejects niche details |
 
 ---
 
@@ -133,7 +134,7 @@ This document answers: what did we decide, and what did we reject?
 
 ---
 
-## 3. Question mechanics (D7 to D12, D28)
+## 3. Question mechanics (D7 to D12, D28, D29)
 
 ### D7: Question count and resource limits
 - **Decision:** Default to 20 questions. Allow user prompts to override the count. If a resource
@@ -224,6 +225,22 @@ This document answers: what did we decide, and what did we reject?
 - **Rejected alternative:** Tuples such as `[text, rationale]` in one `wrong` array.
   Rejected because the text and the rationale have no names. The tuples made the drafts about 15%
   shorter, but a swap would show the rationale as a choice on the slide, and no check can find it.
+
+### D29: Core focus
+- **Decision:** Before the draft, the agent writes a core list of 5 to 10 lines: the purpose, the
+  main entry points, the main flow, the main data types, the common options, and the common
+  failures. Every question comes from this list, and each tier goes deeper into the same core.
+  The regular-user test rejects a question: a person who uses the resource every week must need
+  the fact to use the resource correctly.
+- **Reason:** Quizzes asked about exit codes, license clauses, rare fallbacks, and internal
+  helpers. A learner who studies a resource needs the part that every user meets. The tier
+  targets alone sent the agent to the edges, because "edge cases" and "hidden assumptions" read
+  as an invitation to niche details.
+- **Rejected alternative:** A list of forbidden subjects only. Rejected because a list cannot name
+  every niche subject, and a core list gives the agent the subjects to use.
+- **Rejected alternative:** A niche check in the blind sub-agent. Rejected because the checker
+  answers the questions and does not weigh subjects, and a check after the draft costs a repair
+  round.
 
 ---
 

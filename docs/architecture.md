@@ -746,6 +746,7 @@ The agent asks a clarifying question before authoring when:
 `skills/quiz/references/question-rules.md` holds the single canonical source of question authoring
 rules. The agent reads this file during Phase 2. The file specifies:
 - Progressive tiers from Fundamentals to Expert (D8).
+- Core focus: a core list before the draft, and the regular-user test for each question (D29).
 - The prohibition on trivia such as arbitrary numbers or variable names.
 - Choice composition: 1 correct, 1 obvious wrong, and 2 plausible wrong (D9).
 - Quality standards for distractors and misconceptions (D10).

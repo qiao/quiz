@@ -28,7 +28,8 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 
 ### Tier 3: Advanced
 - Thinking type: Apply.
-- Target: edge cases, error conditions, boundary behavior, hostile input, and combining rules.
+- Target: the main flow at its edges: invalid input, missing input, hostile input, the limits
+  that the source states, and rules that combine.
 - Code example: What error occurs when a file is missing, or how does the cache behave on invalid
   keys?
 - Threat example: What happens when a caller sends a path with `../` or a field with HTML in it?
@@ -41,7 +42,7 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 
 ### Tier 4: Expert
 - Thinking type: Analyze.
-- Target: design tradeoffs, architectural invariants, hidden assumptions, and limitations.
+- Target: the main design choices: tradeoffs, invariants, hidden assumptions, and limits.
 - Code example: Why did the designers pick this data structure, or what invariant breaks if these
   two calls run out of order?
 - Tradeoff example: Why does the design use X instead of Y? Name the rejected alternative Y in the
@@ -52,7 +53,37 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 - Book or docs example: What limitation does the author identify in a technique, or how do two
   competing guidelines balance against each other?
 
-## 2. Prohibition on trivia
+## 2. Focus on the core
+
+Test the part of the resource that every user meets. A niche question tests a detail that a
+regular user can ignore.
+
+Before you write, list the core of the resource in 5 to 10 lines:
+
+- The purpose and the main output.
+- The main entry points: the commands, the public functions, or the first pages of a document.
+- The main flow from input to output, and the component that each step uses.
+- The main data types and what each field holds.
+- The options that most users set.
+- The failures that a user sees most often, and the check that stops each one.
+
+Write every question from this list. The four tiers go deeper into the same core. They do not
+move to the edges. Tier 3 asks what the main flow does with bad input. Tier 4 asks why the main
+design is the way it is.
+
+Apply the regular-user test to each question: a person who uses the resource every week needs
+the fact to use it correctly. When the test fails, replace the question.
+
+Niche subjects, which fail the test:
+
+- An exit code, a rare flag, or an option that most users never set.
+- A license clause, a copyright line, or a credit.
+- A fallback for a rare environment, for example reduced motion or blocked storage.
+- An internal helper that no public path names.
+- A number that the source can change with no visible effect for the user.
+- The reason for a wording choice in a document.
+
+## 3. Prohibition on trivia
 
 Every question must evaluate mental models and system comprehension. Trivia is strictly forbidden.
 
@@ -63,7 +94,7 @@ Every question must evaluate mental models and system comprehension. Trivia is s
 - Every question must test why code works in a specific way, how components interact, or what
   fails when assumptions change.
 
-## 3. Choice composition
+## 4. Choice composition
 
 Every question has exactly four choices, and each field of the draft holds one role:
 
@@ -96,7 +127,7 @@ Every question has exactly four choices, and each field of the draft holds one r
 - Model real engineering mistakes: inverted logic, missing edge cases, or confused terms.
 - Provide a non-empty `rationale` string for each plausible distractor explaining why it fails.
 
-## 4. Prompt clarity and verification
+## 5. Prompt clarity and verification
 
 Design questions so that an independent reader reaches the exact correct choice:
 
@@ -109,17 +140,17 @@ Design questions so that an independent reader reaches the exact correct choice:
 - If a prompt refers to specific code behavior, include the relevant code snippet in a fenced code
   block, or state the exact file name.
 
-## 5. Coverage
+## 6. Coverage
 
-Spread questions across the target resource:
+Spread questions across the core of the target resource:
 
 - No two questions may test the same fact. Every question must evaluate a distinct concept or
   mechanism.
-- Spread questions across the modules, chapters, or documentation pages that the prompt or focus
-  covers.
+- Spread questions across the modules, chapters, or documentation pages of the core list. A
+  module that a regular user does not meet gets no question.
 - Avoid clustering multiple questions around a single function, file, or paragraph.
 
-## 6. Explanations and citations
+## 7. Explanations and citations
 
 ### Explanations
 - Every question must provide a non-empty `explanation`.
@@ -136,7 +167,7 @@ Spread questions across the target resource:
   Both numbers must be positive integers of 1 or more, and `lineEnd` must be at least `lineStart`.
 - For PDF documents, specify the `page` number as a positive integer of 1 or more.
 
-## 7. Language
+## 8. Language
 
 Write every generated text so that a reader understands it on the first read: the title, the
 source line, each prompt, each choice, each rationale, and each explanation. Follow ASD-STE100
