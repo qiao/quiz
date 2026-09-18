@@ -82,10 +82,12 @@ The skill transforms resources into self-contained HTML slides through five sequ
    After two failed repair rounds, the agent replaces the question with a new question of the same
    tier. If the replacement question also fails after two repair rounds, the agent removes the
    question, reports the removal to the user, and proceeds.
-4. **Build:** The agent executes `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json` using the
-   absolute path of the skill folder. The script validates the draft against schema rules,
+4. **Build:** When every question passes, the same `--grade` command builds the page, so the
+   agent runs no separate build command. The script validates the draft against schema rules,
    balances choice positions, compiles Markdown to safe HTML, inlines CSS and font assets, and
-   generates `quizzes/<slug>/index.html`.
+   generates `quizzes/<slug>/index.html`. The command with no flag
+   (`node <skill-dir>/build.mjs quizzes/<slug>/quiz.json`) builds the same page with no grade, for
+   example after a template change.
 5. **Report:** The agent outputs the file path, an operating system open command (`open` on
    macOS, `xdg-open` on Linux, `start` on Windows), and a static hosting deployment hint (for
    example, `npx vercel quizzes/<slug>`).
@@ -300,6 +302,8 @@ export interface GradeReport {
   passedCount: number;
   /** Detailed list of verification failures */
   failures: GradeFailure[];
+  /** Path of the index.html that the command wrote, present only when passed is true */
+  page?: string;
 }
 ```
 
@@ -334,7 +338,9 @@ When passed `--grade <path-to-answers.json>`, `build.mjs` compares the sub-agent
 (`SubAgentAnswerFile`) against the draft key. A relative path resolves from the current working
 directory (for example, `quizzes/<slug>/answers.json`). Code maps shuffled choices back to draft
 choices using the question seed. The compiler prints a JSON report (`GradeReport`) of passed
-questions and failed questions with error reasons.
+questions and failed questions with error reasons. When every question passes, the command also
+writes `index.html` next to the draft and gives its path in the `page` field. A passed grade is
+always followed by the build, so one command saves the agent a turn.
 
 ### Blind check verification loop
 
@@ -352,6 +358,7 @@ During Phase 3, the primary agent uses code to verify quiz quality:
 5. The primary agent writes the returned JSON to `quizzes/<slug>/answers.json`.
 6. The primary agent executes:
    `node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json`.
+   When every question passes, this command also writes `quizzes/<slug>/index.html`.
 7. If a choice is wrong or marked `'ambiguous'`, the agent revises the prompt, distractors, or
    explanation to resolve the ambiguity. Any edit to `quiz.json` changes the hash seed, requiring
    a fresh `--blind` run and complete sub-agent re-check.
@@ -393,7 +400,8 @@ Before emitting HTML, `build.mjs` checks:
 ### Error format and exit codes
 
 `build.mjs` uses standard process exit codes:
-- `0`: The command executed successfully. For `--grade`, all questions passed verification.
+- `0`: The command executed successfully. For `--grade`, all questions passed verification, and
+  the command wrote `index.html`.
 - `1`: Validation failed. The draft JSON or answers JSON contains schema errors. `build.mjs`
   prints structured error diagnostics to standard error.
 - `2`: Usage error. The invocation is missing required file arguments, files do not exist,
@@ -739,7 +747,7 @@ rules. The agent reads this file during Phase 2. The file specifies:
 8. Execute blind verification: generate `quiz.blind.json` with `--blind`, give its path to the
    sub-agent with instructions forbidding every other path in `quizzes/`, collect answers, and
    evaluate them with `build.mjs --grade`.
-9. Compile the slide deck with `build.mjs` and report the local file path.
+9. Report the local file path of the slide deck that the passed grade wrote.
 
 ---
 
@@ -924,9 +932,9 @@ The automated test suite organizes tests into fourteen groups:
     pass, license embedding, script tag escaping with `\u003c`, and an error when the template
     does not hold each placeholder exactly once.
 13. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, permalinks in a
-    real git repository, `--blind` output, `--grade` outputs with exit code 0 or code 3,
-    validation failure exit code 1, usage exit code 2 with argument-specific usage printing, and
-    `--help`.
+    real git repository, `--blind` output, `--grade` outputs with exit code 0 and a written page
+    or exit code 3 and no page, validation failure exit code 1, usage exit code 2 with
+    argument-specific usage printing, and `--help`.
 14. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
     remaining template placeholders and zero external network requests in links, scripts, and CSS.
 

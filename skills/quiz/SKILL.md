@@ -179,7 +179,9 @@ Run the grading command from the project root:
 node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --grade quizzes/<slug>/answers.json
 ```
 
-- Exit code 0: all questions passed verification (`passed: true`). Proceed to step 9.
+- Exit code 0: all questions passed verification (`passed: true`). The same command compiled the
+  draft into `quizzes/<slug>/index.html`, and the `page` field of the report gives that path.
+  Proceed to step 9.
 - Exit code 3: one or more questions failed verification (`passed: false`). Inspect the
   `failures` array in the standard output JSON and repair failed questions in step 8d.
 - Exit code 1: validation error in `quiz.json` or `answers.json`. Repair the file and re-run.
@@ -196,21 +198,10 @@ Repair in rounds:
 Completion criterion: All questions in `quizzes/<slug>/quiz.json` pass grading, or unresolvable
 questions are removed within the allowed limits.
 
-## 9. Compile and report
+## 9. Report
 
-Compile the final responsive HTML slide deck and deliver the result to the user.
-
-- Run the compiler without flags from the project root:
-
-```bash
-node <skill-dir>/build.mjs quizzes/<slug>/quiz.json
-```
-
-The compiler validates the draft, balances answer positions across choices, compiles Markdown to
-safe HTML, inlines CSS and font assets, and writes `quizzes/<slug>/index.html`. Exit code 0
-indicates success.
-
-Deliver the results to the user:
+The passed grade in step 8c already wrote `quizzes/<slug>/index.html`. Deliver the result to the
+user:
 - Print the relative output path: `quizzes/<slug>/index.html`.
 - Print a browser command to view the slides: `open ./quizzes/<slug>/index.html` on macOS,
   `xdg-open ./quizzes/<slug>/index.html` on Linux, or `start quizzes\<slug>\index.html`

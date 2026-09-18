@@ -564,6 +564,8 @@ export function placeChoices(draft) {
  * @property {number} totalQuestions Number of questions in the draft.
  * @property {number} passedCount Number of questions that passed.
  * @property {GradeFailure[]} failures One item for each question that failed.
+ * @property {string} [page] Path of the `index.html` that the command wrote, only when every
+ *   question passed.
  */
 
 /**
@@ -933,7 +935,8 @@ const USAGE = `Usage:
   node <skill-dir>/build.mjs <quiz.json> --blind
       Write quiz.blind.json for the blind checker.
   node <skill-dir>/build.mjs <quiz.json> --grade <answers.json>
-      Print a grade report as JSON.
+      Print a grade report as JSON. When every question passed, also write index.html next to
+      the draft, and give its path in the "page" field of the report.
 
 Run the command from the project folder. Relative paths start from that folder.
 
@@ -1128,6 +1131,21 @@ function makePage(draft, io) {
 }
 
 /**
+ * Writes an output file next to the draft.
+ *
+ * @param {string} draftPath Path of the draft as the user wrote it.
+ * @param {string} name File name of the output.
+ * @param {string} content File content.
+ * @param {MainIo} io Folders and environment.
+ * @returns {string} Path of the output, in the same form as the draft path.
+ */
+function writeOutput(draftPath, name, content, io) {
+  const outPath = join(dirname(draftPath), name);
+  writeFileSync(resolve(io.cwd, outPath), content);
+  return outPath;
+}
+
+/**
  * Runs the command line.
  *
  * @param {string[]} args Arguments after the script name.
@@ -1151,6 +1169,10 @@ export function main(args, io) {
       const file = readJsonFile(command.answersPath, io.cwd);
       stopOnErrors(validateAnswers(file, validDraft.questions.length), command.answersPath);
       const report = gradeAnswers(validDraft, /** @type {{ answers: SubAgentAnswer[] }} */ (file));
+      // A passed grade is always followed by the build, so the same command writes the page.
+      if (report.passed) {
+        report.page = writeOutput(command.draftPath, 'index.html', makePage(validDraft, io), io);
+      }
       io.stdout(`${JSON.stringify(report, null, 2)}\n`);
       return report.passed ? 0 : 3;
     }
@@ -1158,9 +1180,7 @@ export function main(args, io) {
     const [name, content] = command.kind === 'blind'
       ? ['quiz.blind.json', `${JSON.stringify(blindQuiz(validDraft), null, 2)}\n`]
       : ['index.html', makePage(validDraft, io)];
-    const outPath = join(dirname(command.draftPath), name);
-    writeFileSync(resolve(io.cwd, outPath), content);
-    io.stdout(`${outPath}\n`);
+    io.stdout(`${writeOutput(command.draftPath, name, content, io)}\n`);
     return 0;
   } catch (error) {
     if (!(error instanceof CommandError)) throw error;

@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -759,7 +759,7 @@ describe('main', () => {
     assert.deepEqual(JSON.parse(blind), blindQuiz(loadDraft()));
   });
 
-  it('prints a grade report with --grade', () => {
+  it('prints a grade report with --grade, and writes the page when every question passed', () => {
     const project = makeProject();
     const answersPath = 'quizzes/js-event-loop/answers.json';
     writeFileSync(join(project.cwd, answersPath), JSON.stringify(correctAnswers(loadDraft())));
@@ -767,7 +767,10 @@ describe('main', () => {
     assert.equal(result.code, 0);
     assert.equal(result.stderr, '');
     const expected = gradeAnswers(loadDraft(), correctAnswers(loadDraft()));
-    assert.deepEqual(JSON.parse(result.stdout), expected);
+    const page = 'quizzes/js-event-loop/index.html';
+    assert.deepEqual(JSON.parse(result.stdout), { ...expected, page });
+    const html = readFileSync(join(project.cwd, page), 'utf8');
+    assert.ok(html.includes('<title>JavaScript event loop</title>'));
   });
 
   it('exits with 3 and still prints the report when a question fails the grade', () => {
@@ -778,7 +781,10 @@ describe('main', () => {
     const result = project.run([draftPath, '--grade', 'answers.json']);
     assert.equal(result.code, 3);
     assert.equal(result.stderr, '');
-    assert.equal(JSON.parse(result.stdout).passed, false);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.passed, false);
+    assert.equal('page' in report, false);
+    assert.equal(existsSync(join(project.cwd, 'quizzes/js-event-loop/index.html')), false);
   });
 
   it('exits with 1 and lists the errors for an invalid draft or answer file', () => {
