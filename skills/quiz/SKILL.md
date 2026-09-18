@@ -76,12 +76,14 @@ Inspect the target resource to understand architecture and component interaction
 - If inspecting a large PDF document, read the table of contents before reading specific chapters.
 - If the source material is small and cannot support 20 questions without trivia, reduce the
   question count and inform the user of the reduction.
-- Write a core list of 5 to 10 lines before you draft: the purpose, the main entry points, the
-  main flow from input to output, the main data types, the options that most users set, and the
-  failures that a user sees most often. Section 2 of the question rules defines the core. Every
-  question comes from this list.
+- Write a core list of 5 to 10 lines in your reply to the user before you draft: the purpose,
+  the main entry points, the main flow from input to output, the main data types, the options
+  that most users set, and the failures that a user sees most often. Take the subjects from the
+  README, the main documentation page, or the table of contents when the resource has one.
+  Section 2 of the question rules defines the core. Every question comes from this list.
 
-Completion criterion: Technical knowledge gathered from the resource, and the core list written.
+Completion criterion: Technical knowledge gathered from the resource, and the core list in the
+reply.
 
 ## 5. Read question rules
 

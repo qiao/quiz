@@ -74,12 +74,19 @@ design is the way it is.
 Apply the regular-user test to each question: a person who uses the resource every week needs
 the fact to use it correctly. When the test fails, replace the question.
 
+The documentation of the resource anchors the test: the README, the main documentation page, or
+the table of contents. A subject that the documentation names is core. A subject that only the
+code shows is core only when it is the main flow from input to output.
+
 Niche subjects, which fail the test:
 
 - An exit code, a rare flag, or an option that most users never set.
 - A license clause, a copyright line, or a credit.
 - A fallback for a rare environment, for example reduced motion or blocked storage.
-- An internal helper that no public path names.
+- An internal helper that no public path names, or the order of the steps inside one function.
+- An error for a call that no documented use makes, for example a required argument left out.
+- An old format, a removed option, or a changelog entry that the current documentation does not
+  describe.
 - A number that the source can change with no visible effect for the user.
 - The reason for a wording choice in a document.
 
