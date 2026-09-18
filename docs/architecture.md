@@ -578,11 +578,11 @@ The URL hash updates with each slide transition (`#0`, `#1`, ... `#21`) to enabl
 2. **Backward navigation:** Learners can return to previous questions by clicking the "Back"
    button or pressing `Left Arrow`. Answered questions display the selected choice, distractor
    rationale, and correct explanation.
-3. **Retry missed questions:** Clicking "Retry Missed Questions" keeps all questions in the deck
-   and preserves correct answers in `answers`. It deletes only the keys for incorrect questions
-   from `answers`, and navigates to the first missed question slide. When the learner returns
-   to the end slide, the view recalculates and displays the updated score and the updated tier
-   breakdown.
+3. **Retry missed questions:** Clicking "Try the missed questions again" keeps all questions in
+   the deck and preserves correct answers in `answers`. It deletes only the keys for incorrect
+   questions from `answers`, and navigates to the first missed question slide. When the learner
+   returns to the end slide, the view recalculates and displays the updated score and the updated
+   tier breakdown.
 
 ### Slide transitions and feedback
 
