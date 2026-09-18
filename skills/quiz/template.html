@@ -1170,14 +1170,21 @@ kbd {
       { keys: ['Left Arrow'], action: 'go back' },
       { keys: ['T'], action: 'change the theme' },
     ];
+    const arrowGlyphs = { 'Right Arrow': '→', 'Left Arrow': '←' };
     const keys = element(
       'ul',
       { class: 'keys' },
       keyRows.map((row) => {
-        const caps = row.keys.flatMap((key, index) => [
-          index ? ' or ' : null,
-          element('kbd', { text: key }),
-        ]);
+        const caps = row.keys.flatMap((key, index) => {
+          const glyph = arrowGlyphs[key];
+          const kbd = glyph
+            ? element('kbd', {}, [
+                element('span', { 'aria-hidden': 'true', text: glyph }),
+                element('span', { class: 'visually-hidden', text: key }),
+              ])
+            : element('kbd', { text: key });
+          return [index ? ' or ' : null, kbd];
+        });
         return element('li', {}, [...caps, ` ${row.action}`]);
       }),
     );

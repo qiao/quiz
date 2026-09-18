@@ -534,10 +534,11 @@ The deck contains three distinct slide views:
    buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an optional "Restart"
    button. The start button ends with an "Enter" key hint, which is hidden from screen readers.
    The notes are a small description list with two rows: "Source" gives the resource source, and
-   "Keys" lists the key bindings in columns of at least 240 px. A device with no keyboard and no
-   hover, for example a phone, shows neither the "Keys" row nor the key hint in the button. On
-   the title slide, the bar shows no title, because the heading carries it. On the title and end
-   slides, the bar shows the answered count only when at least one question has an answer.
+   "Keys" lists the key bindings in columns of at least 240 px. The legend shows the two arrow
+   glyphs (→ and ←), and each glyph carries the key name for a screen reader. A device with no
+   keyboard and no hover, for example a phone, shows neither the "Keys" row nor the key hint in the
+   button. On the title slide, the bar shows no title, because the heading carries it. On the title
+   and end slides, the bar shows the answered count only when at least one question has an answer.
 2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
    block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,
