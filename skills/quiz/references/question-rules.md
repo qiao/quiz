@@ -49,8 +49,11 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 - Tradeoff example: Why does the design use X instead of Y? Name the rejected alternative Y in the
   prompt or in a choice, so that the learner weighs the two options.
 - Ask why the designers chose X only when the source states the reason, for example in a decision
-  record, a design document, or a code comment. When the source gives no reason, ask what the
+  record, a design document, or the README. When the source gives no reason, ask what the
   choice causes: what breaks, what it costs, or what it permits.
+- A code comment is not a design record. A comment that explains an internal step, for example
+  a temporary object or a header that one browser needs, does not make a core question. Ask
+  about a design choice that the documentation names, and that a user of the resource meets.
 - Book or docs example: What limitation does the author identify in a technique, or how do two
   competing guidelines balance against each other?
 
@@ -86,7 +89,8 @@ Niche subjects, which fail the test:
 - An exit code, a rare flag, or an option that most users never set.
 - A license clause, a copyright line, or a credit.
 - A fallback for a rare environment, for example reduced motion or blocked storage.
-- An internal helper that no public path names, or the order of the steps inside one function.
+- An internal helper that no public path names, or the order of the steps inside one function,
+  even when a code comment explains it.
 - An error for a call that no documented use makes, for example a required argument left out.
 - An old format, a removed option, or a changelog entry that the current documentation does not
   describe.
