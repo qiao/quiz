@@ -886,7 +886,7 @@ node --test 'test/*.test.mjs'
 
 ### Test suite: `test/build.test.mjs`
 
-The automated test suite organizes tests into thirteen groups:
+The automated test suite organizes tests into fourteen groups:
 
 1. **`validateDraft`:** Checks draft schema rules. Tests accept the valid fixture and reject
    non-objects, missing or empty fields, slugs that are not kebab-case, invalid or descending tiers,
@@ -899,9 +899,9 @@ The automated test suite organizes tests into thirteen groups:
    lists.
 3. **`quizIdOf`:** Verifies quiz identifier derivation. Tests verify slug prefix format, 8-character
    hex content hashes, and hash changes when question content changes.
-4. **`choiceOrders`:** Verifies deterministic choice shuffling. Tests confirm reproducible
-   permutations, distractor order shuffling, and answer slot balance within 1 question across
-   counts from 1 to 40.
+4. **`placeChoices`:** Verifies deterministic choice placement. Tests confirm reproducible
+   placement, one use of each letter, distractor order shuffling, and answer slot balance within
+   1 question across counts from 1 to 40.
 5. **`blindQuiz`:** Verifies blind check generation. Tests verify removal of `kind`, `rationale`,
    and `explanation` fields while preserving the displayed choice order.
 6. **`validateAnswers`:** Verifies sub-agent answer payloads. Tests accept valid answer objects and
@@ -910,19 +910,24 @@ The automated test suite organizes tests into thirteen groups:
 7. **`gradeAnswers`:** Verifies answer grading. Tests confirm full passes for correct answer keys,
    and verify structured failure reporting for wrong choices, ambiguous selections, and missing
    answers.
-8. **`githubWebUrl`:** Verifies remote URL parsing. Tests convert SSH and HTTPS GitHub remotes into
-   web URLs and reject non-GitHub hosts.
-9. **`resolveCitation`:** Verifies citation links. Tests link direct URLs, produce permalinks with
-   git commit hashes and line or page anchors for clean tracked files, and omit links for dirty or
-   unpushed files.
-10. **`buildQuiz`:** Verifies presentation data assembly. Tests derive IDs, tier names, formatted
+8. **`githubWebUrl`:** Verifies remote URL parsing. Tests convert the SSH, SSH URL, and HTTPS
+   forms of a GitHub remote into web URLs and reject non-GitHub hosts.
+9. **`readGitFacts`:** Verifies the git checks with a fake git runner. Tests confirm no git command
+   when no citation is a file, 5 git commands for any number of cited files, and a stop after the
+   remote when the host is not GitHub.
+10. **`resolveCitation`:** Verifies citation links. Tests link direct URLs, produce permalinks with
+    git commit hashes and line or page anchors for clean tracked files, and omit links for
+    changed, renamed, untracked, or unpushed files, and outside a GitHub repository.
+11. **`buildQuiz`:** Verifies presentation data assembly. Tests derive IDs, tier names, formatted
     HTML, and mapped choice letters from valid drafts.
-11. **`renderPage`:** Verifies template assembly. Tests confirm placeholder replacement, license
-    embedding, and script tag escaping with `\u003c`.
-12. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, `--blind` output,
-    `--grade` outputs with exit code 0 or code 3, validation failure exit code 1, and usage exit
-    code 2 with argument-specific usage printing.
-13. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
+12. **`renderPage`:** Verifies template assembly. Tests confirm placeholder replacement in one
+    pass, license embedding, script tag escaping with `\u003c`, and an error when the template
+    does not hold each placeholder exactly once.
+13. **`main`:** Verifies CLI execution and exit codes. Tests verify index builds, permalinks in a
+    real git repository, `--blind` output, `--grade` outputs with exit code 0 or code 3,
+    validation failure exit code 1, usage exit code 2 with argument-specific usage printing, and
+    `--help`.
+14. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
     remaining template placeholders and zero external network requests in links, scripts, and CSS.
 
 ---
