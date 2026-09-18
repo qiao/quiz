@@ -82,7 +82,7 @@ Completion criterion: Technical knowledge gathered from the resource.
 ## 5. Read question rules
 
 Read `<skill-dir>/references/question-rules.md`. It is the one source of every authoring rule:
-tiers, trivia, choices, clarity, coverage, explanations, and citations.
+tiers, trivia, choices, clarity, coverage, explanations, citations, and language.
 
 Completion criterion: Authoring rules loaded before drafting.
 
@@ -128,6 +128,10 @@ Format `quiz.json` with this structure:
   ]
 }
 ```
+
+Write every text in the draft so that a reader understands it on the first read. Section 7 of
+the rules gives the sentence rules of ASD-STE100 Simplified Technical English: short sentences,
+one idea per sentence, the active voice, simple tenses, and the technical names of the source.
 
 Write each question in one pass, and review it one time. The build checks the structure, the tier
 sizes, and the choice lengths. The blind check in step 8 finds ambiguous questions. A repair round

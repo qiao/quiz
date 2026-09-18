@@ -136,14 +136,26 @@ Spread questions across the target resource:
   Both numbers must be positive integers of 1 or more, and `lineEnd` must be at least `lineStart`.
 - For PDF documents, specify the `page` number as a positive integer of 1 or more.
 
-## 7. Technical language
+## 7. Language
 
-- Use exact programming terms and domain language from the source repository.
+Write every generated text so that a reader understands it on the first read: the title, the
+source line, each prompt, each choice, each rationale, and each explanation. Follow ASD-STE100
+Simplified Technical English:
+
+- Write short sentences. Keep a sentence under 20 words.
+- Put one idea in one sentence.
+- Use the active voice. Name the subject that does the action.
+- Use the simple present, past, or future tense.
+- Use one word for one meaning, and the same word for the same thing in every sentence.
+- Do not use idioms, slang, filler words, or jargon that the source does not use.
+- Keep the technical names of the source: programming terms, framework terms, and code
+  identifiers. Simplified Technical English permits technical names. Do not replace them with
+  plain words, because a plain word is less exact.
 - Describe an internal component by its role, for example "the function that assigns the answer
   letters". Its name can follow the role in backticks, but the question must make sense to a
   reader who does not know the name. A public name can stand alone: a command flag, an exported
   API, a configuration key, or a file name.
-- Author questions in the language of the user prompt, or the conversation language.
+- Author questions in the language of the user prompt, or the conversation language. Apply the
+  same sentence rules in that language.
 - Format code identifiers in backticks (`code`).
 - Format multiline code examples in fenced code blocks with language identifiers.
-- Keep prompt statements direct and concise.

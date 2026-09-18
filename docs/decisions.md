@@ -196,14 +196,18 @@ This document answers: what did we decide, and what did we reject?
   Rejected because self-evaluation carries confirmation bias and misses flawed assumptions.
 
 ### D12: Technical language
-- **Decision:** Use natural domain terminology matching the source code and the language of the
-  prompt. For a bare `/quiz` invocation, use the language of the conversation. The skill
-  definition and documentation use ASD-STE100.
-- **Reason:** Technical questions require exact programming language constructs and established
-  framework terms.
-- **Rejected alternative:** Enforce strict ASD-STE100 vocabulary on quiz questions.
-  Rejected because replacing specialized programming terms with simplified words creates
-  unnatural phrasing and confuses developers.
+- **Decision:** Write every generated text with the sentence rules of ASD-STE100 Simplified
+  Technical English: short sentences, one idea per sentence, the active voice, and simple tenses.
+  Keep the domain terms of the source as technical names, which ASD-STE100 permits. Author in the
+  language of the prompt. For a bare `/quiz` invocation, use the language of the conversation.
+  The skill definition and documentation use ASD-STE100 too.
+- **Reason:** A learner must understand a question on the first read, and the question must
+  still name exact programming language constructs and established framework terms.
+- **Rejected alternative:** Enforce the ASD-STE100 dictionary on domain terms. Rejected because
+  replacing specialized programming terms with simplified words creates unnatural phrasing and
+  confuses developers.
+- **Rejected alternative:** Leave the sentence style to the model. Rejected because long
+  sentences with several ideas made questions hard to read.
 
 ### D28: Draft choice fields
 - **Decision:** The draft names each choice by its role. `answer` holds the text of the correct

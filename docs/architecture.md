@@ -749,6 +749,8 @@ rules. The agent reads this file during Phase 2. The file specifies:
 - The prohibition on trivia such as arbitrary numbers or variable names.
 - Choice composition: 1 correct, 1 obvious wrong, and 2 plausible wrong (D9).
 - Quality standards for distractors and misconceptions (D10).
+- Language: the sentence rules of ASD-STE100 for every generated text, with the technical names
+  of the source kept (D12).
 
 ### Step sequence
 
