@@ -482,6 +482,16 @@ kbd {
   text-align: right;
 }
 
+/* A dot before the count of a tier row shows the band of that tier. */
+.band-marker svg {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: var(--vbg-space-2);
+  vertical-align: 0.1em;
+  fill: var(--band-color);
+}
+
 /* The score ring holds the count in its center. The heading label carries the full text. */
 .score {
   display: grid;
@@ -1337,15 +1347,22 @@ kbd {
     const rows = [1, 2, 3, 4]
       .map((tier) => quiz.questions.filter((question) => question.tier === tier))
       .filter((questions) => questions.length > 0)
-      .map((questions) =>
-        element('tr', {}, [
+      .map((questions) => {
+        const tierCorrect = questions.filter(isAnsweredCorrectly).length;
+        const tierBand = scoreBand(Math.round((tierCorrect / questions.length) * 100));
+        const marker = element('span', {
+          class: 'band-marker',
+          'aria-hidden': 'true',
+          html: '<svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>',
+        });
+        return element('tr', {}, [
           element('td', { text: `Tier ${questions[0].tier} · ${questions[0].tierName}` }),
-          element('td', {
-            class: 'numeric',
-            text: `${questions.filter(isAnsweredCorrectly).length} of ${questions.length}`,
-          }),
-        ]),
-      );
+          element('td', { class: `numeric band-${tierBand}` }, [
+            marker,
+            `${tierCorrect} of ${questions.length}`,
+          ]),
+        ]);
+      });
 
     const missedList = element(
       'ul',

@@ -518,7 +518,8 @@ The deck contains three distinct slide views:
    displays drawn check and cross icons next to the status text.
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
-   text for screen readers. Shows a score band summary line, score breakdown per tier, action
+   text for screen readers. Shows a score band summary line, score breakdown per tier (each row
+   has an 8 px dot in the band color of that tier, hidden from screen readers), action
    buttons ("Try the missed questions again" and "Restart") placed before the missed question list,
    and links to missed questions. Reaching the end slide from the last question animates the ring
    fill and count-up over 800 ms, and drops confetti after the ring closes for a 100% score.
