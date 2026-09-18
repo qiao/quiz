@@ -30,7 +30,7 @@ Find the absolute path to this skill directory, denoted `<skill-dir>`.
 - If the host environment states a base directory when loading this skill (for example,
   "Base directory for this skill: ..."), use that path as `<skill-dir>`.
 - Otherwise, resolve the directory containing `SKILL.md` and `build.mjs`.
-- Use this absolute path when executing `build.mjs` or reading references in later steps.
+- Use this absolute path to run `build.mjs` or read references in later steps.
 
 Completion criterion: `<skill-dir>` absolute path is known.
 
@@ -40,7 +40,7 @@ Extract resource target, topic focus, question count, and language from the user
 
 - **Target and focus:** The prompt can provide a resource path, a focus topic, or both. If omitted,
   the target defaults to the current working directory.
-- **Focus versus topic:** When prompt words do not name a path or URL (for example,
+- **Focus versus topic:** If prompt words do not name a path or URL (for example,
   `/quiz authentication flow` or `/quiz TCP congestion control`):
   1. Search the current working directory for matching files or code symbols.
   2. If the working directory contains matching material, treat the words as a focus within the
@@ -52,7 +52,7 @@ Extract resource target, topic focus, question count, and language from the user
   defaults to 20 questions.
 - **Language:** Author questions in the language of the prompt. For a bare `/quiz` invocation,
   author questions in the conversation language.
-- **Clarifying questions:** Ask a clarifying question only when:
+- **Clarifying questions:** Ask a clarifying question only if:
   1. The target path does not exist.
   2. The prompt has no resource and no focus words (a bare `/quiz` or only a count), and the
      current working directory is empty.
@@ -60,7 +60,7 @@ Extract resource target, topic focus, question count, and language from the user
      current working directory is the user home directory (`~`).
   4. The prompt specifies a free-standing topic, and the current working directory is the user home
      directory (`~`), to confirm where to save the quiz output directory.
-  Do not ask confirmation questions for count, difficulty, or layout when valid defaults exist.
+  Do not ask confirmation questions for count, difficulty, or layout if valid defaults exist.
 
 Completion criterion: Target resource, focus topic, count, and language are determined, or user
 clarification is received.
@@ -79,7 +79,7 @@ Inspect the target resource to understand architecture and component interaction
 - Write a core list of 5 to 10 lines before you draft: the purpose, the main entry points, the
   main flow from input to output, the main data types, the options that most users set, and the
   failures that a user sees most often. Take the subjects from the README, the main
-  documentation page, or the table of contents when the resource has one. The list goes into the
+  documentation page, or the table of contents if the resource has one. The list goes into the
   `core` field of the draft in step 7. Section 2 of the question rules defines the core. Every
   question comes from this list.
 
@@ -171,7 +171,7 @@ node <skill-dir>/build.mjs quizzes/<slug>/quiz.json --blind
 
 - If validation fails (exit code 1), read the errors on standard error, repair `quiz.json`,
   and run `--blind` again. Do not invoke the sub-agent until `--blind` exits with code 0.
-- When validation succeeds (exit code 0), the command generates `quizzes/<slug>/quiz.blind.json`
+- If validation succeeds (exit code 0), the command generates `quizzes/<slug>/quiz.blind.json`
   with stripped answer keys and shuffled choices, and prints its file path.
 
 ### Step 8b: Invoke the blind sub-agent
@@ -235,11 +235,11 @@ user:
 - If the quiz covers a free-standing topic, state in the report that the quiz uses web sources.
 
 Then offer to open the page. Do not wait for the user to ask:
-- Ask one question: open the quiz in the browser now? When the host has a tool for questions to
+- Ask one question: open the quiz in the browser now? If the host has a tool for questions to
   the user, use that tool, with "Open it now" as the first option and "Not now" as the second.
   Otherwise, ask in the final message.
-- When the user accepts, run the browser command for the operating system.
-- When the session cannot wait for an answer, for example a headless run, print the command and
+- If the user accepts, run the browser command for the operating system.
+- If the session cannot wait for an answer, for example a headless run, print the command and
   stop.
 
 Completion criterion: `quizzes/<slug>/index.html` exists on disk, the user receives the file path,
