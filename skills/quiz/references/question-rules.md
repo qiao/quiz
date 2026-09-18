@@ -44,6 +44,11 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 - Target: design tradeoffs, architectural invariants, hidden assumptions, and limitations.
 - Code example: Why did the designers pick this data structure, or what invariant breaks if these
   two calls run out of order?
+- Tradeoff example: Why does the design use X instead of Y? Name the rejected alternative Y in the
+  prompt or in a choice, so that the learner weighs the two options.
+- Ask why the designers chose X only when the source states the reason, for example in a decision
+  record, a design document, or a code comment. When the source gives no reason, ask what the
+  choice causes: what breaks, what it costs, or what it permits.
 - Book or docs example: What limitation does the author identify in a technique, or how do two
   competing guidelines balance against each other?
 
