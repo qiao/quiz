@@ -24,7 +24,7 @@ export const SCENES: Scene[] = [
   { id: "Draft", component: DraftScene, durationInFrames: sec(3) },
   { id: "Slide", component: SlideScene, durationInFrames: sec(2) },
   { id: "WrongAnswer", component: WrongAnswerScene, durationInFrames: sec(3.6) },
-  { id: "Score", component: ScoreScene, durationInFrames: sec(3.33) },
+  { id: "Score", component: ScoreScene, durationInFrames: sec(3.67) },
 ];
 
 /** Length of the fade between two scenes, in frames. */

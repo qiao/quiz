@@ -1,5 +1,5 @@
 import { Audio } from "@remotion/media";
-import { ding, mouseClick } from "@remotion/sfx";
+import { ding } from "@remotion/sfx";
 import {
   AbsoluteFill,
   Easing,
@@ -12,38 +12,22 @@ import {
 import { COLOR, FPS, MONO, sec } from "../theme";
 import { Caption } from "./Caption";
 
-/** Frames of the first fill, which stops at 19 of 20 because one answer was wrong. */
-const FIRST_FILL = [sec(0.2), sec(1)] as const;
-
-/** Frame where the learner presses "Try the missed questions again". */
-const RETRY_PRESS = sec(1.6);
-
-/** Frames of the second fill, after the learner answers the missed question again. */
-const SECOND_FILL = [sec(1.8), sec(2.13)] as const;
+/** Frames of the fill, which runs from an empty ring to a perfect score. */
+const FILL = [sec(0.2), sec(1.4)] as const;
 
 /** Frame where the confetti starts, after the ring closes. */
-const CONFETTI_START = SECOND_FILL[1] + sec(0.07);
+const CONFETTI_START = FILL[1] + sec(0.07);
 
 const CONFETTI_COLORS = [COLOR.text, COLOR.green, COLOR.dim];
 
-/**
- * Scene 6: the score ring fills to 19 of 20, the learner retries the missed question, and the ring
- * closes at a perfect score with confetti.
- */
+/** Scene 6: the score ring fills to a perfect score, and confetti drops when the ring closes. */
 export const ScoreScene: React.FC = () => {
   const frame = useCurrentFrame();
-  const fill =
-    frame < SECOND_FILL[0]
-      ? interpolate(frame, [...FIRST_FILL], [0, 0.95], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-          easing: Easing.bezier(0.33, 0, 0.2, 1),
-        })
-      : interpolate(frame, [...SECOND_FILL], [0.95, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-          easing: Easing.bezier(0.33, 0, 0.2, 1),
-        });
+  const fill = interpolate(frame, [...FILL], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.bezier(0.33, 0, 0.2, 1),
+  });
   const perfect = fill === 1;
   // Time since the confetti started, in seconds.
   const confettiTime = (frame - CONFETTI_START) / FPS;
@@ -128,42 +112,10 @@ export const ScoreScene: React.FC = () => {
         </Interactive.Div>
       </div>
 
-      <Interactive.Div
-        name="Retry button"
-        style={{
-          marginTop: 44,
-          padding: "18px 34px",
-          borderRadius: 8,
-          fontFamily: MONO,
-          fontSize: 30,
-          fontWeight: 500,
-          backgroundColor: COLOR.text,
-          color: COLOR.background,
-          opacity: interpolate(frame, [sec(1.13), sec(1.33), sec(1.8), sec(2)], [0, 1, 1, 0], {
-            extrapolateLeft: "clamp",
-            extrapolateRight: "clamp",
-          }),
-          scale: interpolate(
-            frame,
-            [RETRY_PRESS, RETRY_PRESS + sec(0.07), RETRY_PRESS + sec(0.13)],
-            [1, 0.94, 1],
-            {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            },
-          ),
-        }}
-      >
-        Try the missed questions again
-      </Interactive.Div>
-
-      <Sequence name="Retry sound" from={RETRY_PRESS} layout="none">
-        <Audio src={mouseClick} volume={0.5} />
-      </Sequence>
       <Sequence name="Perfect sound" from={CONFETTI_START} layout="none">
         <Audio src={ding} volume={0.5} />
       </Sequence>
-      <Caption text="Test your knowledge" from={sec(2.4)} />
+      <Caption text="Test your knowledge" from={sec(1.73)} />
     </AbsoluteFill>
   );
 };
