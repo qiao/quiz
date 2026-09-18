@@ -967,7 +967,6 @@ kbd {
   const questionCount = quiz.questions.length;
   const endSlide = questionCount + 1;
   const stateKey = `quiz:${quiz.id}:state`;
-  document.getElementById('bar-title').textContent = quiz.title;
 
   /**
    * Reads the saved progress, and drops any value that does not fit this quiz.
@@ -1476,9 +1475,13 @@ kbd {
     const answeredCount = Object.keys(state.answers).length;
     const onQuestion = slide >= 1 && slide <= questionCount;
     slideElement.classList.toggle('slide-question', onQuestion);
-    document.getElementById('bar-count').textContent = onQuestion
-      ? `${slide} / ${questionCount}`
-      : `${answeredCount} / ${questionCount} answered`;
+    // The cover shows the title as its heading, so the bar shows the title on the other slides.
+    // The count leaves the bar when no question has an answer, so a fresh cover has no noise.
+    document.getElementById('bar-title').textContent = slide === 0 ? '' : quiz.title;
+    let count = '';
+    if (onQuestion) count = `${slide} / ${questionCount}`;
+    else if (answeredCount) count = `${answeredCount} / ${questionCount} answered`;
+    document.getElementById('bar-count').textContent = count;
     const fill = document.getElementById('progress-fill');
     const progress = onQuestion ? slide : answeredCount;
     fill.style.width = `${(progress / questionCount) * 100}%`;
