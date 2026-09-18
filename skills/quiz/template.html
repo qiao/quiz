@@ -407,7 +407,7 @@ h2 {
 
 /*
  * The tier strip on the cover: one segment per tier, in tier order. The segments have the same
- * width, so the strip reads as four steps, and the count under each name gives the size.
+ * width, so the strip reads as three steps, and the count under each name gives the size.
  */
 .tiers {
   display: grid;
@@ -810,9 +810,9 @@ kbd {
     padding: var(--vbg-space-6) var(--vbg-space-4) var(--vbg-space-10);
   }
 
-  /* A narrow screen shows the tier strip as two rows of two, so a tier name does not break. */
+  /* A narrow screen stacks the tier strip, so a tier name does not break. */
   .tiers {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     grid-auto-flow: row;
   }
 
@@ -1136,7 +1136,7 @@ kbd {
   }
 
   function renderTitleSlide() {
-    const tiers = [1, 2, 3, 4]
+    const tiers = [1, 2, 3]
       .map((tier) => quiz.questions.filter((question) => question.tier === tier))
       .filter((questions) => questions.length > 0);
     const answeredCount = Object.keys(state.answers).length;
@@ -1418,7 +1418,7 @@ kbd {
       if (percent === 100) slideTimers.push(setTimeout(dropConfetti, 800));
     }
 
-    const rows = [1, 2, 3, 4]
+    const rows = [1, 2, 3]
       .map((tier) => quiz.questions.filter((question) => question.tier === tier))
       .filter((questions) => questions.length > 0)
       .map((questions) => {
