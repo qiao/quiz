@@ -5,11 +5,13 @@ document before it writes `quiz.json`.
 
 ## 1. Progressive tiers
 
-Organize all questions into four progressive difficulty tiers. Arrange questions in non-decreasing
-tier order: all Tier 1 questions first, followed by Tier 2, Tier 3, and Tier 4.
+Organize all questions into three progressive difficulty tiers. Arrange questions in
+non-decreasing tier order: all Tier 1 questions first, then Tier 2, then Tier 3.
 
-Tier sizes must differ by at most 1 question across all four tiers. For total count N, allocate
-`Math.floor(N / 4)` questions to each tier, and distribute remainders to earlier tiers.
+Half of the questions go to Tier 1. Each of the two higher tiers takes half of what is left, and
+a remainder goes to the earlier tier. A quiz of 20 questions is 10, 5, and 5. A quiz of 10
+questions is 5, 3, and 2. The build rejects a draft with a different shape, and the error names
+the correct sizes.
 
 ### Tier 1: Fundamentals
 - Thinking type: Recall.
@@ -27,25 +29,21 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
   described process work step by step?
 
 ### Tier 3: Advanced
-- Thinking type: Apply.
-- Target: the main flow at its edges: invalid input, missing input, hostile input, the limits
-  that the source states, and rules that combine.
+- Thinking type: Apply and analyze.
+- Target: the main flow at its edges, and the main design choices. The edges are invalid input,
+  missing input, hostile input, the limits that the source states, and rules that combine. The
+  design choices are why the resource does X instead of Y, the invariant that the main flow
+  keeps, and what the design cannot do.
+- Write at least one question of each kind when the source supports both.
 - Code example: What error occurs when a file is missing, or how does the cache behave on invalid
   keys?
 - Threat example: What happens when a caller sends a path with `../` or a field with HTML in it?
   Which check stops it, and what breaks without that check?
 - When the resource has a trust boundary (user input, files or data from outside, network input,
-  or a third party), write at least one Tier 3 question about hostile input at that boundary. Base
+  or a third party), write at least one question about hostile input at that boundary. Base
   the answer on a check or a limit that the source shows.
-- Book or docs example: How does a principle apply to a new scenario, or what exception does the
-  text specify for a general rule?
-
-### Tier 4: Expert
-- Thinking type: Analyze.
-- Target: the main design choices: why the resource does X instead of Y, the invariant that the
-  main flow keeps, and what the design cannot do.
-- Code example: Why did the designers pick this data structure, or what invariant breaks if these
-  two calls run out of order?
+- Design example: Why did the designers pick this data structure, or what invariant breaks if
+  these two calls run out of order?
 - Tradeoff example: Why does the design use X instead of Y? Name the rejected alternative Y in the
   prompt or in a choice, so that the learner weighs the two options.
 - Ask why the designers chose X only when the source states the reason, for example in a decision
@@ -54,8 +52,8 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 - A code comment is not a design record. A comment that explains an internal step, for example
   a temporary object or a header that one browser needs, does not make a core question. Ask
   about a design choice that the documentation names, and that a user of the resource meets.
-- Book or docs example: What limitation does the author identify in a technique, or how do two
-  competing guidelines balance against each other?
+- Book or docs example: How does a principle apply to a new scenario, what exception does the
+  text specify for a general rule, or what limitation does the author identify in a technique?
 
 ## 2. Focus on the core
 
@@ -73,9 +71,9 @@ cover:
 - The options that most users set.
 - The failures that a user sees most often, and the check that stops each one.
 
-Write every question from this list. The four tiers go deeper into the same core. They do not
-move to the edges. Tier 3 asks what the main flow does with bad input. Tier 4 asks why the main
-design is the way it is.
+Write every question from this list. The three tiers go deeper into the same core. They do not
+move to the edges. Tier 3 asks what the main flow does with bad input, and why the main design is
+the way it is.
 
 Apply the regular-user test to each question: a person who uses the resource every week needs
 the fact to use it correctly. When the test fails, replace the question.
