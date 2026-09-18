@@ -90,9 +90,9 @@ The skill transforms resources into self-contained HTML slides through five sequ
    example after a template change.
 5. **Report:** The agent outputs the file path, an operating system open command (`open` on
    macOS, `xdg-open` on Linux, `start` on Windows), and a static hosting deployment hint (for
-   example, `npx vercel quizzes/<slug>`). The agent then offers to open the page in the browser,
-   and runs the open command only when the user accepts. A session that cannot wait for an
-   answer prints the command and stops.
+   example, `npx vercel deploy --cwd quizzes/<slug> --yes --prod`). The agent then offers to
+   open the page in the browser, and runs the open command only when the user accepts. A session
+   that cannot wait for an answer prints the command and stops.
 
 ---
 

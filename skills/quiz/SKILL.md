@@ -231,7 +231,7 @@ user:
   `xdg-open ./quizzes/<slug>/index.html` on Linux, or `start quizzes\<slug>\index.html`
   on Windows.
 - Print a one-line deployment hint for static hosting (for example,
-  `npx vercel quizzes/<slug>` or `npx netlify deploy --dir=quizzes/<slug>`).
+  `npx vercel deploy --cwd quizzes/<slug> --yes --prod`).
 - If the quiz covers a free-standing topic, state in the report that the quiz uses web sources.
 
 Then offer to open the page. Do not wait for the user to ask:
