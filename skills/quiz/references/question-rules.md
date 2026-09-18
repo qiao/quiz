@@ -42,7 +42,8 @@ Tier sizes must differ by at most 1 question across all four tiers. For total co
 
 ### Tier 4: Expert
 - Thinking type: Analyze.
-- Target: the main design choices: tradeoffs, invariants, hidden assumptions, and limits.
+- Target: the main design choices: why the resource does X instead of Y, the invariant that the
+  main flow keeps, and what the design cannot do.
 - Code example: Why did the designers pick this data structure, or what invariant breaks if these
   two calls run out of order?
 - Tradeoff example: Why does the design use X instead of Y? Name the rejected alternative Y in the
@@ -89,6 +90,7 @@ Niche subjects, which fail the test:
 - An error for a call that no documented use makes, for example a required argument left out.
 - An old format, a removed option, or a changelog entry that the current documentation does not
   describe.
+- A detail of option parsing, for example which strings count as true.
 - A number that the source can change with no visible effect for the user.
 - The reason for a wording choice in a document.
 
