@@ -200,42 +200,56 @@ function checkCitation(citation, label, errors) {
  * @param {string[]} texts The 4 choice texts, the correct choice first.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
- * @returns {boolean} True when the correct choice is longer than every wrong choice.
+ * @returns {ChoiceLengths} The trimmed lengths of the answer and of the longest wrong choice.
  */
 function checkChoiceLengths(texts, label, errors) {
-  const [correctLength, ...wrongLengths] = texts.map((text) => text.trim().length);
+  const [answer, ...wrongLengths] = texts.map((text) => text.trim().length);
   const longestWrong = Math.max(...wrongLengths);
-  if (correctLength > longestWrong * MAX_CORRECT_LENGTH_RATIO) {
+  if (answer > longestWrong * MAX_CORRECT_LENGTH_RATIO) {
     errors.push(
-      `${label}: the correct choice has ${correctLength} characters, and the longest wrong ` +
+      `${label}: the correct choice has ${answer} characters, and the longest wrong ` +
         `choice has ${longestWrong}. Make the lengths closer, so that the length does not show ` +
         'the answer',
     );
   }
-  return correctLength > longestWrong;
+  return { answer, longestWrong };
 }
+
+/**
+ * @typedef {object} ChoiceLengths
+ * @property {number} answer Trimmed length of the correct choice.
+ * @property {number} longestWrong Trimmed length of the longest wrong choice.
+ *
+ * @typedef {ChoiceLengths & { question: number }} LongAnswer
+ */
 
 /**
  * Rejects a quiz where the correct choice is the longest choice too often.
  *
  * A learner who always picks the longest choice must not do better than a random guess, so the
- * limit is a quarter of the questions.
+ * limit is a quarter of the questions. The error gives the lengths, smallest gap first, so that
+ * the agent can choose the smallest edits without a count of its own.
  *
- * @param {number[]} questionNumbers Numbers of the questions where the correct choice is longer
- *   than every wrong choice.
+ * @param {LongAnswer[]} longAnswers The questions where the correct choice is longer than every
+ *   wrong choice, in question order.
  * @param {number} questionCount Number of questions in the quiz.
  * @param {string[]} errors List that receives the errors.
  */
-function checkLongestCorrectCount(questionNumbers, questionCount, errors) {
+function checkLongestCorrectCount(longAnswers, questionCount, errors) {
   const limit = Math.ceil(questionCount / CHOICE_LETTERS.length);
-  const excess = questionNumbers.length - limit;
-  if (excess > 0) {
-    errors.push(
-      `Quiz: the correct choice is the longest choice in ${questionNumbers.length} questions ` +
-        `(${questionNumbers.join(', ')}), and the limit is ${limit}. Make a wrong choice longer ` +
-        `than the correct choice in ${excess} or more of these questions`,
-    );
-  }
+  const excess = longAnswers.length - limit;
+  if (excess <= 0) return;
+  const gap = (/** @type {LongAnswer} */ item) => item.answer - item.longestWrong;
+  const items = [...longAnswers]
+    .sort((first, second) => gap(first) - gap(second) || first.question - second.question)
+    .map((item) => `${item.question} (${item.answer} vs ${item.longestWrong})`);
+  errors.push(
+    `Quiz: the correct choice is the longest choice in ${longAnswers.length} questions, and the ` +
+      `limit is ${limit}. Make a wrong choice longer than the correct choice in ${excess} or ` +
+      'more of these questions. Each item gives the question, the length of the correct ' +
+      'choice, and the length of the longest wrong choice, smallest gap first: ' +
+      items.join(', '),
+  );
 }
 
 /**
@@ -244,7 +258,7 @@ function checkLongestCorrectCount(questionNumbers, questionCount, errors) {
  * @param {Record<string, unknown>} question Question to check.
  * @param {string} label Start of each error message.
  * @param {string[]} errors List that receives the errors.
- * @returns {boolean} True when the correct choice is longer than every wrong choice.
+ * @returns {ChoiceLengths | null} The choice lengths, or null when a choice text is missing.
  */
 function checkChoices(question, label, errors) {
   checkFilledStrings(question, ['answer'], label, errors);
@@ -275,7 +289,7 @@ function checkChoices(question, label, errors) {
   }
 
   // The text checks need all 4 texts.
-  if (texts.length !== 4 || !texts.every(([, text]) => isFilledString(text))) return false;
+  if (texts.length !== 4 || !texts.every(([, text]) => isFilledString(text))) return null;
   /** @type {Map<string, string>} */
   const seen = new Map();
   for (const [field, text] of texts) {
@@ -313,8 +327,8 @@ export function validateDraft(draft) {
   }
 
   const tierSizes = [0, 0, 0, 0];
-  /** @type {number[]} */
-  const longestCorrect = [];
+  /** @type {LongAnswer[]} */
+  const longAnswers = [];
   let previousTier = 0;
   draft.questions.forEach((question, index) => {
     const label = `Question ${index + 1}`;
@@ -339,7 +353,10 @@ export function validateDraft(draft) {
     }
 
     checkFilledStrings(question, ['prompt', 'explanation'], label, errors);
-    if (checkChoices(question, label, errors)) longestCorrect.push(index + 1);
+    const lengths = checkChoices(question, label, errors);
+    if (lengths && lengths.answer > lengths.longestWrong) {
+      longAnswers.push({ question: index + 1, ...lengths });
+    }
     checkCitation(question.citation, label, errors);
   });
 
@@ -348,7 +365,7 @@ export function validateDraft(draft) {
       `Quiz: tier sizes must differ by at most 1 question, found ${tierSizes.join(', ')}`,
     );
   }
-  checkLongestCorrectCount(longestCorrect, draft.questions.length, errors);
+  checkLongestCorrectCount(longAnswers, draft.questions.length, errors);
   return errors;
 }
 

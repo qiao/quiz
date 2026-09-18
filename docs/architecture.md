@@ -397,7 +397,9 @@ Before emitting HTML, `build.mjs` checks:
     choice (after trimming spaces), so that choice length does not reveal the answer.
 12. The correct choice can be longer than every wrong choice in at most `Math.ceil(N / 4)`
     questions. A learner who always picks the longest choice then does no better than a random
-    guess. The error lists the question numbers, so that the agent fixes them in one pass.
+    guess. The error lists each question with the length of its correct choice and of its longest
+    wrong choice, smallest gap first. The agent then picks the smallest edits and fixes them in
+    one pass, with no count of its own.
 
 ### Error format and exit codes
 

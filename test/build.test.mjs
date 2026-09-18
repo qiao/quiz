@@ -188,9 +188,12 @@ describe('validateDraft', () => {
     setLongestCorrect(draft, [2, 5]);
     assert.deepEqual(validateDraft(draft), []);
     setLongestCorrect(draft, [2, 5, 7]);
+    draft.questions[4].answer += 'xx';
     assert.deepEqual(validateDraft(draft), [
-      'Quiz: the correct choice is the longest choice in 3 questions (2, 5, 7), and the limit ' +
-        'is 2. Make a wrong choice longer than the correct choice in 1 or more of these questions',
+      'Quiz: the correct choice is the longest choice in 3 questions, and the limit is 2. Make a ' +
+        'wrong choice longer than the correct choice in 1 or more of these questions. Each item ' +
+        'gives the question, the length of the correct choice, and the length of the longest ' +
+        'wrong choice, smallest gap first: 2 (43 vs 42), 7 (68 vs 67), 5 (47 vs 44)',
     ]);
   });
 
