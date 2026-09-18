@@ -650,23 +650,26 @@ The compiler resolves citation permalinks during compilation:
 
 1. If the citation target begins with `http://` or `https://`, the compiler assigns `citation.url`
    directly to that target URL.
-2. For local file paths, `build.mjs` checks if the cited file sits inside a git repository using
-   `git rev-parse --show-toplevel`. Citation paths are relative to this repository root.
-3. It checks whether `HEAD` is on a remote-tracking branch by running
-   `git branch -r --contains HEAD`. If the command produces no output, the commit is not pushed
-   to a remote, and `build.mjs` sets `citation.url` to `undefined`. This check reads local refs
-   and makes no network calls.
-4. It checks for uncommitted changes using `git status --porcelain <target-file>`. If the file has
-   uncommitted changes, `citation.url` remains `undefined`.
-5. It reads the remote URL using `git remote get-url origin`. If the remote URL uses the SSH form
-   (`git@github.com:org/repo.git`), `build.mjs` converts it to HTTPS
-   (`https://github.com/org/repo`).
-6. Version 1 supports GitHub remotes only. If the repository points to GitHub, the compiler
-   formats a direct link: `https://github.com/<org>/<repo>/blob/<commit>/<path>#L15-L32`.
-   For PDF citations with a page number, it formats `#page=N`.
-7. If any check fails, the slide displays plain text line numbers (`path/to/file.ts:15-32`) or
-   page numbers (`document.pdf:p.12`).
-8. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`.
+2. For local file paths, `build.mjs` runs git in the folder where the build runs. It stops at the
+   first check that fails, and then no local citation gets a link. When no citation is a local
+   file, it runs no git command.
+3. `git rev-parse --show-toplevel HEAD` gives the repository root and the commit SHA. Citation
+   paths are relative to this root, and a leading `./` is removed.
+4. `git remote get-url origin` gives the remote. Version 1 supports GitHub remotes only: the SSH
+   form (`git@github.com:org/repo.git`), the SSH URL form, and the HTTPS form become
+   `https://github.com/org/repo`. Any other host stops the checks.
+5. `git rev-list -n1 HEAD --not --remotes` checks that a remote-tracking branch holds `HEAD`. Any
+   output means that `HEAD` has commits that no remote branch holds, which stops the checks. This
+   check reads local refs and makes no network calls.
+6. `git ls-files -z` and `git status --porcelain -z --untracked-files=no` run one time each, with
+   all cited paths. A file gets a link only when git tracks it and it has no uncommitted change.
+   The number of git processes is 5 at most, for any number of citations.
+7. A linked file gets `https://github.com/<org>/<repo>/blob/<commit>/<path>` with an anchor:
+   `#page=N` for a PDF page, `#L15-L32` for a line range, or `#L15` for one line.
+8. The citation label is the path with its lines (`path/to/file.ts:15-32`) or its page
+   (`document.pdf, page 12`). A linked citation uses the label as link text. If any check fails,
+   the slide shows the label as code text with no link.
+9. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`.
 
 ---
 
