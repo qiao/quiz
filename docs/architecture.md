@@ -531,7 +531,7 @@ The deck contains three distinct slide views:
 1. **Title slide (index 0):** Shows five blocks in this order: the quiz title, a lede with the
    question count and the tier count ("20 questions in 4 tiers"), a tier strip, the buttons, and
    the notes. The tier strip is an ordered list with one segment per tier. Each segment has a
-   2 px rule on top, the tier name, and the question count of that tier. The segments have the
+   2 px rule on top, the tier label, and the question count of that tier. The segments have the
    same width and sit in one row, or in two rows of two on a screen up to 600 px wide. The
    buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an optional "Restart"
    button. The start button ends with an "Enter" key hint, which is hidden from screen readers.
@@ -544,9 +544,9 @@ The deck contains three distinct slide views:
    A question slide gives its number above the prompt, so the bar shows no count on it.
 2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
-   block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,
-   question progress ("5 of 20"), question prompt, four interactive choice cards, an explanation
-   reveal panel, citation link, a "Back" button, and a forward button ("Next" on
+   block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows the tier label, the
+   question number ("Question 5 of 20"), question prompt, four interactive choice cards, an
+   explanation reveal panel, citation link, a "Back" button, and a forward button ("Next" on
    questions 1 to N - 1, or "See the score" on question N). In review when all questions have
    answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
    displays drawn check and cross icons next to the status text.
@@ -558,6 +558,10 @@ The deck contains three distinct slide views:
    questions. The retry button and the "Back" button on the question slides reach them. Reaching
    the end slide from the last question animates the ring fill and count-up over 800 ms, and
    drops confetti after the ring closes for a 100% score.
+
+A tier label names the tier of a question on every slide: a level mark and the tier name. The level
+mark has three bars of rising height, and one bar is on for each tier step, so Core shows two bars.
+The mark is hidden from screen readers, and a hidden prefix gives the tier number ("Tier 2: ").
 
 ### Keyboard bindings
 

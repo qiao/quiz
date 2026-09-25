@@ -162,11 +162,50 @@ pre {
   display: flex;
   flex-wrap: wrap;
   gap: var(--vbg-space-2) var(--vbg-space-4);
+  align-items: center;
   justify-content: space-between;
   margin-bottom: var(--vbg-space-4);
   color: var(--vbg-gray-900);
   font-size: var(--vbg-type-label);
   font-variant-numeric: tabular-nums;
+}
+
+/* A tier label: the level mark and the tier name. */
+.tier-label {
+  display: inline-flex;
+  gap: var(--vbg-space-2);
+  align-items: center;
+  font-weight: 500;
+}
+
+/*
+ * The level mark of a tier: three bars of rising height. One bar is on for each tier step, so the
+ * mark shows the depth of a question in the same way on every slide.
+ */
+.level {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  align-items: flex-end;
+  height: 10px;
+}
+
+.level i {
+  width: 3px;
+  height: 4px;
+  background: color-mix(in oklab, var(--vbg-gray-1000) 20%, transparent);
+}
+
+.level i:nth-child(2) {
+  height: 7px;
+}
+
+.level i:nth-child(3) {
+  height: 10px;
+}
+
+.level i.is-on {
+  background: var(--vbg-gray-1000);
 }
 
 h1,
@@ -430,9 +469,8 @@ h2 {
   line-height: 1.4;
 }
 
-.tier-name {
-  display: block;
-  font-weight: 500;
+.tier .tier-label {
+  display: flex;
 }
 
 .tier-count {
@@ -961,6 +999,24 @@ kbd {
   }
 
   /**
+   * Makes a tier label: the level mark and the tier name. The level mark has three bars of rising
+   * height, and one bar is on for each tier step. The name goes with the mark, so the mark is
+   * hidden from readers, and a hidden prefix gives the tier number.
+   *
+   * @param {number} tier Tier from 1 to 3.
+   * @param {string} name Tier name.
+   * @returns {HTMLElement} The label.
+   */
+  function tierLabel(tier, name) {
+    const bars = [1, 2, 3].map((step) => element('i', step <= tier ? { class: 'is-on' } : {}));
+    return element('span', { class: 'tier-label' }, [
+      element('span', { class: 'level', 'aria-hidden': 'true' }, bars),
+      element('span', { class: 'visually-hidden', text: `Tier ${tier}: ` }),
+      name,
+    ]);
+  }
+
+  /**
    * Replaces the slide content, and skips children that a render function left out.
    *
    * @param {Array<Node | string | null>} children Slide content in order.
@@ -1156,7 +1212,7 @@ kbd {
       { class: 'tiers', 'aria-label': 'Tiers' },
       tiers.map((questions) =>
         element('li', { class: 'tier' }, [
-          element('span', { class: 'tier-name', text: questions[0].tierName }),
+          tierLabel(questions[0].tier, questions[0].tierName),
           element('span', { class: 'tier-count', text: plural(questions.length, 'question') }),
         ]),
       ),
@@ -1305,7 +1361,7 @@ kbd {
 
     showSlide([
       element('div', { class: 'meta' }, [
-        element('span', { text: `Tier ${question.tier} · ${question.tierName}` }),
+        tierLabel(question.tier, question.tierName),
         element('span', { text: `Question ${question.id} of ${questionCount}` }),
       ]),
       element('div', { class: 'prompt rich', html: question.promptHtml }),
