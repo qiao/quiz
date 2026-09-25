@@ -805,7 +805,7 @@ kbd {
     padding: 0 var(--vbg-space-2) 0 var(--vbg-space-4);
   }
 
-  /* A narrow bar shows only the count and the theme button. The browser tab keeps the title. */
+  /* A narrow bar shows only the count, if any, and the theme button. The tab keeps the title. */
   .bar-title {
     display: none;
   }
@@ -1482,11 +1482,11 @@ kbd {
     const onQuestion = slide >= 1 && slide <= questionCount;
     slideElement.classList.toggle('slide-question', onQuestion);
     // The cover shows the title as its heading, so the bar shows the title on the other slides.
-    // The count leaves the bar when no question has an answer, so a fresh cover has no noise.
+    // The count leaves the bar when no question has an answer, so a fresh cover has no noise. A
+    // question slide gives its number above the prompt, so the bar shows no count there.
     document.getElementById('bar-title').textContent = slide === 0 ? '' : quiz.title;
-    let count = '';
-    if (onQuestion) count = `${slide} / ${questionCount}`;
-    else if (answeredCount) count = `${answeredCount} / ${questionCount} answered`;
+    const showCount = !onQuestion && answeredCount > 0;
+    const count = showCount ? `${answeredCount} / ${questionCount} answered` : '';
     document.getElementById('bar-count').textContent = count;
     const fill = document.getElementById('progress-fill');
     const progress = onQuestion ? slide : answeredCount;

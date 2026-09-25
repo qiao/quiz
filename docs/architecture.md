@@ -541,6 +541,7 @@ The deck contains three distinct slide views:
    keyboard and no hover, for example a phone, shows neither the "Keys" row nor the key hint in the
    button. On the title slide, the bar shows no title, because the heading carries it. On the title
    and end slides, the bar shows the answered count only when at least one question has an answer.
+   A question slide gives its number above the prompt, so the bar shows no count on it.
 2. **Question slide (index 1 to N):** Starts at a fixed distance from the top, so content does not
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
    block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows tier badge,
