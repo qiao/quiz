@@ -284,28 +284,38 @@ h1 {
 
 .choice:hover:not([aria-disabled='true']) {
   background: var(--vbg-background-200);
-  box-shadow: inset 0 0 0 1px var(--vbg-gray-900);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--vbg-gray-1000) 35%, transparent);
 }
 
 .choice[aria-disabled='true'] {
   cursor: default;
 }
 
+/* The key cap of a choice. It fills with ink on hover, so the learner sees the key to press. */
 .choice-letter {
   display: inline-grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: var(--vbg-radius-small);
+  background: var(--vbg-background-200);
   box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  color: var(--vbg-gray-900);
   font-family: var(--vbg-font-mono);
-  font-size: var(--vbg-type-label);
+  font-size: 0.75rem;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
+.choice:hover:not([aria-disabled='true']) .choice-letter {
+  background: var(--vbg-gray-1000);
+  box-shadow: none;
+  color: var(--vbg-background-100);
+}
+
+/* The first line of the text is 24 px tall, so it lines up with the key cap. */
 .choice-body {
   min-width: 0;
-  padding-top: 2px;
 }
 
 /*
@@ -687,6 +697,7 @@ kbd {
   }
 
   .choice,
+  .choice-letter,
   .button {
     transition:
       background-color var(--duration-quick) ease,
