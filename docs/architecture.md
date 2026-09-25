@@ -832,8 +832,8 @@ token uses CSS `light-dark(<light>, <dark>)`:
 - **Border radius (from `vercel-brand.css`):**
   `--vbg-radius-small: 6px` and `--vbg-radius: 8px`. The interface uses no other radii.
 - **Type scale (from `vercel-brand.css`):**
-  Page title `2.5rem`, title `2rem`, section `1.5rem`, subsection `1.25rem`, lede `1.125rem`,
-  body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
+  Display `3rem`, page title `2.5rem`, title `2rem`, section `1.5rem`, subsection `1.25rem`, lede
+  `1.125rem`, body `1rem`, compact `0.875rem`, and label or metadata `0.8125rem`.
 - **Typography families (from `vercel-brand.css`):**
   `"Geist"` for sans-serif text and `"Geist Mono"` for monospace code.
 - **Motion tokens (from `transitions.dev`):**

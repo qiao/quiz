@@ -1,7 +1,7 @@
 /*
  * Design tokens for the quiz page.
  * Source: https://vercel.com/geist/vercel-brand.css, which https://vercel.com/design.md names.
- * Copy date: 2026-09-16. The page uses only these tokens.
+ * Copy date: 2026-09-16, and 2026-09-25 for --vbg-type-display. The page uses only these tokens.
  * Each color is light-dark(<light>, <dark>), so `color-scheme` on the root selects the theme.
  */
 :root {
@@ -38,6 +38,7 @@
   --vbg-radius-small: 6px;
   --vbg-radius: 8px;
 
+  --vbg-type-display: 3rem;
   --vbg-type-page-title: 2.5rem;
   --vbg-type-title: 2rem;
   --vbg-type-section: 1.5rem;
