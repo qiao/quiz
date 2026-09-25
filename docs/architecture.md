@@ -531,8 +531,9 @@ The deck contains three distinct slide views:
 1. **Title slide (index 0):** Shows five blocks in this order: the quiz title, a lede with the
    question count and the tier count ("20 questions in 3 tiers"), a tier strip, the buttons, and
    the notes. The tier strip is an ordered list with one segment per tier. Each segment has a
-   2 px rule on top, the tier label, and the question count of that tier. The segments have the
-   same width and sit in one row, or in two rows of two on a screen up to 600 px wide. The
+   hairline on top, the tier label, and the question count of that tier. The segments have the
+   same width and sit in one row. On a screen up to 600 px wide, each tier takes one row between
+   hairlines, with the count at the end of the row. The
    buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an optional "Restart"
    button. The start button ends with an "Enter" key hint, which is hidden from screen readers.
    The notes are a small description list with two rows: "Source" gives the resource source, and
