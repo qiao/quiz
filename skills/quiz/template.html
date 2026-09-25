@@ -60,11 +60,12 @@ pre {
   tab-size: 2;
 }
 
+/* Inline code sits on a soft fill with no border, so a line with several names stays calm. */
 :not(pre) > code {
-  padding: 1px var(--vbg-space-1);
+  padding: 0.1em 0.3em;
   border-radius: var(--vbg-radius-small);
-  background: var(--vbg-background-200);
-  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  background: var(--vbg-gray-alpha-400);
+  font-size: 0.85em;
 }
 
 pre {
