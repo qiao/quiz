@@ -523,19 +523,26 @@ h1 {
   list-style: none;
 }
 
+/* A key cap: a small filled cap with the key name in the sans font. */
 kbd {
   display: inline-block;
-  padding: 0 var(--vbg-space-1);
+  min-width: 20px;
+  padding: 0 5px;
   border-radius: var(--vbg-radius-small);
+  background: var(--vbg-background-200);
   box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
   color: var(--vbg-gray-1000);
-  font-family: var(--vbg-font-mono);
-  font-size: var(--vbg-type-label);
+  font-family: var(--vbg-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
 }
 
 /* A key hint at the end of a button. The hint takes the text color of the button. */
 .button-key {
-  box-shadow: inset 0 0 0 1px color-mix(in oklch, currentColor 40%, transparent);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 35%, transparent);
   color: inherit;
 }
 
