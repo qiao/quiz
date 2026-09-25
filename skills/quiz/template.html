@@ -543,7 +543,7 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-/* The notes at the foot of the cover: the source of the questions and the keys. */
+/* The notes at the foot of the cover: the source of the questions. */
 .notes {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -571,19 +571,6 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-/*
- * The keys note lists one binding per item. The items sit in columns of at least 240 px, so the
- * items line up when the list wraps.
- */
-.keys {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--vbg-space-2) var(--vbg-space-6);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
 /* A key cap: a small filled cap with the key name in the sans font. */
 kbd {
   display: inline-block;
@@ -607,9 +594,8 @@ kbd {
   color: inherit;
 }
 
-/* A device with no keyboard and no hover, for example a phone, does not show the key hints. */
+/* A device with no keyboard and no hover, for example a phone, does not show the key hint. */
 @media (hover: none) and (pointer: coarse) {
-  .notes > .notes-keys,
   .button-key {
     display: none;
   }
@@ -1406,36 +1392,10 @@ kbd {
       answeredCount ? button('Restart', 'secondary', restart) : null,
     ]);
 
-    const keyRows = [
-      { keys: ['1 to 4', 'A to D'], action: 'choose an answer' },
-      { keys: ['Enter', 'Right Arrow'], action: 'go on' },
-      { keys: ['Left Arrow'], action: 'go back' },
-      { keys: ['T'], action: 'change the theme' },
-    ];
-    const arrowGlyphs = { 'Right Arrow': '→', 'Left Arrow': '←' };
-    const keys = element(
-      'ul',
-      { class: 'keys' },
-      keyRows.map((row) => {
-        const caps = row.keys.flatMap((key, index) => {
-          const glyph = arrowGlyphs[key];
-          const kbd = glyph
-            ? element('kbd', {}, [
-                element('span', { 'aria-hidden': 'true', text: glyph }),
-                element('span', { class: 'visually-hidden', text: key }),
-              ])
-            : element('kbd', { text: key });
-          return [index ? ' or ' : null, kbd];
-        });
-        return element('li', {}, [...caps, ` ${row.action}`]);
-      }),
-    );
+    // The cover lists no keys. The key caps on the choices, the hint in the start button, and the
+    // tooltip of the theme button show the keys where the learner uses them.
     const notes = element('dl', { class: 'notes' }, [
       element('div', {}, [element('dt', { text: 'Source' }), element('dd', { text: quiz.source })]),
-      element('div', { class: 'notes-keys' }, [
-        element('dt', { text: 'Keys' }),
-        element('dd', {}, [keys]),
-      ]),
     ]);
 
     showSlide([
