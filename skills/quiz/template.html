@@ -225,9 +225,16 @@ h1 {
 }
 
 .prompt {
-  font-size: var(--vbg-type-subsection);
+  font-size: var(--vbg-type-section);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.prompt code {
   font-weight: 500;
-  line-height: 1.45;
+  letter-spacing: -0.01em;
 }
 
 .rich > :first-child {
@@ -238,8 +245,11 @@ h1 {
   margin-bottom: 0;
 }
 
+/* A code block in a prompt uses the compact size, so the lines of code fit the column. */
 .prompt pre {
+  font-size: var(--vbg-type-compact);
   font-weight: 400;
+  letter-spacing: 0;
 }
 
 .rich p,
@@ -250,7 +260,7 @@ h1 {
 .choices {
   display: grid;
   gap: var(--vbg-space-2);
-  margin: var(--vbg-space-6) 0 0;
+  margin: var(--vbg-space-8) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -828,7 +838,7 @@ kbd {
   }
 
   .prompt {
-    font-size: var(--vbg-type-lede);
+    font-size: var(--vbg-type-subsection);
   }
 
   .bar {
