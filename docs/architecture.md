@@ -529,7 +529,7 @@ The title and end slides provide a "Restart" button that clears `quiz:<quizId>:s
 The deck contains three distinct slide views:
 
 1. **Title slide (index 0):** Shows five blocks in this order: the quiz title, a lede with the
-   question count and the tier count ("20 questions in 4 tiers"), a tier strip, the buttons, and
+   question count and the tier count ("20 questions in 3 tiers"), a tier strip, the buttons, and
    the notes. The tier strip is an ordered list with one segment per tier. Each segment has a
    2 px rule on top, the tier label, and the question count of that tier. The segments have the
    same width and sit in one row, or in two rows of two on a screen up to 600 px wide. The
