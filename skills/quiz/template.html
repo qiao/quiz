@@ -543,34 +543,6 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-/* The notes at the foot of the cover: the source of the questions. */
-.notes {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: var(--vbg-space-3) var(--vbg-space-6);
-  margin: var(--vbg-space-12) 0 0;
-  color: var(--vbg-gray-900);
-  font-size: var(--vbg-type-label);
-}
-
-.notes > div {
-  display: contents;
-}
-
-.notes dt,
-.notes dd {
-  margin: 0;
-}
-
-.notes dt {
-  color: var(--vbg-gray-1000);
-  font-weight: 500;
-}
-
-.notes dd {
-  overflow-wrap: anywhere;
-}
-
 /* A key cap: a small filled cap with the key name in the sans font. */
 kbd {
   display: inline-block;
@@ -1393,20 +1365,14 @@ kbd {
     ]);
 
     // The cover lists no keys. The key caps on the choices, the hint in the start button, and the
-    // tooltip of the theme button show the keys where the learner uses them.
-    const notes = element('dl', { class: 'notes' }, [
-      element('div', {}, [element('dt', { text: 'Source' }), element('dd', { text: quiz.source })]),
-    ]);
-
+    // tooltip of the theme button show the keys where the learner uses them. The tier strip gives
+    // the tiers, so the lede gives only the question count and the source.
+    const lede = `${plural(questionCount, 'question')} · ${quiz.source}`;
     showSlide([
       element('h1', { text: quiz.title }),
-      element('p', {
-        class: 'lede',
-        text: `${plural(questionCount, 'question')} in ${plural(tiers.length, 'tier')}`,
-      }),
+      element('p', { class: 'lede', text: lede }),
       tierStrip,
       actions,
-      notes,
     ]);
   }
 
