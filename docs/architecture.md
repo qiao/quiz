@@ -827,7 +827,7 @@ token uses CSS `light-dark(<light>, <dark>)`:
   `598d3d6ad89dabb4bdf742fd2e887ca53914a888`:
   - `--duration-stagger: 40ms`: step interval for the score count-up timer.
   - `--duration-quick: 150ms`: button and choice card hover transitions.
-  - `--duration-fast: 250ms`: slide enter transition.
+  - `--duration-fast: 250ms`: slide enter transition, and the growth of the progress fill.
   - `--duration-medium: 350ms`: SVG check and cross icon stroke drawing, and the choice notes
     reveal.
   - `--duration-very-slow: 500ms`: explanation panel and score band line elevation.
