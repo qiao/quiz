@@ -560,8 +560,9 @@ The deck contains three distinct slide views:
    and percent in its center and replaces the big score heading. The heading label keeps the full
    text for screen readers. The score band line sits to the right of the ring: its first sentence
    is the title of the summary, and the rest is a gray lede. A screen up to 600 px wide puts the
-   summary under the ring. Shows score breakdown per tier (each row
-   has an 8 px dot in the band color of that tier, hidden from screen readers), and action
+   summary under the ring. Shows the score breakdown per tier in a table with a hidden caption.
+   Each row has the tier label, a bar of 6 px that fills to the percent of that tier in the band
+   color of that tier (hidden from screen readers), and the count ("7 of 10"). Shows the action
    buttons ("Try the missed questions again" and "Restart"). The slide lists no missed
    questions. The retry button and the "Back" button on the question slides reach them. Reaching
    the end slide from the last question animates the ring fill and count-up over 800 ms, and
@@ -635,8 +636,8 @@ Transitions provide visual feedback during navigation and answers without blocki
    40%. The thresholds are the same as for the score band line (item 6). The count stays ink. At
    zero, only the track shows. The heading wraps the ring, count, and percent, and keeps the full
    text in its `aria-label` for screen readers. On a real finish from the last question, the fill
-   moves with the 800 ms count-up from empty to final value, while the count and percent count up
-   in 20 steps over 800 ms.
+   and each tier bar move with the 800 ms count-up from empty to final value, while the count and
+   percent count up in 20 steps over 800 ms.
 6. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
    view using the 500 ms rise animation. The line matches the score percentage:
    - 100%: "Every answer is correct."

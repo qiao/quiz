@@ -626,38 +626,61 @@ kbd {
   }
 }
 
+/* The tier rows: the tier label, a bar in the band color of the tier, and the count. */
 .score-table {
   width: 100%;
-  margin-top: var(--vbg-space-4);
+  margin-top: var(--vbg-space-10);
   border-collapse: collapse;
+  font-size: var(--vbg-type-compact);
   font-variant-numeric: tabular-nums;
 }
 
 .score-table th,
 .score-table td {
-  padding: var(--vbg-space-2) 0;
+  padding: var(--vbg-space-3) 0;
   box-shadow: inset 0 -1px 0 var(--vbg-gray-alpha-400);
   text-align: left;
 }
 
+.score-table tr:first-child > * {
+  box-shadow:
+    inset 0 1px 0 var(--vbg-gray-alpha-400),
+    inset 0 -1px 0 var(--vbg-gray-alpha-400);
+}
+
+/* The label column takes only the width of the longest tier name. */
 .score-table th {
-  color: var(--vbg-gray-900);
-  font-size: var(--vbg-type-label);
+  width: 1%;
+  padding-right: var(--vbg-space-8);
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.score-table .numeric {
+.score-cell {
+  display: flex;
+  gap: var(--vbg-space-6);
+  align-items: center;
+}
+
+.score-bar {
+  flex: 1;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--vbg-radius-small);
+  background: var(--vbg-gray-400);
+}
+
+.score-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--band-color);
+}
+
+.score-cell-count {
+  min-width: 4.5em;
+  color: var(--vbg-gray-900);
   text-align: right;
-}
-
-/* A dot before the count of a tier row shows the band of that tier. */
-.band-marker svg {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  margin-right: var(--vbg-space-2);
-  vertical-align: 0.1em;
-  fill: var(--band-color);
+  white-space: nowrap;
 }
 
 /* The score hero: the ring on the left and the summary on the right. */
@@ -770,9 +793,13 @@ kbd {
  * The old slide does not slide out, because the page renders one slide at a time.
  */
 @media (prefers-reduced-motion: no-preference) {
-  /* The fill moves with the count-up, which takes 800 ms. */
+  /* The fill of the ring and of each tier bar moves with the count-up, which takes 800 ms. */
   .ring-fill {
     transition: stroke-dashoffset 800ms linear;
+  }
+
+  .score-bar-fill {
+    transition: width 800ms linear;
   }
 
   .progress-fill {
@@ -995,6 +1022,14 @@ kbd {
     flex-direction: column;
     gap: var(--vbg-space-6);
     align-items: flex-start;
+  }
+
+  .score-table th {
+    padding-right: var(--vbg-space-4);
+  }
+
+  .score-cell {
+    gap: var(--vbg-space-4);
   }
 
   /* The buttons share the row equally. A grid ignores the padding that a flex basis counts. */
@@ -1635,17 +1670,23 @@ kbd {
       .filter((questions) => questions.length > 0)
       .map((questions) => {
         const tierCorrect = questions.filter(isAnsweredCorrectly).length;
-        const tierBand = scoreBand(Math.round((tierCorrect / questions.length) * 100));
-        const marker = element('span', {
-          class: 'band-marker',
-          'aria-hidden': 'true',
-          html: '<svg viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"></circle></svg>',
+        const tierPercent = (tierCorrect / questions.length) * 100;
+        // A live finish starts the bar empty, and the fill grows to `data-width` after layout.
+        const fill = element('span', {
+          class: 'score-bar-fill',
+          'data-width': `${tierPercent}%`,
+          style: `width: ${live ? 0 : tierPercent}%`,
         });
-        return element('tr', {}, [
-          element('td', { text: `Tier ${questions[0].tier} · ${questions[0].tierName}` }),
-          element('td', { class: `numeric band-${tierBand}` }, [
-            marker,
-            `${tierCorrect} of ${questions.length}`,
+        return element('tr', { class: `band-${scoreBand(Math.round(tierPercent))}` }, [
+          element('th', { scope: 'row' }, [tierLabel(questions[0].tier, questions[0].tierName)]),
+          element('td', {}, [
+            element('span', { class: 'score-cell' }, [
+              element('span', { class: 'score-bar', 'aria-hidden': 'true' }, [fill]),
+              element('span', {
+                class: 'score-cell-count',
+                text: `${tierCorrect} of ${questions.length}`,
+              }),
+            ]),
           ]),
         ]);
       });
@@ -1661,12 +1702,7 @@ kbd {
     showSlide([
       element('div', { class: 'score-hero' }, [heading, summary]),
       element('table', { class: 'score-table' }, [
-        element('thead', {}, [
-          element('tr', {}, [
-            element('th', { scope: 'col', text: 'Tier' }),
-            element('th', { scope: 'col', class: 'numeric', text: 'Correct' }),
-          ]),
-        ]),
+        element('caption', { class: 'visually-hidden', text: 'Score by tier' }),
         element('tbody', {}, rows),
       ]),
       element('div', { class: 'actions' }, [
@@ -1678,6 +1714,9 @@ kbd {
       const fill = /** @type {SVGElement} */ (ring.querySelector('.ring-fill'));
       void fill.getBoundingClientRect(); // Forces a layout, so the fill starts from empty.
       fill.style.strokeDashoffset = String(fillOffset);
+      for (const bar of slideElement.querySelectorAll('.score-bar-fill')) {
+        /** @type {HTMLElement} */ (bar).style.width = bar.getAttribute('data-width');
+      }
     }
   }
 

@@ -362,7 +362,7 @@ This document answers: what did we decide, and what did we reject?
 ### D27: Score band colors
 - **Decision:** Color the score on the end slide by score band. A score of 70% or more is green
   (`--vbg-green-900`), 40% to 69% is amber (`--vbg-amber-900`), and less than 40% is red
-  (`--vbg-red-900`). The band colors the ring fill and the percent. Each tier row also shows a dot
+  (`--vbg-red-900`). The band colors the ring fill and the percent. Each tier row also shows a bar
   in the band color of that tier. The bands use the thresholds of the score band summary line.
 - **Reason:** The user requested color-coding on the score page, so a learner sees the result
   level at a glance. The count, the percent, and the summary line give the same result as text, so
@@ -517,7 +517,7 @@ green merely because it is favorable or important."
 
 **Our implementation:**
 The end slide colors the score ring fill and the percent by score band: green, amber, or red. Each
-tier row shows a dot in the band color of that tier. The count, the score band summary line, and
+tier row shows a bar in the band color of that tier. The count, the score band summary line, and
 the "x of y" count of each tier give the same result as text. The count, the table text, and the
 buttons stay monochrome.
 
