@@ -464,11 +464,6 @@ h1 {
   cursor: pointer;
 }
 
-.button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
 .button-primary {
   background: var(--vbg-gray-1000);
   color: var(--vbg-background-100);
@@ -498,6 +493,15 @@ h1 {
 .button-tertiary:hover {
   background: var(--vbg-background-200);
   color: var(--vbg-gray-1000);
+}
+
+/* A disabled button is a flat gray surface, so it does not compete with the choices. */
+.button:disabled,
+.button:disabled:hover {
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
+  color: color-mix(in oklab, var(--vbg-gray-900) 70%, transparent);
+  cursor: not-allowed;
 }
 
 /* The theme button shows only an icon. Its accessible name and its tooltip give the action. */
