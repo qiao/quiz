@@ -45,7 +45,13 @@ body {
 
 a {
   color: inherit;
+  text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+  text-decoration-thickness: 1px;
   text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-color: currentColor;
 }
 
 :focus-visible {
@@ -414,8 +420,21 @@ h1 {
 .citation {
   margin: var(--vbg-space-4) 0 0;
   color: var(--vbg-gray-900);
-  font-size: var(--vbg-type-compact);
+  font-size: var(--vbg-type-label);
   overflow-wrap: anywhere;
+}
+
+/* A linked citation shows the path in the mono font, and an arrow marks the new tab. */
+.citation a {
+  display: inline-flex;
+  gap: var(--vbg-space-1);
+  align-items: center;
+  font-family: var(--vbg-font-mono);
+}
+
+.citation .icon {
+  width: 12px;
+  height: 12px;
 }
 
 .actions {
@@ -1027,6 +1046,7 @@ kbd {
         'M13.25 8h1.25M3.4 3.4l.9.9M11.7 11.7l.9.9M3.4 12.6l.9-.9M11.7 4.3l.9-.9',
     },
     moon: { path: 'M13.5 10A5.5 5.5 0 0 1 6 2.5a5.5 5.5 0 1 0 7.5 7.5z' },
+    external: { path: 'M5.5 4h6.5v6.5M12 4l-8 8' },
   };
 
   /**
@@ -1394,13 +1414,14 @@ kbd {
     let feedback = null;
     if (answer) {
       const citation = question.citation;
+      const linkAttributes = {
+        href: citation.url,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        text: citationLabel(citation),
+      };
       const source = citation.url
-        ? element('a', {
-            href: citation.url,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            text: citationLabel(citation),
-          })
+        ? element('a', linkAttributes, [icon('external')])
         : element('code', { text: citationLabel(citation) });
       const isRight = answer === correct.id;
       const resultText = isRight

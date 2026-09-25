@@ -710,7 +710,8 @@ The compiler resolves citation permalinks during compilation:
 8. The citation label is the path with its lines (`path/to/file.ts:15-32`) or its page
    (`document.pdf, page 12`). A linked citation uses the label as link text. If any check fails,
    the slide shows the label as code text with no link.
-9. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`.
+9. All citation links open in a new tab with `target="_blank" rel="noopener noreferrer"`. A link
+   shows the label in Geist Mono with a small arrow icon that marks the new tab.
 
 ---
 
