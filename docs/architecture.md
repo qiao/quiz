@@ -638,8 +638,8 @@ Transitions provide visual feedback during navigation and answers without blocki
    text in its `aria-label` for screen readers. On a real finish from the last question, the fill
    and each tier bar move with the 800 ms count-up from empty to final value, while the count and
    percent count up in 20 steps over 800 ms.
-6. **End slide score band line:** After the 800 ms count-up completes, one summary line rises into
-   view using the 500 ms rise animation. The line matches the score percentage:
+6. **End slide score band line:** After the 800 ms count-up completes, the summary (the title and
+   the lede) rises into view using the 500 ms rise animation. The line matches the score percentage:
    - 100%: "Every answer is correct."
    - 70% or more: "A good result. Read the missed questions to learn more."
    - 40% or more: "Good progress. Read the explanation of each missed question."
