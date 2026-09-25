@@ -549,7 +549,8 @@ The deck contains three distinct slide views:
    question number ("Question 5 of 20"), question prompt, four interactive choice cards, an
    explanation panel, citation link, a "Back" button, and a forward button ("Next" on
    questions 1 to N - 1, or "See the score" on question N). In review when all questions have
-   answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
+   answers, a tertiary "See the score" button appears between "Back" and "Next". The "Back" button
+   starts with a left arrow icon, and the forward button ends with a right arrow icon. Choice status
    displays drawn check and cross icons next to the status text. The correct choice and a wrong
    pick get a 1 px border, a 7% tint, and a filled key cap in green or red. The key cap letter
    has a contrast of at least 5.2 to 1 on the fill in both themes. The explanation panel is a gray

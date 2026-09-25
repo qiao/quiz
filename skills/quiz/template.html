@@ -1047,6 +1047,8 @@ kbd {
     },
     moon: { path: 'M13.5 10A5.5 5.5 0 0 1 6 2.5a5.5 5.5 0 1 0 7.5 7.5z' },
     external: { path: 'M5.5 4h6.5v6.5M12 4l-8 8' },
+    back: { path: 'M12.5 8h-9M7 4.5L3.5 8 7 11.5' },
+    next: { path: 'M3.5 8h9M9 4.5l3.5 3.5L9 11.5' },
   };
 
   /**
@@ -1076,11 +1078,16 @@ kbd {
    * @param {string} label Button text.
    * @param {'primary' | 'secondary' | 'tertiary'} variant Button style.
    * @param {() => void} onClick Action.
+   * @param {{ before?: keyof typeof ICONS, after?: keyof typeof ICONS }} [icons] Icons before
+   *   and after the label.
    * @returns {HTMLButtonElement} The button.
    */
-  function button(label, variant, onClick) {
-    const attributes = { type: 'button', class: `button button-${variant}`, text: label };
-    const node = element('button', attributes);
+  function button(label, variant, onClick, icons = {}) {
+    const node = element('button', { type: 'button', class: `button button-${variant}` }, [
+      icons.before ? icon(icons.before) : null,
+      label,
+      icons.after ? icon(icons.after) : null,
+    ]);
     node.addEventListener('click', onClick);
     return /** @type {HTMLButtonElement} */ (node);
   }
@@ -1443,7 +1450,8 @@ kbd {
     const isLast = question.id === questionCount;
     // A learner who reviews a question from the score slide can go back to it in one step.
     const reviewing = !isLast && lastOpenSlide() === endSlide;
-    const nextButton = button(isLast ? 'See the score' : 'Next', 'primary', next);
+    const nextLabel = isLast ? 'See the score' : 'Next';
+    const nextButton = button(nextLabel, 'primary', next, { after: 'next' });
     nextButton.disabled = !answer;
     if (!answer) nextButton.title = 'Choose an answer first';
 
@@ -1456,7 +1464,7 @@ kbd {
       choices,
       feedback,
       element('div', { class: 'actions' }, [
-        button('Back', 'secondary', back),
+        button('Back', 'secondary', back, { before: 'back' }),
         reviewing ? button('See the score', 'tertiary', () => goTo(endSlide)) : null,
         element('span', { class: 'actions-end' }, [nextButton]),
       ]),
