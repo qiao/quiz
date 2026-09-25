@@ -388,19 +388,31 @@ h1 {
   color: var(--vbg-gray-900);
 }
 
+/* The explanation panel: a gray card that starts with the result line in the state color. */
 .feedback {
   margin-top: var(--vbg-space-6);
-  padding-top: var(--vbg-space-4);
-  box-shadow: inset 0 1px 0 var(--vbg-gray-alpha-400);
+  padding: var(--vbg-space-5) var(--vbg-space-6);
+  border-radius: var(--vbg-radius);
+  background: var(--vbg-background-200);
+  box-shadow: inset 0 0 0 1px var(--vbg-gray-alpha-400);
 }
 
 .result {
+  display: flex;
+  gap: 6px;
+  align-items: center;
   margin: 0 0 var(--vbg-space-2);
+  color: var(--state-color);
+  font-size: var(--vbg-type-compact);
   font-weight: 600;
 }
 
+.feedback .rich {
+  line-height: 1.6;
+}
+
 .citation {
-  margin: var(--vbg-space-3) 0 0;
+  margin: var(--vbg-space-4) 0 0;
   color: var(--vbg-gray-900);
   font-size: var(--vbg-type-compact);
   overflow-wrap: anywhere;
@@ -731,7 +743,8 @@ kbd {
    * Answer: the status icons draw their stroke, as in the recipe 25-checkbox-check.md, and the
    * feedback rises in, as one line of the recipe 18-texts-reveal.md.
    */
-  .slide.is-answering .choice-status .icon path {
+  .slide.is-answering .choice-status .icon path,
+  .slide.is-answering .result .icon path {
     stroke-dasharray: var(--icon-length);
     animation: icon-draw var(--duration-medium) var(--ease-smooth-out) both;
   }
@@ -888,6 +901,10 @@ kbd {
   .slide {
     justify-content: flex-start;
     padding: var(--vbg-space-6) var(--vbg-space-4) var(--vbg-space-10);
+  }
+
+  .feedback {
+    padding: var(--vbg-space-4);
   }
 
   /* A narrow screen puts each tier on one row, with the count at the end of the row. */
@@ -1385,18 +1402,18 @@ kbd {
             text: citationLabel(citation),
           })
         : element('code', { text: citationLabel(citation) });
-      const resultText =
-        answer === correct.id
-          ? 'Correct.'
-          : `Not correct. The correct choice is ${correct.id.toUpperCase()}.`;
+      const isRight = answer === correct.id;
+      const resultText = isRight
+        ? 'Correct.'
+        : `Not correct. The correct choice is ${correct.id.toUpperCase()}.`;
       const feedbackAttributes = {
-        class: 'feedback',
+        class: `feedback ${isRight ? 'is-correct' : 'is-wrong'}`,
         id: 'feedback',
         tabindex: '-1',
         'aria-label': 'Explanation',
       };
       feedback = element('section', feedbackAttributes, [
-        element('p', { class: 'result', text: resultText }),
+        element('p', { class: 'result' }, [icon(isRight ? 'check' : 'cross'), resultText]),
         element('div', { class: 'rich', html: question.explanationHtml }),
         element('p', { class: 'citation' }, ['Source: ', source]),
       ]);

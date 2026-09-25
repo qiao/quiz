@@ -547,12 +547,14 @@ The deck contains three distinct slide views:
    jump after an answer. The distance is half the window height minus 300 px, at least 40 px, so a
    block of about 600 px sits in the middle. A narrow screen uses 24 px. Shows the tier label, the
    question number ("Question 5 of 20"), question prompt, four interactive choice cards, an
-   explanation reveal panel, citation link, a "Back" button, and a forward button ("Next" on
+   explanation panel, citation link, a "Back" button, and a forward button ("Next" on
    questions 1 to N - 1, or "See the score" on question N). In review when all questions have
    answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
    displays drawn check and cross icons next to the status text. The correct choice and a wrong
    pick get a 1 px border, a 7% tint, and a filled key cap in green or red. The key cap letter
-   has a contrast of at least 5.2 to 1 on the fill in both themes.
+   has a contrast of at least 5.2 to 1 on the fill in both themes. The explanation panel is a gray
+   card with a 1 px border. It starts with the result line: a drawn check or cross icon and the
+   result words ("Correct." or "Not correct. The correct choice is B.") in green or red.
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
    text for screen readers. Shows a score band summary line, score breakdown per tier (each row
@@ -609,10 +611,10 @@ Transitions provide visual feedback during navigation and answers without blocki
    blur (`--blur-medium`). Moving forward translates from positive 8 pixels. Moving backward
    translates from negative 8 pixels. Initial page loads and reloads render without animation. The
    previous slide does not animate out because the application renders one slide at a time.
-2. **Answer status icon draw:** When the learner selects a choice, the check or cross SVG icon
-   draws its stroke over 350 ms (`--duration-medium`) with `--ease-smooth-out`. The stroke uses
-   `stroke-dasharray` and `stroke-dashoffset` with path lengths of 14 units for check and 23 units
-   for cross.
+2. **Answer status icon draw:** When the learner selects a choice, each check or cross SVG icon
+   in the choice status and in the result line draws its stroke over 350 ms
+   (`--duration-medium`) with `--ease-smooth-out`. The stroke uses `stroke-dasharray` and
+   `stroke-dashoffset` with path lengths of 14 units for check and 23 units for cross.
 3. **Choice notes reveal:** When the learner selects a choice, the notes under each choice (the
    status and the rationale) open from zero height and rise 8 pixels (`--distance-base`) with a
    fade from opacity 0 to 1 and a 3 pixel blur over 350 ms (`--duration-medium`) with
