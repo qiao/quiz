@@ -550,7 +550,9 @@ The deck contains three distinct slide views:
    explanation reveal panel, citation link, a "Back" button, and a forward button ("Next" on
    questions 1 to N - 1, or "See the score" on question N). In review when all questions have
    answers, a tertiary "See the score" button appears between "Back" and "Next". Choice status
-   displays drawn check and cross icons next to the status text.
+   displays drawn check and cross icons next to the status text. The correct choice and a wrong
+   pick get a 1 px border, a 7% tint, and a filled key cap in green or red. The key cap letter
+   has a contrast of at least 5.2 to 1 on the fill in both themes.
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
    text for screen readers. Shows a score band summary line, score breakdown per tier (each row

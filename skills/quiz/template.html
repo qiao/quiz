@@ -334,9 +334,10 @@ h1 {
 
 .choice-status {
   display: flex;
-  gap: var(--vbg-space-1);
+  gap: 6px;
   align-items: center;
-  margin-top: var(--vbg-space-1);
+  margin-top: 6px;
+  color: var(--state-color);
   font-size: var(--vbg-type-label);
   font-weight: 500;
 }
@@ -358,20 +359,29 @@ h1 {
   font-size: var(--vbg-type-compact);
 }
 
-.choice.is-correct {
-  box-shadow: inset 0 0 0 2px var(--vbg-green-900);
+/*
+ * An answer state sets one color for its marks: green for the correct choice and red for a wrong
+ * pick. The status words and the icons give the same result without color.
+ */
+.is-correct {
+  --state-color: var(--vbg-green-900);
 }
 
-.choice.is-correct .choice-status {
-  color: var(--vbg-green-900);
+.is-wrong {
+  --state-color: var(--vbg-red-900);
 }
 
-.choice.is-wrong-pick {
-  box-shadow: inset 0 0 0 2px var(--vbg-red-900);
+.choice.is-correct,
+.choice.is-wrong {
+  background: color-mix(in oklab, var(--state-color) 7%, var(--vbg-background-100));
+  box-shadow: inset 0 0 0 1px var(--state-color);
 }
 
-.choice.is-wrong-pick .choice-status {
-  color: var(--vbg-red-900);
+.choice.is-correct .choice-letter,
+.choice.is-wrong .choice-letter {
+  background: var(--state-color);
+  box-shadow: none;
+  color: var(--vbg-background-100);
 }
 
 .choice.is-other {
@@ -1329,7 +1339,7 @@ kbd {
             const mine = answer === choice.id;
             status = [icon('check'), mine ? 'Your answer (correct)' : 'Correct answer'];
           } else if (choice.id === answer) {
-            stateClass = 'is-wrong-pick';
+            stateClass = 'is-wrong';
             status = [icon('cross'), 'Your answer (not correct)'];
           } else {
             stateClass = 'is-other';
