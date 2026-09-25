@@ -558,7 +558,9 @@ The deck contains three distinct slide views:
    result words ("Correct." or "Not correct. The correct choice is B.") in green or red.
 3. **End slide (index N + 1):** Shows a thin score ring (144 px, 3 px stroke) that holds the count
    and percent in its center and replaces the big score heading. The heading label keeps the full
-   text for screen readers. Shows a score band summary line, score breakdown per tier (each row
+   text for screen readers. The score band line sits to the right of the ring: its first sentence
+   is the title of the summary, and the rest is a gray lede. A screen up to 600 px wide puts the
+   summary under the ring. Shows score breakdown per tier (each row
    has an 8 px dot in the band color of that tier, hidden from screen readers), and action
    buttons ("Try the missed questions again" and "Restart"). The slide lists no missed
    questions. The retry button and the "Back" button on the question slides reach them. Reaching

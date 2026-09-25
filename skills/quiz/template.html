@@ -660,9 +660,34 @@ kbd {
   fill: var(--band-color);
 }
 
+/* The score hero: the ring on the left and the summary on the right. */
+.score-hero {
+  display: flex;
+  gap: var(--vbg-space-8);
+  align-items: center;
+}
+
+.score-summary {
+  min-width: 0;
+}
+
+.score-title {
+  margin: 0;
+  font-size: var(--vbg-type-section);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.score-summary .lede {
+  margin-top: var(--vbg-space-2);
+}
+
 /* The score ring holds the count in its center. The heading label carries the full text. */
 .score {
   display: grid;
+  flex: none;
   width: 144px;
   height: 144px;
   margin: 0;
@@ -720,14 +745,22 @@ kbd {
 
 .score-count {
   font-size: var(--vbg-type-title);
+  letter-spacing: -0.04em;
   line-height: 1;
 }
 
+.score-total {
+  color: var(--vbg-gray-900);
+  font-size: var(--vbg-type-subsection);
+  font-weight: 500;
+}
+
 .score-percent {
-  margin-top: var(--vbg-space-1);
+  margin-top: 6px;
   color: var(--band-color, var(--vbg-gray-900));
-  font-size: var(--vbg-type-compact);
-  font-weight: 400;
+  font-family: var(--vbg-font-mono);
+  font-size: var(--vbg-type-label);
+  font-weight: 500;
   letter-spacing: 0;
 }
 
@@ -956,6 +989,12 @@ kbd {
 
   .tier-count {
     margin-top: 0;
+  }
+
+  .score-hero {
+    flex-direction: column;
+    gap: var(--vbg-space-6);
+    align-items: flex-start;
   }
 
   /* The buttons share the row equally. A grid ignores the padding that a flex basis counts. */
@@ -1578,7 +1617,10 @@ kbd {
     const heading = element('h1', { class: headingClass, 'aria-label': label }, [
       ring,
       element('span', { class: 'score-text' }, [
-        element('span', { class: 'score-count' }, [countNode, `/${questionCount}`]),
+        element('span', { class: 'score-count' }, [
+          countNode,
+          element('span', { class: 'score-total', text: `/${questionCount}` }),
+        ]),
         element('span', { class: 'score-percent' }, [percentNode, '%']),
       ]),
     ]);
@@ -1608,9 +1650,16 @@ kbd {
         ]);
       });
 
+    // The first sentence of the score line is the title of the summary, and the rest is the lede.
+    const [scoreTitle, ...scoreRest] = scoreLine(percent).split(/(?<=\.) /);
+    const summaryClass = `score-summary ${live ? 'is-rising' : ''}`.trim();
+    const summary = element('div', { class: summaryClass }, [
+      element('p', { class: 'score-title', text: scoreTitle }),
+      scoreRest.length ? element('p', { class: 'lede', text: scoreRest.join(' ') }) : null,
+    ]);
+
     showSlide([
-      heading,
-      element('p', { class: `lede ${live ? 'is-rising' : ''}`.trim(), text: scoreLine(percent) }),
+      element('div', { class: 'score-hero' }, [heading, summary]),
       element('table', { class: 'score-table' }, [
         element('thead', {}, [
           element('tr', {}, [
