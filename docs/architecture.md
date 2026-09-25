@@ -535,7 +535,8 @@ The deck contains three distinct slide views:
    and the question count of that tier. The segments have the same width and sit in one row. On a
    screen up to 600 px wide, each tier takes one row between hairlines, with the count at the end
    of the row. The buttons are "Start the quiz" (or "Continue the quiz" when resuming) and an
-   optional "Restart" button. The start button ends with an "Enter" key hint, which is hidden from
+   optional "Restart" button. The title uses the display size (`3rem`, weight 500), and `2rem` on a
+   screen up to 600 px wide. The start button ends with an "Enter" key hint, which is hidden from
    screen readers. The cover lists no keys. The key caps on the choices, the "Enter" hint in the
    start button, and the tooltip of the theme button show the keys where the learner uses them.
    A device with no keyboard and no hover, for example a phone, does not show the key hint in the
