@@ -425,17 +425,20 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-/* A linked citation shows the path in the mono font, and an arrow marks the new tab. */
+/*
+ * A linked citation shows the path in the mono font, and an arrow marks the new tab. The link is
+ * inline, so on a narrow screen a long path wraps like text and the arrow follows its last word.
+ */
 .citation a {
-  display: inline-flex;
-  gap: var(--vbg-space-1);
-  align-items: center;
   font-family: var(--vbg-font-mono);
 }
 
 .citation .icon {
+  display: inline-block;
   width: 12px;
   height: 12px;
+  margin-left: var(--vbg-space-1);
+  vertical-align: -1px;
 }
 
 .actions {
