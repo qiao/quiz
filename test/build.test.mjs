@@ -912,4 +912,42 @@ describe('the real skill folder', () => {
     assert.match(page, /font-family: 'Geist Mono'/);
     assert.match(page, /--vbg-background-100: light-dark/);
   });
+
+  it('gives each light-dark() color a fallback with the same two values', () => {
+    const css = readFileSync(new URL('../skills/quiz/tokens.css', import.meta.url), 'utf8');
+    const fallbackStart = css.indexOf('@supports not (color: light-dark(');
+    assert.notEqual(fallbackStart, -1, 'tokens.css holds no fallback for light-dark()');
+    const fallback = css.slice(fallbackStart);
+
+    /**
+     * Reads the custom properties of the first block with a selector in the fallback.
+     *
+     * @param {string} selector Selector of the block.
+     * @returns {Map<string, string>} Property names and values.
+     */
+    const block = (selector) => {
+      const start = fallback.indexOf(`${selector} {`);
+      assert.notEqual(start, -1, `the fallback holds no block for ${selector}`);
+      const body = fallback.slice(start, fallback.indexOf('}', start));
+      return new Map([...body.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2]]));
+    };
+    const light = block(':root');
+    const systemDark = block(':root:not([data-theme])');
+    const chosenDark = block(":root[data-theme='dark']");
+
+    const pairs = [...css.slice(0, fallbackStart).matchAll(/(--[\w-]+): light-dark\((.+)\);$/gm)];
+    assert.ok(pairs.length > 0);
+    for (const [, name, values] of pairs) {
+      let depth = 0;
+      const comma = [...values].findIndex((char) => {
+        if (char === '(') depth += 1;
+        if (char === ')') depth -= 1;
+        return char === ',' && depth === 0;
+      });
+      const [lightValue, darkValue] = [values.slice(0, comma), values.slice(comma + 1)];
+      assert.equal(light.get(name), lightValue.trim(), `${name} in the light fallback`);
+      assert.equal(systemDark.get(name), darkValue.trim(), `${name} in the system dark fallback`);
+      assert.equal(chosenDark.get(name), darkValue.trim(), `${name} in the chosen dark fallback`);
+    }
+  });
 });

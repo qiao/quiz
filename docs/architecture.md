@@ -868,6 +868,12 @@ sun in the dark theme and a moon in the light theme. Its `aria-label` names the 
 theme" or "Use dark theme"), and its tooltip adds the key ("Use light theme (T)"). The button is
 32 px square, and 44 px square on a device with a coarse pointer.
 
+A browser with no `light-dark()`, for example every iOS browser before iOS 17.5, finds no valid
+color in the tokens, and the page loses every border and fill. For that browser, `tokens.css` holds
+a fallback in `@supports not (color: light-dark(#fff, #000))`. The fallback sets each color token
+to its light value on `:root`, and to its dark value for the system dark theme and for
+`data-theme="dark"`. A test checks that the fallback values match the `light-dark()` pairs.
+
 ### Motion and focus styles
 
 Transitions follow `prefers-reduced-motion` settings:
@@ -992,6 +998,8 @@ The automated test suite organizes tests into fourteen groups:
     argument-specific usage printing, and `--help`.
 15. **`the real skill folder`:** Verifies end-to-end packaging with real assets. Tests verify zero
     remaining template placeholders and zero external network requests in links, scripts, and CSS.
+    A test also checks that the color fallback in `tokens.css` has the same light and dark value
+    as each `light-dark()` token.
 
 ---
 

@@ -64,6 +64,63 @@
 }
 
 /*
+ * A color fallback for browsers with no light-dark(), for example every iOS browser before iOS
+ * 17.5. There, each color above is not valid, so the page loses every border and fill. The values
+ * copy the light-dark() pairs above, and a test in test/build.test.mjs checks the copy.
+ */
+@supports not (color: light-dark(#fff, #000)) {
+  :root {
+    --vbg-background-100: oklch(1 0 0);
+    --vbg-background-200: oklch(0.984 0 0);
+    --vbg-gray-400: oklch(0.937 0 0);
+    --vbg-gray-900: oklch(0.42 0 0);
+    --vbg-gray-1000: oklch(0.205 0 0);
+    --vbg-gray-alpha-300: oklch(0 0 0 / 0.1);
+    --vbg-gray-alpha-400: oklch(0 0 0 / 0.08);
+    --vbg-blue-700: oklch(57.61% 0.2508 258.23);
+    --vbg-blue-900: oklch(53.18% 0.2399 256.99);
+    --vbg-green-900: oklch(51.75% 0.1453 147.65);
+    --vbg-amber-900: oklch(52.79% 0.1496 54.65);
+    --vbg-red-900: oklch(54.99% 0.232 25.29);
+    --vbg-focus: var(--vbg-blue-700);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      --vbg-background-100: oklch(0 0 0);
+      --vbg-background-200: oklch(0.027 0 0);
+      --vbg-gray-400: oklch(0.301 0 0);
+      --vbg-gray-900: oklch(0.706 0 0);
+      --vbg-gray-1000: oklch(0.946 0 0);
+      --vbg-gray-alpha-300: oklch(1 0 0 / 0.13);
+      --vbg-gray-alpha-400: oklch(1 0 0 / 0.14);
+      --vbg-blue-700: oklch(57.61% 0.2321 258.23);
+      --vbg-blue-900: oklch(71.7% 0.1648 250.794);
+      --vbg-green-900: oklch(73.1% 0.2158 148.29);
+      --vbg-amber-900: oklch(77.21% 0.1991 64.28);
+      --vbg-red-900: oklch(69.96% 0.2136 22.03);
+      --vbg-focus: var(--vbg-blue-900);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --vbg-background-100: oklch(0 0 0);
+    --vbg-background-200: oklch(0.027 0 0);
+    --vbg-gray-400: oklch(0.301 0 0);
+    --vbg-gray-900: oklch(0.706 0 0);
+    --vbg-gray-1000: oklch(0.946 0 0);
+    --vbg-gray-alpha-300: oklch(1 0 0 / 0.13);
+    --vbg-gray-alpha-400: oklch(1 0 0 / 0.14);
+    --vbg-blue-700: oklch(57.61% 0.2321 258.23);
+    --vbg-blue-900: oklch(71.7% 0.1648 250.794);
+    --vbg-green-900: oklch(73.1% 0.2158 148.29);
+    --vbg-amber-900: oklch(77.21% 0.1991 64.28);
+    --vbg-red-900: oklch(69.96% 0.2136 22.03);
+    --vbg-focus: var(--vbg-blue-900);
+  }
+}
+
+/*
  * Motion tokens for the slide, answer, and score transitions.
  * Source: https://github.com/Jakubantalik/transitions.dev, file skills/transitions-dev/_root.css
  * at commit 598d3d6ad89dabb4bdf742fd2e887ca53914a888. The terms, at
