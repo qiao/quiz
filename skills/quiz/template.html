@@ -1620,11 +1620,16 @@ kbd {
       });
 
     // The first sentence of the score line is the title of the summary, and the rest is the lede.
-    const [scoreTitle, ...scoreRest] = scoreLine(percent).split(/(?<=\.) /);
+    // The split uses no regex lookbehind, because Safari before 16.4 cannot parse one, and a parse
+    // error stops the whole script.
+    const line = scoreLine(percent);
+    const cut = line.indexOf('. ') + 1;
+    const scoreTitle = cut ? line.slice(0, cut) : line;
+    const scoreRest = cut ? line.slice(cut + 1) : '';
     const summaryClass = `score-summary ${live ? 'is-rising' : ''}`.trim();
     const summary = element('div', { class: summaryClass }, [
       element('p', { class: 'score-title', text: scoreTitle }),
-      scoreRest.length ? element('p', { class: 'lede', text: scoreRest.join(' ') }) : null,
+      scoreRest ? element('p', { class: 'lede', text: scoreRest }) : null,
     ]);
 
     showSlide([
