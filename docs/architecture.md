@@ -564,7 +564,8 @@ The deck contains three distinct slide views:
    summary under the ring. Shows the score breakdown per tier in a table with a hidden caption.
    Each row has the tier label, a bar of 6 px that fills to the percent of that tier in the band
    color of that tier (hidden from screen readers), and the count ("7 of 10"). Shows the action
-   buttons ("Try the missed questions again" and "Restart"). The slide lists no missed
+   buttons ("Try the missed questions again" and "Restart"). A screen up to 600 px wide stacks the
+   two buttons, so the retry label fits one line. The slide lists no missed
    questions. The retry button and the "Back" button on the question slides reach them. Reaching
    the end slide from the last question animates the ring fill and count-up over 800 ms, and
    drops confetti after the ring closes for a 100% score.

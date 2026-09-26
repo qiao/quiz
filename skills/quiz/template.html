@@ -1006,6 +1006,11 @@ kbd {
     display: grid;
     margin-left: 0;
   }
+
+  /* The score slide stacks its buttons, so the long label of the retry button fits one line. */
+  .actions-stack {
+    grid-auto-flow: row;
+  }
 }
 </style>
 </head>
@@ -1641,7 +1646,7 @@ kbd {
         element('caption', { class: 'visually-hidden', text: 'Score by tier' }),
         element('tbody', {}, rows),
       ]),
-      element('div', { class: 'actions' }, [
+      element('div', { class: 'actions actions-stack' }, [
         missed.length ? button('Try the missed questions again', 'primary', retryMissed) : null,
         button('Restart', 'secondary', restart),
       ]),
