@@ -38,6 +38,7 @@ body {
   font-size: var(--vbg-type-body);
   line-height: 1.5;
   cursor: default;
+  -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -50,8 +51,14 @@ a {
   text-underline-offset: 3px;
 }
 
-a:hover {
-  text-decoration-color: currentColor;
+/*
+ * A touch screen keeps the hover state after a tap, so a tapped control stayed highlighted. Each
+ * hover style applies only on a device that can hover.
+ */
+@media (hover: hover) {
+  a:hover {
+    text-decoration-color: currentColor;
+  }
 }
 
 :focus-visible {
@@ -289,9 +296,11 @@ h1 {
   cursor: pointer;
 }
 
-.choice:hover:not([aria-disabled='true']) {
-  background: var(--vbg-background-200);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--vbg-gray-1000) 35%, transparent);
+@media (hover: hover) {
+  .choice:hover:not([aria-disabled='true']) {
+    background: var(--vbg-background-200);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--vbg-gray-1000) 35%, transparent);
+  }
 }
 
 .choice[aria-disabled='true'] {
@@ -314,10 +323,12 @@ h1 {
   text-transform: uppercase;
 }
 
-.choice:hover:not([aria-disabled='true']) .choice-letter {
-  background: var(--vbg-gray-1000);
-  box-shadow: none;
-  color: var(--vbg-background-100);
+@media (hover: hover) {
+  .choice:hover:not([aria-disabled='true']) .choice-letter {
+    background: var(--vbg-gray-1000);
+    box-shadow: none;
+    color: var(--vbg-background-100);
+  }
 }
 
 /* The first line of the text is 24 px tall, so it lines up with the key cap. */
@@ -473,8 +484,10 @@ h1 {
   color: var(--vbg-background-100);
 }
 
-.button-primary:hover {
-  background: color-mix(in oklab, var(--vbg-gray-1000) 85%, var(--vbg-background-100));
+@media (hover: hover) {
+  .button-primary:hover {
+    background: color-mix(in oklab, var(--vbg-gray-1000) 85%, var(--vbg-background-100));
+  }
 }
 
 .button-secondary {
@@ -483,8 +496,10 @@ h1 {
   color: var(--vbg-gray-1000);
 }
 
-.button-secondary:hover {
-  background: var(--vbg-background-200);
+@media (hover: hover) {
+  .button-secondary:hover {
+    background: var(--vbg-background-200);
+  }
 }
 
 .button-tertiary {
@@ -494,9 +509,11 @@ h1 {
   color: var(--vbg-gray-900);
 }
 
-.button-tertiary:hover {
-  background: var(--vbg-background-200);
-  color: var(--vbg-gray-1000);
+@media (hover: hover) {
+  .button-tertiary:hover {
+    background: var(--vbg-background-200);
+    color: var(--vbg-gray-1000);
+  }
 }
 
 /* A disabled button is a flat gray surface, so it does not compete with the choices. */

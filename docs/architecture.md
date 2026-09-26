@@ -897,6 +897,9 @@ Transitions follow `prefers-reduced-motion` settings:
 - **Cursor:** The page sets `cursor: default` on the body, so the cursor is an arrow on every
   text and surface, as in a slide deck. Buttons, links, and open choices show a hand. A disabled
   button shows `not-allowed`. An answered choice shows the arrow. Text selection still works.
+- **Touch:** Each hover style sits in `@media (hover: hover)`, because a touch screen keeps the
+  hover state after a tap. The page sets `-webkit-tap-highlight-color: transparent`, so a tap
+  shows no gray flash. The tapped control shows its own new state.
 
 ### Accessibility structure
 
